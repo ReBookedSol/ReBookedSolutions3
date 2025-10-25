@@ -78,12 +78,12 @@ export const setCSPHeader = (): void => {
 
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.paystack.co https://cdn.gpteng.co https://www.googletagmanager.com https://maps.googleapis.com https://www.google-analytics.com https://vercel.live https://va.vercel-scripts.com https://vitals.vercel-insights.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.paystack.co https://cdn.gpteng.co https://www.googletagmanager.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://maps.googleapis.com https://www.google-analytics.com https://vercel.live https://va.vercel-scripts.com https://vitals.vercel-insights.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://paystack.com https://cdn.builder.io",
     "font-src 'self' https://fonts.gstatic.com https://cdn.builder.io",
     "img-src 'self' data: https: blob: http:",
-    "connect-src 'self' https: wss: https://*.supabase.co wss://*.supabase.co https://api.paystack.co https://js.paystack.co https://www.google-analytics.com https://maps.googleapis.com https://vercel.live https://vitals.vercel-insights.com",
-    "frame-src 'self' https://checkout.paystack.com https://maps.google.com https://www.google.com https://vercel.live",
+    "connect-src 'self' https: wss: https://*.supabase.co wss://*.supabase.co https://api.paystack.co https://js.paystack.co https://www.google-analytics.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://maps.googleapis.com https://vercel.live https://vitals.vercel-insights.com",
+    "frame-src 'self' https://checkout.paystack.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://maps.google.com https://www.google.com https://vercel.live",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self' https://checkout.paystack.com",
