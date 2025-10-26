@@ -67,7 +67,7 @@ export const PRODUCTION_SETTINGS = {
     SITE_NAME: 'ReBooked Solutions',
     SITE_DESCRIPTION: 'Buy and sell new and used books through our secure platform in South Africa',
     SITE_URL: 'https://rebookedsolutions.co.za',
-    SOCIAL_IMAGE: '/og-image.jpg',
+    SOCIAL_IMAGE: 'https://cdn.builder.io/api/v1/image/assets%2Fd496663337e74740910037e73ef37db4%2Fa4d94e95c03244a89c08a0582a9856f0?format=webp&width=800',
     
     // Structured data
     ORGANIZATION: {
