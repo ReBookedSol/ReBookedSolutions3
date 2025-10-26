@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Book, Instagram, Facebook } from "lucide-react";
+import { Book, Instagram, Facebook, Twitter } from "lucide-react";
 import TikTokIcon from "@/components/icons/TikTokIcon";
 
 const Footer = () => {
