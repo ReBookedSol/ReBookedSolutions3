@@ -21,7 +21,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
-import { ArrowLeft, AlertTriangle, Send } from "lucide-react";
+import { AlertTriangle, Send } from "lucide-react";
 import { submitReport } from "@/services/reportService";
 
 const Report = () => {
