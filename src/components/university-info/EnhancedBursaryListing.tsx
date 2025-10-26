@@ -308,7 +308,7 @@ const EnhancedBursaryListing = () => {
             <BookOpen className="h-5 w-5 text-emerald-600" /> Tips & Updates
           </CardTitle>
           <CardDescription className="text-gray-600">
-            Quick pointers to improve your chances. Get the latest on <a href="https://www.rebookednews.co.za/" target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:text-emerald-900 underline">ReBooked News</a>.
+            Quick pointers to improve your chances. Get the latest on <a href="https://news.rebookedsolutions.co.za" target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:text-emerald-900 underline">ReBooked News</a>.
           </CardDescription>
           <ul className="text-sm text-gray-700 grid sm:grid-cols-3 gap-2 sm:gap-4 mt-1">
             <li className="px-3 py-2 rounded-lg bg-gray-50 border border-gray-200">Apply early and track deadlines</li>
