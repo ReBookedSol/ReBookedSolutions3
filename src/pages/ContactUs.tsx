@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { ArrowLeft, Mail, Send, Instagram, Facebook, Clock, X } from "lucide-react";
+import { ArrowLeft, Mail, Send, Instagram, Facebook, Clock } from "lucide-react";
+import XIcon from "@/components/icons/XIcon";
 import { submitContactMessage } from "@/services/contactService";
 import TikTokIcon from "@/components/icons/TikTokIcon";
 
