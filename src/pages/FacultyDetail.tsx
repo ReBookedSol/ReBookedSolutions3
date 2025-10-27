@@ -105,6 +105,10 @@ const FacultyDetail = () => {
 
       <CampusNavbar />
 
+      <div className="container mx-auto px-4 py-4">
+        <GoogleAd />
+      </div>
+
       <div className="min-h-screen bg-gray-50">
         {/* Hero Section with Study Theme - Mobile Optimized */}
         <div className="relative bg-gradient-to-r from-book-600 to-book-700 text-white">
