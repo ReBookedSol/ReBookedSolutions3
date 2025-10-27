@@ -60,12 +60,12 @@ const PrivateInstitutionProfile: React.FC = () => {
               <h1 className="text-2xl font-bold">Institution not found</h1>
               <p className="text-gray-600">The institution you’re looking for doesn’t exist or hasn’t been added yet.</p>
               <div className="flex justify-center">
-                <Link to="/university-info?tool=private-institutions">
+                <a href="/university-info?tool=private-institutions">
                   <Button variant="outline" className="hover:bg-book-50 hover:border-book-300 text-book-600 border-book-200">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back to Private Institutions
                   </Button>
-                </Link>
+                </a>
               </div>
             </CardContent>
           </Card>
