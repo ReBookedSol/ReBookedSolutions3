@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import CampusNavbar from "@/components/CampusNavbar";
 import SEO from "@/components/SEO";
+import GoogleAd from "@/components/ads/GoogleAd";
 import { SOUTH_AFRICAN_UNIVERSITIES } from "@/constants/universities";
 import { University, Faculty, Degree } from "@/types/university";
 
