@@ -169,7 +169,7 @@ const APSScoreCard: React.FC<APSScoreCardProps> = ({
             size="sm"
             onClick={() => {
               // Pass APS context to ensure personalized experience
-              navigate(
+              window.location.assign(
                 `/university/${score.universityId}?fromAPS=true&aps=${score.score}`,
               );
             }}
