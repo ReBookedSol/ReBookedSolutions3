@@ -132,12 +132,14 @@ const PrivateInstitutionExplorer = () => {
                   ) : null}
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <a href={`/private-institution/${inst.id}`} className="sm:flex-1">
-                    <Button variant="outline" className="w-full hover:bg-book-50 hover:border-book-300 text-book-600 border-book-200">
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      View Profile
+                  <Link to={`/private-institution/${inst.id}`} className="sm:flex-1">
+                    <Button variant="outline" className="w-full hover:bg-book-50 hover:border-book-300 text-book-600 border-book-200" asChild>
+                      <span>
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        View Profile
+                      </span>
                     </Button>
-                  </a>
+                  </Link>
                   {inst.contact?.website && (
                     <a href={inst.contact.website} target="_blank" rel="noopener noreferrer" className="sm:flex-1">
                       <Button variant="outline" className="w-full border-book-200 text-book-600 hover:bg-book-50">
@@ -211,7 +213,7 @@ const PrivateInstitutionExplorer = () => {
                 <li>DHET registration for private providers</li>
               </ul>
               <div className="text-xs mt-2">
-                Verify on: <a href="https://www.che.ac.za/" className="text-book-600 hover:underline" target="_blank" rel="noreferrer">CHE</a> ��� <a href="https://www.saqa.org.za/" className="text-book-600 hover:underline" target="_blank" rel="noreferrer">SAQA</a>
+                Verify on: <a href="https://www.che.ac.za/" className="text-book-600 hover:underline" target="_blank" rel="noreferrer">CHE</a> • <a href="https://www.saqa.org.za/" className="text-book-600 hover:underline" target="_blank" rel="noreferrer">SAQA</a>
               </div>
             </div>
             <div className="p-4 rounded-lg bg-green-50 border border-green-200">
