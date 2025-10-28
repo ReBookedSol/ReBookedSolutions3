@@ -21,7 +21,7 @@ const GoogleAd: React.FC<GoogleAdProps> = ({
   // Refresh ad when route changes or ad props change
   useEffect(() => {
     setRefreshKey((k) => k + 1);
-  }, [location.pathname, location.search, slot, format, layoutKey]);
+  }, [location.pathname, slot, format, layoutKey]);
 
   useEffect(() => {
     try {
