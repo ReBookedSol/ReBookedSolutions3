@@ -79,6 +79,8 @@ const BookFilters = ({
     "Grade 10",
     "Grade 11",
     "Grade 12",
+    "Study Guide",
+    "Course Book",
   ];
   const curricula = ["CAPS", "Cambridge", "IEB"];
   const provinces = [
