@@ -46,6 +46,7 @@ export interface BookFormData {
   universityYear?: string;
   university?: string;
   curriculum?: 'CAPS' | 'Cambridge' | 'IEB';
+  universityBookType?: 'Study Guide' | 'Course Book';
   province?: string;
   // Quantity to create listing with
   quantity?: number;
