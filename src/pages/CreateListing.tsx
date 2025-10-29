@@ -610,8 +610,9 @@ const CreateListing = () => {
           <ShareProfileDialog
             isOpen={showShareProfileDialog}
             onClose={() => setShowShareProfileDialog(false)}
-            userId={user?.id}
-            userProfile={profile}
+            userId={user?.id || ""}
+            userName={[(profile as any)?.first_name, (profile as any)?.last_name].filter(Boolean).join(" ") || profile?.name || "Your"}
+            isOwnProfile={true}
           />
 
           <SellerPolicyModal
