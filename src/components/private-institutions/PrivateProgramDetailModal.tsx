@@ -268,6 +268,84 @@ const PrivateProgramDetailModal: React.FC<PrivateProgramDetailModalProps> = ({ p
             </div>
           </TabsContent>
 
+          <TabsContent value="contact" className="mt-6">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader className="bg-gradient-to-r from-book-50 to-white">
+                  <CardTitle className="text-xl flex items-center text-gray-900">
+                    <Calendar className="h-6 w-6 mr-3 text-book-500" />
+                    Application & Contact Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  {institution.contact ? (
+                    <div className="space-y-4">
+                      {institution.contact.website && (
+                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                          <div className="font-medium text-blue-900 mb-2">Official Website</div>
+                          <Button variant="outline" className="w-full border-blue-300 text-blue-600 hover:bg-blue-100" asChild>
+                            <a href={institution.contact.website} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="h-4 w-4 mr-2" /> {institution.contact.website}
+                            </a>
+                          </Button>
+                        </div>
+                      )}
+                      {institution.contact.email && (
+                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                          <div className="font-medium text-gray-900 mb-2">Email</div>
+                          <a href={`mailto:${institution.contact.email}`} className="text-book-600 hover:underline break-all">
+                            {institution.contact.email}
+                          </a>
+                        </div>
+                      )}
+                      {institution.contact.phone && (
+                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                          <div className="font-medium text-gray-900 mb-2">Phone</div>
+                          <a href={`tel:${institution.contact.phone}`} className="text-book-600 hover:underline">
+                            {institution.contact.phone}
+                          </a>
+                        </div>
+                      )}
+                      {institution.contact.address && (
+                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                          <div className="font-medium text-gray-900 mb-2">Address</div>
+                          <p className="text-gray-700">{institution.contact.address}</p>
+                        </div>
+                      )}
+                      {institution.locations && institution.locations.length > 0 && (
+                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                          <div className="font-medium text-gray-900 mb-2">Campuses & Locations</div>
+                          <div className="space-y-1">
+                            {institution.locations.map((location, idx) => (
+                              <div key={idx} className="text-gray-700 flex items-start">
+                                <MapPin className="h-4 w-4 text-gray-400 mr-2 mt-0.5 flex-shrink-0" />
+                                <span>{location}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <div className="p-4 bg-book-50 rounded-lg border border-book-200">
+                        <div className="font-medium text-book-900 mb-2">Next Steps</div>
+                        <ul className="text-sm text-book-800 space-y-2">
+                          <li>• Visit the institution's website for application forms and requirements</li>
+                          <li>• Check application deadlines and closing dates</li>
+                          <li>• Review entry requirements for this specific program</li>
+                          <li>• Contact the institution directly for more information</li>
+                        </ul>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-6 bg-gray-50 rounded-lg text-center text-gray-600">
+                      <p className="mb-3">Contact details for this institution are not yet available.</p>
+                      <p className="text-sm">Please check the institution's website or contact information directly for application details.</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
           <TabsContent value="resources" className="mt-6">
             <div className="space-y-6">
               <Card>
