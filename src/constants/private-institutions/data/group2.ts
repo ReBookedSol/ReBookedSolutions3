@@ -4,6 +4,8 @@ export const PRIVATE_GROUP_2: PrivateInstitution[] = [
   {
     id: "cape-town-baptist-seminary",
     name: "Cape Town Baptist Seminary NPC",
+    locations: ["52 - 64 Tarentaal Road, Bridgetown, Cape Town, 7764"],
+    contact: { website: "https://www.ctbs.org.za/" },
     programs: [
       { id: "ctbs-bth", name: "Bachelor of Theology", type: "bachelor", mode: "contact", credits: 480, nqfLevel: 8 },
       { id: "ctbs-bmin", name: "Bachelor of Ministry", type: "bachelor", mode: "contact", credits: 480, nqfLevel: 8 },
@@ -13,6 +15,8 @@ export const PRIVATE_GROUP_2: PrivateInstitution[] = [
   {
     id: "cape-town-college-of-fashion-design",
     name: "Cape Town College of Fashion Design (Pty) Ltd",
+    locations: ["Unit 15, Waverley Business Park, Wyecroft Road, Mowbray, Cape Town, 7700"],
+    contact: { website: "https://ctcfd.co.za/" },
     programs: [
       { id: "ctcfd-dip-fashion-design", name: "Diploma in Fashion Design", type: "diploma", mode: "contact", credits: 360, nqfLevel: 6 },
       { id: "ctcfd-adv-dip-fashion-design", name: "Advanced Diploma in Fashion Design", type: "advanced-diploma", mode: "contact", credits: 120, nqfLevel: 7 },
@@ -21,6 +25,8 @@ export const PRIVATE_GROUP_2: PrivateInstitution[] = [
   {
     id: "cape-town-creative-academy",
     name: "Cape Town Creative Academy (Pty) Ltd",
+    locations: ["Silo District / V&A Waterfront, Cape Town"],
+    contact: { website: "https://ctca.ac.za/" },
     programs: [
       { id: "ctca-ba-communication-design", name: "Bachelor of Arts in Communication Design", type: "bachelor", mode: "contact", credits: 360, nqfLevel: 7 },
       { id: "ctca-ba-contemporary-art", name: "Bachelor of Arts in Contemporary Art", type: "bachelor", mode: "contact", credits: 360, nqfLevel: 7 },
@@ -33,6 +39,8 @@ export const PRIVATE_GROUP_2: PrivateInstitution[] = [
   {
     id: "centre-for-creative-education",
     name: "Centre for Creative Education/Iziko La Bantu Be Afrika NPC",
+    locations: ["4 Victoria Road, Plumstead, Cape Town, 7800"],
+    contact: { website: "https://www.centreforcreativeeducation.co.za/" },
     programs: [
       { id: "cce-hc-ecd", name: "Higher Certificate in Early Childhood Development", type: "higher-certificate", mode: "contact", credits: 120, nqfLevel: 5 },
       { id: "cce-bed-foundation", name: "Bachelor of Education in Foundation Phase Teaching", type: "bachelor", mode: "contact", credits: 480, nqfLevel: 7 },
@@ -42,6 +50,8 @@ export const PRIVATE_GROUP_2: PrivateInstitution[] = [
   {
     id: "christ-baptist-church-seminary",
     name: "Christ Baptist Church Seminary NPC",
+    locations: ["Polokwane, South Africa"],
+    contact: { website: "https://christseminary.ac.za/" },
     programs: [
       { id: "cbcs-dip-theology", name: "Diploma in Theology", type: "diploma", mode: "contact", credits: 360, nqfLevel: 6 },
       { id: "cbcs-bth", name: "Bachelor of Theology", type: "bachelor", mode: "contact", credits: 360, nqfLevel: 7 },
@@ -50,6 +60,8 @@ export const PRIVATE_GROUP_2: PrivateInstitution[] = [
   {
     id: "christian-reformed-theological-seminary",
     name: "Christian Reformed Theological Seminary/Christelike Gereformeerde Teologie Seminarium NPC",
+    locations: ["Hoewe 3, Von Willich Street, Verster Park, Bronkhorstspruit, 1020"],
+    contact: { website: "https://www.cgts.co.za/" },
     programs: [
       { id: "crts-bth", name: "Bachelor of Theology", type: "bachelor", mode: "distance", credits: 360, nqfLevel: 7 },
     ],
@@ -57,6 +69,8 @@ export const PRIVATE_GROUP_2: PrivateInstitution[] = [
   {
     id: "city-varsity",
     name: "City Varsity (Pty) Ltd",
+    locations: ["Cape Town (16-18 Roeland Street)", "Johannesburg (125 Simmonds Street, Braamfontein)"],
+    contact: { website: "https://www.cityvarsity.co.za/" },
     programs: [
       { id: "cv-hc-acting-camera", name: "Higher Certificate in Acting for Camera", type: "higher-certificate", mode: "contact", credits: 120, nqfLevel: 5 },
       { id: "cv-hc-digital-media-arts", name: "Higher Certificate in Digital Media Arts", type: "higher-certificate", mode: "contact", credits: 120, nqfLevel: 5 },
@@ -78,6 +92,8 @@ export const PRIVATE_GROUP_2: PrivateInstitution[] = [
   {
     id: "college-of-transfiguration",
     name: "College of Transfiguration NPC",
+    locations: ["Makhanda (Grahamstown), Eastern Cape"],
+    contact: { website: "https://cott.co.za/" },
     programs: [
       { id: "cot-dip-theology", name: "Diploma in Theology", type: "diploma", mode: "contact", credits: 360, nqfLevel: 6 },
       { id: "cot-adv-dip-ministry", name: "Advanced Diploma in Ministry", type: "advanced-diploma", mode: "contact", credits: 120, nqfLevel: 7 },
@@ -87,6 +103,8 @@ export const PRIVATE_GROUP_2: PrivateInstitution[] = [
   {
     id: "cornerstone-institute",
     name: "Cornerstone Institute (RF) NPC",
+    locations: ["1 Cedar Street, Sandown, Milnerton Rural, Western Cape, 7441"],
+    contact: { website: "https://cornerstone.ac.za/" },
     programs: [
       { id: "ci-hc-business-studies", name: "Higher Certificate in Business Studies", type: "higher-certificate", mode: "contact", credits: 120, nqfLevel: 5 },
       { id: "ci-hc-christian-ministry", name: "Higher Certificate in Christian Ministry", type: "higher-certificate", mode: "contact", credits: 120, nqfLevel: 5 },
@@ -105,6 +123,8 @@ export const PRIVATE_GROUP_2: PrivateInstitution[] = [
   {
     id: "cranefield-college",
     name: "Cranefield College (Pty) Ltd",
+    locations: ["Pretoria"],
+    contact: { website: "https://www.cranefield.ac.za/" },
     programs: [
       { id: "cranefield-adv-cert-project-mgmt", name: "Advanced Certificate in Project Management", type: "advanced-certificate", mode: "distance", credits: 120, nqfLevel: 6 },
       { id: "cranefield-adv-dip-project-mgmt", name: "Advanced Diploma in Project Management", type: "advanced-diploma", mode: "contact", credits: 120, nqfLevel: 7 },
@@ -117,12 +137,14 @@ export const PRIVATE_GROUP_2: PrivateInstitution[] = [
   {
     id: "damelin",
     name: "Damelin (Pty) Ltd",
+    locations: ["Multiple campuses (nationwide)"],
+    contact: { website: "https://www.damelin.co.za/" },
     programs: [
       { id: "damelin-hc-business-mgmt", name: "Higher Certificate in Business Management", type: "higher-certificate", mode: "contact", credits: 120, nqfLevel: 5 },
-      { id: "damelin-hc-marketing-mgmt", name: "Higher Certificate in Marketing Management", type: "higher-certificate", mode: "contact", credits: 120, nqfLevel: "Not specified" },
+      { id: "damelin-hc-marketing-mgmt", name: "Higher Certificate in Marketing Management", type: "higher-certificate", mode: "contact", credits: 120, nqfLevel: 5 },
       { id: "damelin-hc-office-admin", name: "Higher Certificate in Office Administration", type: "higher-certificate", mode: "contact", credits: 120, nqfLevel: 5 },
       { id: "damelin-hc-project-mgmt", name: "Higher Certificate in Project Management", type: "higher-certificate", mode: "contact", credits: 120, nqfLevel: 5 },
-      { id: "damelin-hc-public-mgmt", name: "Higher Certificate in Public Management", type: "higher-certificate", mode: "distance", credits: 120, nqfLevel: "Not specified" },
+      { id: "damelin-hc-public-mgmt", name: "Higher Certificate in Public Management", type: "higher-certificate", mode: "distance", credits: 120, nqfLevel: 5 },
       { id: "damelin-hc-supply-chain-logistics", name: "Higher Certificate in Supply Chain and Logistics Management", type: "higher-certificate", mode: "contact", credits: 120, nqfLevel: 5 },
       { id: "damelin-dip-business-mgmt", name: "Diploma in Business Management", type: "diploma", mode: "contact", credits: 360, nqfLevel: 6 },
       { id: "damelin-dip-it", name: "Diploma in Information Technology", type: "diploma", mode: "contact", credits: 360, nqfLevel: 6 },
@@ -142,6 +164,8 @@ export const PRIVATE_GROUP_2: PrivateInstitution[] = [
   {
     id: "da-vinci-institute",
     name: "Da Vinci Institute for Technology Management (Pty) Ltd",
+    locations: ["Johannesburg"],
+    contact: { website: "https://davinci.ac.za/" },
     programs: [
       { id: "davinci-hc-mti", name: "Higher Certificate in Management of Technology and Innovation", type: "higher-certificate", mode: "distance", credits: 120, nqfLevel: 5 },
       { id: "davinci-bcom-business-mgmt", name: "Bachelor of Commerce in Business Management", type: "bachelor", mode: "distance", credits: 360, nqfLevel: 7 },
@@ -155,6 +179,8 @@ export const PRIVATE_GROUP_2: PrivateInstitution[] = [
   {
     id: "design-academy-of-fashion",
     name: "Design Academy of Fashion (Pty) Ltd (The)",
+    locations: ["The Old Biscuit Mill, 375 Albert Road, Woodstock, Cape Town"],
+    contact: { website: "https://designacademyoffashion.com/" },
     programs: [
       { id: "daf-dip-fashion", name: "Diploma in Fashion", type: "diploma", mode: "contact", credits: 360, nqfLevel: 6 },
       { id: "daf-bachelor-fashion", name: "Bachelor of Fashion", type: "bachelor", mode: "contact", credits: 360, nqfLevel: 7 },
@@ -163,6 +189,8 @@ export const PRIVATE_GROUP_2: PrivateInstitution[] = [
   {
     id: "edutel-higher-education",
     name: "Edutel Higher Education (Pty) Ltd",
+    locations: ["Roodepoort, Gauteng"],
+    contact: { website: "https://www.edutel.co.za/" },
     programs: [
       { id: "edutel-adv-cert-fpt", name: "Advanced Certificate in Foundation Phase Teaching", type: "advanced-certificate", mode: "distance", credits: 120, nqfLevel: 6 },
       { id: "edutel-adv-cert-ipt", name: "Advanced Certificate in Intermediate Phase Teaching", type: "advanced-certificate", mode: "distance", credits: 120, nqfLevel: 6 },
