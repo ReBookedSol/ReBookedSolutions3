@@ -53,6 +53,11 @@ export const BookTypeSection = ({
     "Course Book",
   ];
 
+  const universityBookTypes = [
+    "Study Guide",
+    "Course Book",
+  ];
+
   return (
     <div className="space-y-4">
       <div>
