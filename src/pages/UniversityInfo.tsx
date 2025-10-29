@@ -652,7 +652,7 @@ const UniversityInfo = () => {
       <CampusNavbar />
 
       <div className="container mx-auto px-4 py-4">
-        <GoogleAd />
+        <GoogleAd ref={topAdRef} />
       </div>
 
       <div className="min-h-screen bg-gray-50">
