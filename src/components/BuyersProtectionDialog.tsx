@@ -35,20 +35,27 @@ const BuyersProtectionDialog = ({
             type="button"
             {...(triggerProps as any)}
             className={cn(
-              "w-full rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-900 px-4 py-3 flex items-center gap-3",
+              "w-full rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-900 px-3 py-2 sm:px-4 sm:py-3 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3",
               triggerClassName,
             )}
             aria-label={triggerLabel}
           >
-            <ShieldCheck className="h-5 w-5 text-emerald-700 flex-shrink-0" />
-            <div className="text-left flex-1">
+            <ShieldCheck className="h-5 w-5 text-emerald-700 flex-shrink-0 mt-0.5 sm:mt-0" />
+
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-semibold">{triggerLabel}</span>
-                <span className="text-xs text-emerald-700/80">i</span>
+                <span className="font-semibold truncate">{triggerLabel}</span>
+                <span className="hidden sm:inline text-xs text-emerald-700/80">i</span>
               </div>
-              <div className="text-xs text-emerald-900/80">Applied to all purchases made on ReBooked Solutions</div>
+              <div className="text-[13px] text-emerald-900/80 truncate">
+                Applied to all purchases made on ReBooked Solutions
+              </div>
             </div>
-            <div className="text-sm text-emerald-700 font-medium">Learn more</div>
+
+            <div className="mt-2 sm:mt-0 flex-shrink-0">
+              <span className="text-sm text-emerald-700 font-medium hidden sm:inline">Learn more</span>
+              <span className="text-sm text-emerald-700 font-medium sm:hidden">Learn</span>
+            </div>
           </button>
         ) : (
           <Button
