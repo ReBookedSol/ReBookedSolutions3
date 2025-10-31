@@ -1,4 +1,5 @@
 import React from "react";
+import React from "react";
 import { ShieldCheck, ShieldAlert, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,7 +9,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 interface BuyersProtectionDialogProps {
   triggerClassName?: string;
