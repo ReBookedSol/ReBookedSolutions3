@@ -234,7 +234,7 @@ const BookGrid = ({
 
                     <div className="mt-3 pt-3 border-t border-gray-100">
                       <BuyersProtectionDialog
-                        triggerVariant="link"
+                        triggerVariant="outline" triggerClassName="text-book-600 border-book-600"
                         triggerProps={{
                           onClick: (e) => {
                             e.preventDefault();
@@ -350,7 +350,7 @@ const BookGrid = ({
 
                     <div className="mt-3 pt-3 border-t border-gray-100">
                       <BuyersProtectionDialog
-                        triggerVariant="link"
+                        triggerVariant="outline" triggerClassName="text-book-600 border-book-600"
                         triggerProps={{
                           onClick: (e) => {
                             e.preventDefault();
