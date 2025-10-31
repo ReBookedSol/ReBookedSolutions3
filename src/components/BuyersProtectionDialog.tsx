@@ -13,12 +13,14 @@ interface BuyersProtectionDialogProps {
   triggerClassName?: string;
   triggerVariant?: "link" | "ghost" | "secondary" | "outline" | "default" | "destructive";
   triggerLabel?: string;
+  triggerProps?: React.ButtonHTMLAttributes<HTMLButtonElement>;
 }
 
 const BuyersProtectionDialog = ({
   triggerClassName,
   triggerVariant = "link",
   triggerLabel = "Buyer Protection",
+  triggerProps,
 }: BuyersProtectionDialogProps) => {
   return (
     <Dialog>
@@ -27,6 +29,7 @@ const BuyersProtectionDialog = ({
           variant={triggerVariant}
           size="sm"
           className={triggerClassName}
+          {...triggerProps}
         >
           <ShieldCheck className="h-4 w-4" />
           {triggerLabel}
