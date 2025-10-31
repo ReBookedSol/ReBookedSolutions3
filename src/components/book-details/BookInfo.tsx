@@ -22,8 +22,9 @@ const BookInfo = ({ book }: BookInfoProps) => {
         {/* Buyer Protection button placed above the details card */}
         <div className="mb-4">
           <BuyersProtectionDialog
-            triggerVariant="link"
+            triggerVariant="outline"
             triggerLabel="Buyer Protection"
+            triggerClassName="text-book-600"
             triggerProps={{
               onClick: (e) => {
                 // Prevent any parent click handlers (like navigation) from triggering
