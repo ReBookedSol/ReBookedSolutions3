@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout";
@@ -9,6 +9,30 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Mail, Lock, User, Loader2, BookOpen, Book } from "lucide-react";
 import { BackupEmailService } from "@/utils/backupEmailService";
+
+// Affiliate tracking storage key
+const AFFILIATE_STORAGE_KEY = 'affiliate_code';
+
+const setStoredAffiliateCode = (code: string) => {
+  try {
+    localStorage.setItem(AFFILIATE_STORAGE_KEY, code);
+    // set cookie for 30 days
+    document.cookie = `${AFFILIATE_STORAGE_KEY}=${encodeURIComponent(code)};path=/;max-age=${30*24*60*60}`;
+  } catch (e) {
+    // ignore
+  }
+};
+
+const getStoredAffiliateCode = (): string | null => {
+  try {
+    const ls = localStorage.getItem(AFFILIATE_STORAGE_KEY);
+    if (ls) return ls;
+    const match = document.cookie.match(new RegExp('(?:^|; )' + AFFILIATE_STORAGE_KEY + '=([^;]*)'));
+    return match ? decodeURIComponent(match[1]) : null;
+  } catch (e) {
+    return null;
+  }
+};
 
 
 const Register = () => {
@@ -36,6 +60,23 @@ const Register = () => {
   const [userEmail, setUserEmail] = useState("");
   const { register, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  // Capture affiliate code from URL ?ref= on first render and store it
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get('ref');
+      if (ref) {
+        setStoredAffiliateCode(ref);
+        // Remove ref param from URL for cleanliness
+        const url = new URL(window.location.href);
+        url.searchParams.delete('ref');
+        window.history.replaceState({}, document.title, url.toString());
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
 
   // Redirect if already authenticated
   if (isAuthenticated) {
@@ -87,7 +128,9 @@ const Register = () => {
       }
 
       console.log("🔄 Calling register function...");
-      const result = await register(email, password, firstName, lastName, normalizedPhone);
+      const affiliateCode = getStoredAffiliateCode();
+      console.log("🔖 Using affiliate code:", affiliateCode);
+      const result = await register(email, password, firstName, lastName, normalizedPhone, affiliateCode ?? undefined);
       console.log("✅ Register function returned:", result);
 
       // Handle different registration outcomes
