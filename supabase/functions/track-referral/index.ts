@@ -27,10 +27,11 @@ serve(async (req) => {
     console.log('Tracking referral:', { affiliate_code, new_user_id });
 
     // Find affiliate by code - use maybeSingle() since affiliate might not exist
+    // Convert to uppercase for case-insensitive comparison
     const { data: affiliate, error: affiliateError } = await supabaseClient
       .from('profiles')
       .select('id')
-      .eq('affiliate_code', affiliate_code)
+      .ilike('affiliate_code', affiliate_code)
       .eq('is_affiliate', true)
       .maybeSingle();
 
