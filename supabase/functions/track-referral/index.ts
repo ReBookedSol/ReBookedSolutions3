@@ -23,17 +23,32 @@ serve(async (req) => {
     );
 
     const { affiliate_code, new_user_id } = await req.json();
+    
+    // Trim and normalize the affiliate code
+    const normalizedCode = affiliate_code?.trim()?.toUpperCase();
 
-    console.log('Tracking referral:', { affiliate_code, new_user_id });
+    console.log('Tracking referral:', { 
+      original_code: affiliate_code, 
+      normalized_code: normalizedCode,
+      new_user_id 
+    });
+
+    if (!normalizedCode) {
+      return new Response(
+        JSON.stringify({ error: 'Affiliate code is required' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
 
     // Find affiliate by code - use maybeSingle() since affiliate might not exist
-    // Convert to uppercase for case-insensitive comparison
     const { data: affiliate, error: affiliateError } = await supabaseClient
       .from('profiles')
-      .select('id')
-      .ilike('affiliate_code', affiliate_code)
+      .select('id, affiliate_code')
+      .ilike('affiliate_code', normalizedCode)
       .eq('is_affiliate', true)
       .maybeSingle();
+
+    console.log('Affiliate lookup result:', { affiliate, affiliateError });
 
     if (affiliateError) {
       console.error('Error looking up affiliate:', affiliateError);
