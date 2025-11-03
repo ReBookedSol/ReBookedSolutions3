@@ -26,36 +26,38 @@ serve(async (req) => {
 
     console.log('Tracking referral:', { affiliate_code, new_user_id });
 
-    // Validate input
-    if (!affiliate_code || !new_user_id) {
-      return new Response(
-        JSON.stringify({ error: 'affiliate_code and new_user_id are required' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
-    }
-
-    // Find affiliate by code
+    // Find affiliate by code - use maybeSingle() since affiliate might not exist
     const { data: affiliate, error: affiliateError } = await supabaseClient
       .from('profiles')
       .select('id')
       .eq('affiliate_code', affiliate_code)
       .eq('is_affiliate', true)
-      .single();
+      .maybeSingle();
 
-    if (affiliateError || !affiliate) {
-      console.error('Affiliate not found:', affiliateError);
+    if (affiliateError) {
+      console.error('Error looking up affiliate:', affiliateError);
+      throw affiliateError;
+    }
+
+    if (!affiliate) {
+      console.error('Affiliate not found for code:', affiliate_code);
       return new Response(
         JSON.stringify({ error: 'Invalid affiliate code' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
       );
     }
 
-    // Check if user is already referred
-    const { data: existing } = await supabaseClient
+    // Check if user is already referred - use maybeSingle() since referral might not exist
+    const { data: existing, error: existingError } = await supabaseClient
       .from('affiliates_referrals')
       .select('id')
       .eq('referred_user_id', new_user_id)
       .maybeSingle();
+
+    if (existingError) {
+      console.error('Error checking existing referral:', existingError);
+      throw existingError;
+    }
 
     if (existing) {
       console.log('User already referred');
