@@ -27,7 +27,6 @@ import AdminUsersTab from "@/components/admin/AdminUsersTab";
 import AdminListingsTab from "@/components/admin/AdminListingsTab";
 import AdminSettingsTab from "@/components/admin/AdminSettingsTab";
 import AdminContactTab from "@/components/admin/AdminContactTab";
-import AdminPayoutTab from "@/components/admin/AdminPayoutTab";
 
 
 
@@ -419,13 +418,6 @@ const AdminDashboard = () => {
       description: "Contact messages",
     },
     {
-      value: "payout",
-      label: "Payout",
-      icon: Banknote,
-      color: "text-green-600",
-      description: "Seller payouts",
-    },
-    {
       value: "settings",
       label: "Settings",
       icon: Settings,
@@ -641,14 +633,6 @@ const AdminDashboard = () => {
               <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm rounded-xl overflow-hidden">
                 <CardContent className="p-0">
                   <AdminContactTab />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="payout" className="mt-0 space-y-8">
-              <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm rounded-xl overflow-hidden">
-                <CardContent className="p-0">
-                  <AdminPayoutTab />
                 </CardContent>
               </Card>
             </TabsContent>
