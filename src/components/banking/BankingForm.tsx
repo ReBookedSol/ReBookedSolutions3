@@ -48,32 +48,26 @@ export default function BankingForm({ onSuccess, onCancel }: BankingFormProps) {
   const loadExistingBankingDetails = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { 
-        navigate("/login"); 
-        return; 
+      if (!session) {
+        navigate("/login");
+        return;
       }
 
-      // Read profile to detect existing subaccount (edit mode)
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("subaccount_code, preferences")
-        .eq("id", session.user.id)
+      // Read banking details from database
+      const { data: bankingRecord } = await supabase
+        .from("banking_subaccounts")
+        .select("*")
+        .eq("user_id", session.user.id)
         .single();
 
-      if (profile?.subaccount_code) {
-        // Prefer secure fetch for sensitive values
-        const { data: decRes } = await supabase.functions.invoke(
-          "decrypt-banking-details",
-          { headers: { Authorization: `Bearer ${session.access_token}` } }
-        );
-
+      if (bankingRecord) {
         setFormData({
-          businessName: (profile.preferences as any)?.business_name || "",
-          email: session.user.email || "",
-          bankName: decRes?.data?.bank_name || (profile.preferences as any)?.bank_details?.bank_name || "",
+          businessName: bankingRecord.business_name || "",
+          email: bankingRecord.email || session.user.email || "",
+          bankName: bankingRecord.bank_name || "",
           accountNumber: "", // never prefill full account
         });
-        setBranchCode(decRes?.data?.bank_code || (profile.preferences as any)?.bank_details?.bank_code || "");
+        setBranchCode(bankingRecord.bank_code || "");
         setIsEditMode(true);
       } else {
         setFormData((p) => ({ ...p, email: session.user.email || "" }));
