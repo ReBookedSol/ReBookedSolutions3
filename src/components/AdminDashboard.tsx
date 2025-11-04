@@ -48,7 +48,6 @@ import {
   Bell,
   ChevronRight,
   Code,
-  Banknote,
   Mail,
 } from "lucide-react";
 
