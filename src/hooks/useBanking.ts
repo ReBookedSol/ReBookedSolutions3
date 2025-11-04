@@ -50,7 +50,6 @@ export const useBanking = () => {
     details: BankingDetails,
   ): Promise<{
     success: boolean;
-    subaccountCode?: string;
     error?: string;
   }> => {
     if (!user) {
@@ -58,7 +57,7 @@ export const useBanking = () => {
     }
 
     try {
-      const result = await BankingService.createOrUpdateSubaccount(
+      const result = await BankingService.createOrUpdateBankingDetails(
         user.id,
         details,
       );
@@ -66,9 +65,6 @@ export const useBanking = () => {
       if (result.success) {
         // Refresh banking details after successful setup
         await fetchBankingDetails();
-
-        // Link books to new subaccount
-        await BankingService.linkBooksToSubaccount(user.id);
       }
 
       return result;
@@ -82,7 +78,6 @@ export const useBanking = () => {
     details: BankingDetails,
   ): Promise<{
     success: boolean;
-    subaccountCode?: string;
     error?: string;
   }> => {
     if (!user) {
@@ -90,7 +85,7 @@ export const useBanking = () => {
     }
 
     try {
-      const result = await BankingService.updateSubaccount(user.id, details);
+      const result = await BankingService.createOrUpdateBankingDetails(user.id, details);
 
       if (result.success) {
         // Refresh banking details after successful update
