@@ -175,97 +175,20 @@ export class BankingService {
     }
   }
 
-  static async createOrUpdateSubaccount(
+  static async createOrUpdateBankingDetails(
     userId: string,
     bankingDetails: BankingDetails,
-  ): Promise<{ success: boolean; subaccountCode?: string; error?: string }> {
+  ): Promise<{ success: boolean; error?: string }> {
     try {
-      const existingSubaccount = await this.getUserBankingDetails(userId);
+      console.log("💾 Saving banking details for user:", userId);
 
-      if (existingSubaccount) {
-        return this.updateSubaccount(userId, bankingDetails);
-      }
-
-      if (!PAYSTACK_CONFIG.isConfigured()) {
-        console.error("Paystack not configured. Banking setup unavailable.");
-        return {
-          success: false,
-          error: "Banking service not configured. Please contact support.",
-        };
-      }
-
-      console.log("🔍 Calling Edge Function with data:", {
-        userId: userId,
-        businessName: bankingDetails.businessName,
-        bankCode: bankingDetails.bankCode,
-        accountNumber: bankingDetails.accountNumber,
-        primaryContactEmail: bankingDetails.email,
+      await this.saveBankingDetails(userId, {
+        ...bankingDetails,
+        subaccountCode: `ACCT_${userId}_${Date.now()}`,
+        status: "active",
       });
 
-      const { data, error } = await supabase.functions.invoke(
-        "create-paystack-subaccount",
-        {
-          body: {
-            business_name: bankingDetails.businessName,
-            email: bankingDetails.email,
-            bank_name: bankingDetails.bankName,
-            bank_code: bankingDetails.bankCode,
-            account_number: bankingDetails.accountNumber,
-            primary_contact_email: bankingDetails.email,
-            primary_contact_name: bankingDetails.businessName,
-            metadata: {
-              user_id: userId,
-              is_update: false,
-            },
-          },
-        },
-      );
-
-      console.log("🔍 Edge Function response:", { data, error });
-
-      if (error) {
-        console.error("Error creating subaccount:", {
-          message: error.message,
-          context: error.context,
-          details: error.details,
-          fullError: error,
-        });
-
-        if (
-          error.message?.includes("not found") ||
-          error.message?.includes("404") ||
-          error.message?.includes("Function not found")
-        ) {
-          console.error("Banking service unavailable");
-          return {
-            success: false,
-            error: "Banking service unavailable. Please contact support.",
-          };
-        }
-
-        return {
-          success: false,
-          error: `Failed to create banking account: ${error.message || "Please try again."}`,
-        };
-      }
-
-      console.log("💾 About to save banking details locally...");
-      try {
-        await this.saveBankingDetails(userId, {
-          ...bankingDetails,
-          subaccountCode: data.subaccount_code,
-          status: "active",
-        });
-        console.log("✅ Banking details saved to local database successfully");
-      } catch (saveError) {
-        console.error("❌ Failed to save banking details locally:", saveError);
-        console.warn("⚠️ Paystack subaccount created but local save failed - subaccount:", data.subaccount_code);
-      }
-
-      return {
-        success: true,
-        subaccountCode: data.subaccount_code,
-      };
+      return { success: true };
     } catch (error) {
       console.error("Banking service error:", {
         message: error instanceof Error ? error.message : "Unknown error",
@@ -273,60 +196,7 @@ export class BankingService {
       });
       return {
         success: false,
-        error: "An unexpected error occurred. Please try again.",
-      };
-    }
-  }
-
-  static async updateSubaccount(
-    userId: string,
-    bankingDetails: BankingDetails,
-  ): Promise<{ success: boolean; subaccountCode?: string; error?: string }> {
-    try {
-      const { data, error } = await supabase.functions.invoke(
-        "update-paystack-subaccount",
-        {
-          body: {
-            userId: userId,
-            businessName: bankingDetails.businessName,
-            bankCode: bankingDetails.bankCode,
-            accountNumber: bankingDetails.accountNumber,
-            primaryContactEmail: bankingDetails.email,
-            primaryContactName: bankingDetails.businessName,
-            primaryContactPhone: bankingDetails.phone || undefined,
-          },
-        },
-      );
-
-      if (error) {
-        return { success: false, error: "Failed to update banking details." };
-      }
-
-      const { error: updateError } = await supabase
-        .from("banking_subaccounts")
-        .update({
-          business_name: bankingDetails.businessName,
-          email: bankingDetails.email,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", userId);
-
-      if (updateError) {
-        throw updateError;
-      }
-
-      return {
-        success: true,
-        subaccountCode: data.subaccount_code,
-      };
-    } catch (error) {
-      console.error("Error updating subaccount:", {
-        message: error instanceof Error ? error.message : "Unknown error",
-        fullError: error,
-      });
-      return {
-        success: false,
-        error: "Failed to update banking details.",
+        error: "Failed to save banking details. Please try again.",
       };
     }
   }
