@@ -24,8 +24,6 @@ import { useBanking } from "@/hooks/useBanking";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import type { BankingSubaccount } from "@/types/banking";
-import SubaccountView from "@/components/banking/SubaccountView";
-import SubaccountEditForm from "@/components/banking/SubaccountEditForm";
 import BankingForm from "@/components/banking/BankingForm";
 import PasswordVerificationForm from "@/components/banking/PasswordVerificationForm";
 import BankingDecryptionService, { type DecryptedBankingDetails } from "@/services/bankingDecryptionService";
