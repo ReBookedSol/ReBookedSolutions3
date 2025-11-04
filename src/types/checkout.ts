@@ -50,6 +50,7 @@ export interface OrderSummary {
   seller_address: CheckoutAddress;
   book_price: number;
   delivery_price: number;
+  platform_fee?: number;
   total_price: number;
 }
 
