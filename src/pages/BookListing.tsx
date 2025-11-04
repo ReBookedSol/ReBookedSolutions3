@@ -9,9 +9,7 @@ import { Book } from "@/types/book";
 import { toast } from "sonner";
 import { useCommit } from "@/hooks/useCommit";
 import { useAuth } from "@/contexts/AuthContext";
-import { clearAllBrowseBooks } from "@/utils/clearBrowseBooks";
 import { Button } from "@/components/ui/button";
-import { debugBookFetching, fixBooksWithMissingAddresses } from "@/utils/debugBooks";
 
 
 const BookListing = () => {
@@ -20,7 +18,6 @@ const BookListing = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isClearingBooks, setIsClearingBooks] = useState(false);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -230,57 +227,6 @@ const BookListing = () => {
     });
   }, []);
 
-  const handleClearAllBooks = async () => {
-    if (
-      !window.confirm(
-        "Are you sure you want to clear ALL books from Browse Books? This action cannot be undone.",
-      )
-    ) {
-      return;
-    }
-
-    setIsClearingBooks(true);
-    try {
-      const result = await clearAllBrowseBooks();
-      if (result.success) {
-        toast.success(result.message);
-        setBooks([]); // Clear the local state
-      } else {
-        toast.error(result.message);
-      }
-    } catch (error) {
-      console.error(
-        "Failed to clear books:",
-        error instanceof Error ? error.message : String(error),
-      );
-      toast.error("Failed to clear books");
-    } finally {
-      setIsClearingBooks(false);
-    }
-  };
-
-  const handleDebugBooks = async () => {
-    console.log("🔍 Running book debug analysis...");
-    const result = await debugBookFetching();
-    if (result) {
-      toast.success(`Found ${result.totalBooks} total books, ${result.validBooks} valid books showing`);
-    }
-  };
-
-  const handleFixBooks = async () => {
-    if (!window.confirm("This will add default addresses to sellers missing pickup addresses. Continue?")) {
-      return;
-    }
-    console.log("🔧 Fixing books with missing addresses...");
-    const fixedCount = await fixBooksWithMissingAddresses();
-    if (fixedCount > 0) {
-      toast.success(`Fixed ${fixedCount} books with missing addresses`);
-      // Reload books after fixing
-      loadBooks();
-    } else {
-      toast.info("No books needed fixing");
-    }
-  };
 
 
   return (
@@ -297,32 +243,6 @@ const BookListing = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-book-800 mb-4 sm:mb-0">
             Browse Books
           </h1>
-          {user?.email === "admin@rebookedsolutions.co.za" && (
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                onClick={handleDebugBooks}
-                variant="outline"
-                size="sm"
-              >
-                Debug Books
-              </Button>
-              <Button
-                onClick={handleFixBooks}
-                variant="secondary"
-                size="sm"
-              >
-                Fix Addresses
-              </Button>
-              <Button
-                onClick={handleClearAllBooks}
-                disabled={isClearingBooks}
-                variant="destructive"
-                size="sm"
-              >
-                {isClearingBooks ? "Clearing..." : "Clear All Books"}
-              </Button>
-            </div>
-          )}
         </div>
 
 
