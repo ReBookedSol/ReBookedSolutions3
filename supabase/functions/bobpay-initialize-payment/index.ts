@@ -57,8 +57,11 @@ Deno.serve(async (req) => {
       throw new Error('BobPay configuration missing');
     }
 
+    // Remove trailing slash from API URL to avoid double slashes
+    const baseUrl = bobpayApiUrl.replace(/\/$/, '');
+
     // Create payment link with BobPay
-    const bobpayResponse = await fetch(`${bobpayApiUrl}/payments/intents/link`, {
+    const bobpayResponse = await fetch(`${baseUrl}/payments/intents/link`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
