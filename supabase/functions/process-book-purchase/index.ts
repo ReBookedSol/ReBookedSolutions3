@@ -253,7 +253,7 @@ serve(async (req) => {
       .single();
 
     if (orderError) {
-      console.error('�� Order creation failed:', orderError.message);
+      console.error(' Order creation failed:', orderError.message);
       
       // Rollback book sale if order creation fails
       console.log('🔄 Rolling back book sale...');
