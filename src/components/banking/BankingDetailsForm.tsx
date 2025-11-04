@@ -28,9 +28,10 @@ import {
   Edit3,
 } from "lucide-react";
 import { toast } from "sonner";
-import { PaystackSubaccountService } from "@/services/paystackSubaccountService";
+import { BankingService } from "@/services/bankingService";
 import { UserAutofillService } from "@/services/userAutofillService";
 import { ActivityService } from "@/services/activityService";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface BankInfo {
   name: string;
@@ -114,7 +115,7 @@ const BankingDetailsForm: React.FC<BankingDetailsFormProps> = ({
     }
   }, [editMode]);
 
-  // 📝 Auto-fill user info from profile
+  // �� Auto-fill user info from profile
   const autofillUserInfo = async () => {
     if (hasAutofilled || editMode) return;
 
