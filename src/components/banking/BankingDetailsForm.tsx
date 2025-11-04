@@ -281,10 +281,18 @@ const BankingDetailsForm: React.FC<BankingDetailsFormProps> = ({
         account_number: "***" + subaccountDetails.account_number.slice(-4),
       });
 
-      // 📡 CREATE SUBACCOUNT VIA SERVICE
-      const result = await PaystackSubaccountService.createOrUpdateSubaccount(
-        subaccountDetails,
-        editMode,
+      // 📡 SAVE BANKING DETAILS
+      if (!user) throw new Error("User not authenticated");
+
+      const result = await BankingService.createOrUpdateBankingDetails(
+        user.id,
+        {
+          businessName: subaccountDetails.business_name,
+          email: subaccountDetails.email,
+          bankName: subaccountDetails.bank_name,
+          bankCode: subaccountDetails.bank_code,
+          accountNumber: subaccountDetails.account_number,
+        },
       );
 
       if (result.success) {
@@ -298,31 +306,11 @@ const BankingDetailsForm: React.FC<BankingDetailsFormProps> = ({
 
         // Log the banking update activity
         try {
-          await ActivityService.logBankingUpdate(session.user.id, editMode);
+          await ActivityService.logBankingUpdate(user.id, editMode);
           console.log("✅ Banking update activity logged");
         } catch (activityError) {
           console.warn("⚠️ Failed to log banking update activity:", activityError);
           // Don't fail the entire operation for activity logging issues
-        }
-
-        // 🔗 AUTOMATICALLY LINK ALL USER'S BOOKS TO NEW SUBACCOUNT
-        if (result.subaccount_code) {
-          try {
-            console.log("Linking books to subaccount:", result.subaccount_code);
-            const linkSuccess =
-              await PaystackSubaccountService.linkBooksToSubaccount(
-                result.subaccount_code,
-              );
-
-            if (linkSuccess) {
-              toast.info(
-                "All your book listings have been updated with your payment details.",
-              );
-            }
-          } catch (linkError) {
-            console.error("Error linking books to subaccount:", linkError);
-            // Don't fail the whole process for this
-          }
         }
 
         setTimeout(() => {
