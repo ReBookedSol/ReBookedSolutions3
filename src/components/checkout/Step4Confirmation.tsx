@@ -234,6 +234,13 @@ Visit https://rebooked.co.za to track your order.
                 <span>Delivery Price</span>
                 <span>R{orderData.delivery_price.toFixed(2)}</span>
               </div>
+              <div className="flex justify-between">
+                <span>Platform Fee</span>
+                <span>R{(orderData.platform_fee || 20).toFixed(2)}</span>
+              </div>
+              <p className="text-xs text-gray-600 mt-2 pt-2 border-t">
+                The R20 fee covers transaction and platform costs to ensure your payment is processed securely and your order is handled efficiently.
+              </p>
               <Separator />
               <div className="flex justify-between font-bold text-lg">
                 <span>Total Paid</span>
