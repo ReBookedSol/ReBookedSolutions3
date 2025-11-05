@@ -31,7 +31,10 @@ import { toast } from "sonner";
 import { BankingService } from "@/services/bankingService";
 import { UserAutofillService } from "@/services/userAutofillService";
 import { ActivityService } from "@/services/activityService";
+import BankingEncryptionService from "@/services/bankingEncryptionService";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface BankInfo {
   name: string;
