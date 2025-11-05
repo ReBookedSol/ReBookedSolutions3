@@ -243,13 +243,21 @@ const BankingProfileTab = () => {
                     <label className="text-sm font-medium text-book-700">
                       Your Name
                     </label>
-                    <p className="text-book-900 font-semibold">{businessName}</p>
+                    <p className="text-book-900 font-semibold">
+                      {showFullAccount && decryptedDetails?.business_name
+                        ? decryptedDetails.business_name
+                        : "••••••••"}
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-book-700">
                       Bank
                     </label>
-                    <p className="text-book-900 font-semibold">{bankName}</p>
+                    <p className="text-book-900 font-semibold">
+                      {showFullAccount && decryptedDetails?.bank_name
+                        ? decryptedDetails.bank_name
+                        : "••••••••"}
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-book-700">

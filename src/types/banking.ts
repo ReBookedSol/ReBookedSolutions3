@@ -16,15 +16,23 @@ export interface BankingDetails {
   updatedAt?: string;
 }
 
+export interface EncryptedBundle {
+  ciphertext: string;
+  iv: string;
+  authTag: string;
+  version?: number;
+}
+
 export interface BankingSubaccount {
   id: string;
   user_id: string;
   subaccount_code: string;
-  business_name: string;
-  bank_name: string;
-  account_number: string;
-  bank_code: string;
-  email: string;
+  encrypted_account_number: string | EncryptedBundle;
+  encrypted_bank_code: string | EncryptedBundle;
+  encrypted_bank_name: string | EncryptedBundle;
+  encrypted_business_name: string | EncryptedBundle;
+  encrypted_email: string | EncryptedBundle;
+  encryption_key_hash: string;
   status: "active" | "inactive" | "pending";
   created_at: string;
   updated_at?: string;

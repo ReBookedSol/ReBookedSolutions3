@@ -132,10 +132,12 @@ export const useBanking = () => {
     hasBankingSetup: !!bankingDetails,
     isActive: bankingDetails?.status === "active",
     subaccountCode: bankingDetails?.subaccount_code,
-    businessName: bankingDetails?.business_name,
-    bankName: bankingDetails?.bank_name,
+    // Plain text fields no longer stored - decrypt via BankingDecryptionService for display
+    businessName: undefined,
+    bankName: undefined,
+    // Always show masked account number - actual account number only available after decryption
     maskedAccountNumber: bankingDetails
-      ? `****${bankingDetails.account_number.slice(-4)}`
+      ? "••••••••"
       : undefined,
   };
 };

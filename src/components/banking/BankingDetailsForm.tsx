@@ -31,7 +31,10 @@ import { toast } from "sonner";
 import { BankingService } from "@/services/bankingService";
 import { UserAutofillService } from "@/services/userAutofillService";
 import { ActivityService } from "@/services/activityService";
+import BankingEncryptionService from "@/services/bankingEncryptionService";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface BankInfo {
   name: string;
@@ -67,6 +70,7 @@ const BankingDetailsForm: React.FC<BankingDetailsFormProps> = ({
   editMode = false,
 }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     businessName: "",
     email: "",
@@ -90,20 +94,18 @@ const BankingDetailsForm: React.FC<BankingDetailsFormProps> = ({
         const bankingDetails = await BankingService.getUserBankingDetails(user.id);
 
         if (bankingDetails) {
+          // Note: Plain text fields are no longer stored. For edit mode, we don't pre-fill sensitive encrypted data.
+          // User must enter details fresh or use "View Details" to decrypt
           setFormData({
-            businessName: bankingDetails.business_name || "",
-            email: bankingDetails.email || "",
-            bankName: bankingDetails.bank_name || "",
-            accountNumber: bankingDetails.account_number || "",
+            businessName: "",
+            email: user?.email || "",
+            bankName: "",
+            accountNumber: "",
           });
-
-          const selectedBank = SOUTH_AFRICAN_BANKS.find(
-            (bank) => bank.name === bankingDetails.bank_name,
-          );
-          setBranchCode(bankingDetails.bank_code || selectedBank?.branchCode || "");
+          setBranchCode("");
         }
       } catch (error) {
-        toast.error("Failed to load existing banking details");
+        console.warn("Failed to load existing banking details:", error);
       } finally {
         setIsLoading(false);
       }
@@ -281,47 +283,119 @@ const BankingDetailsForm: React.FC<BankingDetailsFormProps> = ({
         account_number: "***" + subaccountDetails.account_number.slice(-4),
       });
 
-      // 📡 SAVE BANKING DETAILS
+      // 📡 ENCRYPT AND SAVE BANKING DETAILS
       if (!user) throw new Error("User not authenticated");
 
-      const result = await BankingService.createOrUpdateBankingDetails(
-        user.id,
-        {
-          businessName: subaccountDetails.business_name,
-          email: subaccountDetails.email,
-          bankName: subaccountDetails.bank_name,
-          bankCode: subaccountDetails.bank_code,
-          accountNumber: subaccountDetails.account_number,
-        },
+      // Encrypt banking details before saving
+      console.log("🔒 Starting banking details encryption...");
+      const encryptionResult = await BankingEncryptionService.encryptBankingDetails(
+        subaccountDetails.account_number,
+        subaccountDetails.bank_code,
+        subaccountDetails.bank_name,
+        subaccountDetails.business_name,
+        subaccountDetails.email
       );
 
-      if (result.success) {
-        setIsSuccess(true);
-
-        const successMessage = editMode
-          ? "Banking details updated successfully!"
-          : "Banking setup completed successfully! You can now start selling books.";
-
-        toast.success(successMessage);
-
-        // Log the banking update activity
-        try {
-          await ActivityService.logBankingUpdate(user.id, editMode);
-          console.log("✅ Banking update activity logged");
-        } catch (activityError) {
-          console.warn("⚠️ Failed to log banking update activity:", activityError);
-          // Don't fail the entire operation for activity logging issues
-        }
-
-        setTimeout(() => {
-          onSuccess?.();
-        }, 2000);
-      } else {
-        throw new Error(
-          result.error ||
-            `Failed to ${editMode ? "update" : "create"} your banking account`,
-        );
+      if (!encryptionResult.success || !encryptionResult.data) {
+        throw new Error(encryptionResult.error || "Failed to encrypt banking details");
       }
+
+      console.log("✅ Banking details encrypted successfully");
+
+      // Generate encryption key hash for identification
+      const encryptionKeyHash = await BankingEncryptionService.generateKeyHash();
+
+      // Create subaccount code
+      const subaccountCode = `ACCT_${user.id}_${Date.now()}`;
+
+      // Prepare encrypted bundle for storage
+      const encryptedData = encryptionResult.data;
+
+      // Check if user already has banking details
+      const { data: existingRecord } = await supabase
+        .from("banking_subaccounts")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      const bankingPayload = {
+        user_id: user.id,
+        encrypted_account_number: JSON.stringify(encryptedData.encrypted_account_number),
+        encrypted_bank_code: JSON.stringify(encryptedData.encrypted_bank_code),
+        encrypted_bank_name: encryptedData.encrypted_bank_name
+          ? JSON.stringify(encryptedData.encrypted_bank_name)
+          : null,
+        encrypted_business_name: encryptedData.encrypted_business_name
+          ? JSON.stringify(encryptedData.encrypted_business_name)
+          : null,
+        encrypted_email: encryptedData.encrypted_email
+          ? JSON.stringify(encryptedData.encrypted_email)
+          : null,
+        encryption_key_hash: encryptionKeyHash,
+        subaccount_code: subaccountCode,
+        status: "active",
+        updated_at: new Date().toISOString(),
+      };
+
+      // Update if exists, insert if new
+      let error;
+      if (existingRecord?.id) {
+        const result = await supabase
+          .from("banking_subaccounts")
+          .update(bankingPayload)
+          .eq("id", existingRecord.id);
+        error = result.error;
+      } else {
+        const result = await supabase
+          .from("banking_subaccounts")
+          .insert({
+            ...bankingPayload,
+            created_at: new Date().toISOString(),
+          });
+        error = result.error;
+      }
+
+      if (error) throw new Error(error.message || "Failed to save banking details");
+
+      console.log("✅ Banking details saved to database with encryption");
+
+      // Update profile with subaccount code
+      await supabase
+        .from("profiles")
+        .update({
+          subaccount_code: subaccountCode,
+          preferences: {
+            banking_setup_complete: true,
+            business_name: subaccountDetails.business_name,
+            bank_details: {
+              bank_name: subaccountDetails.bank_name,
+              bank_code: subaccountDetails.bank_code,
+              account_number_masked: `****${subaccountDetails.account_number.slice(-4)}`
+            }
+          }
+        })
+        .eq("id", user.id);
+
+      setIsSuccess(true);
+
+      const successMessage = editMode
+        ? "Banking details updated successfully!"
+        : "Banking setup completed successfully! You can now start selling books.";
+
+      toast.success(successMessage);
+
+      // Log the banking update activity
+      try {
+        await ActivityService.logBankingUpdate(user.id, editMode);
+        console.log("✅ Banking update activity logged");
+      } catch (activityError) {
+        console.warn("⚠️ Failed to log banking update activity:", activityError);
+        // Don't fail the entire operation for activity logging issues
+      }
+
+      setTimeout(() => {
+        onSuccess?.();
+      }, 2000);
     } catch (error) {
       console.error("Banking setup error:", error);
 
