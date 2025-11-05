@@ -62,13 +62,14 @@ export default function BankingForm({ onSuccess, onCancel }: BankingFormProps) {
         .single();
 
       if (bankingRecord) {
+        // Note: Plain text fields are no longer stored. For updates, user must enter fresh details.
         setFormData({
-          businessName: bankingRecord.business_name || "",
-          email: bankingRecord.email || session.user.email || "",
-          bankName: bankingRecord.bank_name || "",
-          accountNumber: "", // never prefill account number (encrypted or plain)
+          businessName: "",
+          email: session.user.email || "",
+          bankName: "",
+          accountNumber: "",
         });
-        setBranchCode(bankingRecord.bank_code || "");
+        setBranchCode("");
         setIsEditMode(true);
       } else {
         setFormData((p) => ({ ...p, email: session.user.email || "" }));
