@@ -130,10 +130,10 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get banking details for the user - select both encrypted and non-encrypted columns
+    // Get banking details for the user - select only encrypted columns
     const { data: bankingDetails, error: fetchError } = await supabase
       .from('banking_subaccounts')
-      .select('encrypted_account_number, encrypted_bank_code, encrypted_bank_name, encrypted_business_name, encrypted_email, account_number, bank_code, bank_name, business_name, email')
+      .select('encrypted_account_number, encrypted_bank_code, encrypted_bank_name, encrypted_business_name, encrypted_email')
       .eq('user_id', user.id)
       .eq('status', 'active')
       .maybeSingle();
