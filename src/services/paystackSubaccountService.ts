@@ -234,7 +234,7 @@ export class PaystackSubaccountService {
       // Parse encrypted data for display
       const paystackData: SubaccountData = {
         subaccount_code: subaccountData.subaccount_code,
-        business_name: subaccountData.business_name || "",
+        business_name: profileData.preferences?.business_name || "",
         account_number: "••••••••", // Don't return plaintext
         settlement_bank: subaccountData.bank_code || "",
         percentage_charge: 0,
