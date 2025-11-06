@@ -57,17 +57,14 @@ export const useAddressFallback = () => {
     };
   }, []);
 
-  // Update Google Maps availability
+  // Always use manual entry (Google Maps removed)
   useEffect(() => {
-    const isAvailable = mapsLoaded && !mapsLoadError && state.isOnline;
-    
     setState(prev => ({
       ...prev,
-      isGoogleMapsAvailable: isAvailable,
-      recommendedMethod: isAvailable ? 'google_maps' : 'manual_entry',
-      lastError: mapsLoadError?.message,
+      isGoogleMapsAvailable: false,
+      recommendedMethod: 'manual_entry',
     }));
-  }, [mapsLoaded, mapsLoadError, state.isOnline]);
+  }, []);
 
   // Save Google Maps address
   const saveGoogleMapsAddress = useCallback((addressData: Omit<AddressData, 'source' | 'timestamp' | 'confidence'>) => {
