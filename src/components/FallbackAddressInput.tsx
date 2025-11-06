@@ -22,10 +22,9 @@ import {
   Wifi,
   WifiOff
 } from "lucide-react";
-import GoogleMapsAddressAutocomplete, {
+import ManualAddressInput, {
   AddressData as GoogleAddressData,
-} from "@/components/GoogleMapsAddressAutocomplete";
-import { useGoogleMaps } from "@/contexts/GoogleMapsContext";
+} from "@/components/ManualAddressInput";
 
 export interface FallbackAddressData {
   formattedAddress: string;
