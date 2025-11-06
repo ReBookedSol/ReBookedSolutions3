@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useGoogleMaps } from '@/contexts/GoogleMapsContext';
 
 export interface AddressData {
   formattedAddress: string;
@@ -25,8 +24,6 @@ export interface AddressFallbackState {
 }
 
 export const useAddressFallback = () => {
-  const { isLoaded: mapsLoaded, loadError: mapsLoadError } = useGoogleMaps();
-  
   const [state, setState] = useState<AddressFallbackState>({
     isGoogleMapsAvailable: false,
     isOnline: navigator.onLine,
@@ -60,34 +57,13 @@ export const useAddressFallback = () => {
     };
   }, []);
 
-  // Update Google Maps availability
+  // Always use manual entry (Google Maps removed)
   useEffect(() => {
-    const isAvailable = mapsLoaded && !mapsLoadError && state.isOnline;
-    
     setState(prev => ({
       ...prev,
-      isGoogleMapsAvailable: isAvailable,
-      recommendedMethod: isAvailable ? 'google_maps' : 'manual_entry',
-      lastError: mapsLoadError?.message,
+      isGoogleMapsAvailable: false,
+      recommendedMethod: 'manual_entry',
     }));
-  }, [mapsLoaded, mapsLoadError, state.isOnline]);
-
-  // Save Google Maps address
-  const saveGoogleMapsAddress = useCallback((addressData: Omit<AddressData, 'source' | 'timestamp' | 'confidence'>) => {
-    const address: AddressData = {
-      ...addressData,
-      source: 'google_maps',
-      timestamp: new Date().toISOString(),
-      confidence: 'high', // Google Maps data is usually high confidence
-    };
-
-    setAddresses(prev => ({
-      ...prev,
-      google: address,
-      selected: address,
-    }));
-
-    return address;
   }, []);
 
   // Save manual address
@@ -145,17 +121,6 @@ export const useAddressFallback = () => {
     };
   }, []);
 
-  // Retry Google Maps
-  const retryGoogleMaps = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      retryCount: prev.retryCount + 1,
-      lastError: undefined,
-    }));
-    
-    // Force reload Google Maps context (this would need to be implemented in the context)
-    window.location.reload();
-  }, []);
 
   // Get the best available address
   const getBestAddress = useCallback((): AddressData | null => {
@@ -174,13 +139,10 @@ export const useAddressFallback = () => {
   const getAddressConfidence = useCallback((): 'high' | 'medium' | 'low' | null => {
     const best = getBestAddress();
     if (!best) return null;
-    
-    // Google Maps = high confidence
-    if (best.source === 'google_maps') return 'high';
-    
+
     // Manual with coordinates = medium confidence
     if (best.source === 'manual_entry' && best.latitude && best.longitude) return 'medium';
-    
+
     // Manual without coordinates = low confidence
     return 'low';
   }, [getBestAddress]);
@@ -205,13 +167,11 @@ export const useAddressFallback = () => {
     // State
     state,
     addresses,
-    
+
     // Actions
-    saveGoogleMapsAddress,
     saveManualAddress,
-    retryGoogleMaps,
     clearAddresses,
-    
+
     // Utilities
     validateAddress,
     compareAddresses,
@@ -219,11 +179,11 @@ export const useAddressFallback = () => {
     getAddressConfidence,
     exportAddressData,
     importAddressData,
-    
+
     // Computed values
     hasAddress: !!getBestAddress(),
-    isGoogleMapsPreferred: state.isGoogleMapsAvailable && state.recommendedMethod === 'google_maps',
-    shouldShowFallback: !state.isGoogleMapsAvailable || !!state.lastError,
+    isGoogleMapsPreferred: false,
+    shouldShowFallback: false,
   };
 };
 

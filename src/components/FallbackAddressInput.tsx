@@ -22,10 +22,9 @@ import {
   Wifi,
   WifiOff
 } from "lucide-react";
-import GoogleMapsAddressAutocomplete, {
+import ManualAddressInput, {
   AddressData as GoogleAddressData,
-} from "@/components/GoogleMapsAddressAutocomplete";
-import { useGoogleMaps } from "@/contexts/GoogleMapsContext";
+} from "@/components/ManualAddressInput";
 
 export interface FallbackAddressData {
   formattedAddress: string;
@@ -75,12 +74,7 @@ const FallbackAddressInput: React.FC<FallbackAddressInputProps> = ({
   showMethodIndicator = true,
   autoFallback = true,
 }) => {
-  const { isLoaded: mapsLoaded, loadError: mapsLoadError } = useGoogleMaps();
-  
-  const [inputMethod, setInputMethod] = useState<'auto' | 'google' | 'manual'>('auto');
-  const [forceManual, setForceManual] = useState(false);
-  const [googleMapsAttempted, setGoogleMapsAttempted] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<'online' | 'offline'>('online');
+  const [inputMethod, setInputMethod] = useState<'manual'>('manual');
   
   // Manual address state
   const [manualAddress, setManualAddress] = useState({
@@ -92,58 +86,11 @@ const FallbackAddressInput: React.FC<FallbackAddressInputProps> = ({
 
   const [selectedAddress, setSelectedAddress] = useState<FallbackAddressData | null>(null);
 
-  // Check network connectivity
-  useEffect(() => {
-    const handleOnline = () => setConnectionStatus('online');
-    const handleOffline = () => setConnectionStatus('offline');
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+  const activeMethod = 'manual';
 
-    // Initial check
-    setConnectionStatus(navigator.onLine ? 'online' : 'offline');
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
-  // Auto-fallback logic
-  useEffect(() => {
-    if (autoFallback) {
-      // If Google Maps failed to load or we're offline, switch to manual
-      if (mapsLoadError || connectionStatus === 'offline') {
-        if (!googleMapsAttempted) {
-          console.log('Auto-falling back to manual entry:', { 
-            mapsLoadError: !!mapsLoadError, 
-            offline: connectionStatus === 'offline' 
-          });
-          setForceManual(true);
-          setInputMethod('manual');
-        }
-      }
-      // If Google Maps loads successfully and we're online, prefer it
-      else if (mapsLoaded && connectionStatus === 'online' && !forceManual) {
-        setInputMethod('google');
-      }
-    }
-    setGoogleMapsAttempted(true);
-  }, [mapsLoaded, mapsLoadError, connectionStatus, autoFallback, googleMapsAttempted, forceManual]);
-
-  // Determine which input method to show
-  const getActiveInputMethod = (): 'google' | 'manual' => {
-    if (forceManual || inputMethod === 'manual') return 'manual';
-    if (connectionStatus === 'offline') return 'manual';
-    if (mapsLoadError) return 'manual';
-    if (!mapsLoaded && inputMethod === 'auto') return 'manual'; // Fallback while loading
-    return 'google';
-  };
-
-  const activeMethod = getActiveInputMethod();
-
-  // Handle Google Maps address selection
-  const handleGoogleMapsSelect = (addressData: GoogleAddressData) => {
+  // Handle manual address selection
+  const handleManualAddressSelect = (addressData: GoogleAddressData) => {
     const fallbackData: FallbackAddressData = {
       formattedAddress: addressData.formattedAddress,
       street: addressData.street,
@@ -151,14 +98,12 @@ const FallbackAddressInput: React.FC<FallbackAddressInputProps> = ({
       province: addressData.province,
       postalCode: addressData.postalCode,
       country: addressData.country,
-      latitude: addressData.latitude,
-      longitude: addressData.longitude,
-      source: 'google_maps',
+      source: 'manual_entry',
       timestamp: new Date().toISOString(),
     };
 
     setSelectedAddress(fallbackData);
-    
+
     // Update manual fields too (for consistency)
     setManualAddress({
       street: addressData.street,
@@ -213,54 +158,16 @@ const FallbackAddressInput: React.FC<FallbackAddressInputProps> = ({
     }
   };
 
-  // Retry Google Maps
-  const handleRetryGoogleMaps = () => {
-    setForceManual(false);
-    setInputMethod('google');
-    window.location.reload(); // Force reload to retry Google Maps
-  };
-
   const renderMethodIndicator = () => {
     if (!showMethodIndicator) return null;
 
     return (
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Badge variant={activeMethod === 'google' ? 'default' : 'secondary'} className="flex items-center gap-1">
-            {activeMethod === 'google' ? <MapIcon className="h-3 w-3" /> : <Keyboard className="h-3 w-3" />}
-            {activeMethod === 'google' ? 'Smart Address' : 'Manual Entry'}
+          <Badge variant="secondary" className="flex items-center gap-1">
+            <Keyboard className="h-3 w-3" />
+            Manual Entry
           </Badge>
-          
-          <Badge variant={connectionStatus === 'online' ? 'default' : 'destructive'} className="flex items-center gap-1">
-            {connectionStatus === 'online' ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
-            {connectionStatus === 'online' ? 'Online' : 'Offline'}
-          </Badge>
-        </div>
-
-        <div className="flex gap-2">
-          {activeMethod === 'manual' && mapsLoaded && connectionStatus === 'online' && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleMethodToggle('google')}
-              className="text-xs"
-            >
-              <MapIcon className="h-3 w-3 mr-1" />
-              Use Smart Address
-            </Button>
-          )}
-          
-          {activeMethod === 'google' && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleMethodToggle('manual')}
-              className="text-xs"
-            >
-              <Keyboard className="h-3 w-3 mr-1" />
-              Manual Entry
-            </Button>
-          )}
         </div>
       </div>
     );
@@ -280,7 +187,7 @@ const FallbackAddressInput: React.FC<FallbackAddressInputProps> = ({
                   Address Saved
                 </p>
                 <Badge variant="outline" className="text-xs">
-                  {selectedAddress.source === 'google_maps' ? 'Smart Address' : 'Manual Entry'}
+                  Manual Entry
                 </Badge>
               </div>
               <p className="text-sm text-green-700">
@@ -310,133 +217,27 @@ const FallbackAddressInput: React.FC<FallbackAddressInputProps> = ({
 
       {renderMethodIndicator()}
 
-      {/* Address Input */}
-      {activeMethod === 'google' ? (
-        <GoogleMapsAddressAutocomplete
-          onAddressSelect={handleGoogleMapsSelect}
-          placeholder={placeholder}
-          required={required}
-          error={error}
-          defaultValue={{
-            formattedAddress: defaultValue?.formattedAddress || "",
-            street: defaultValue?.street || "",
-            city: defaultValue?.city || "",
-            province: defaultValue?.province || "",
-            postalCode: defaultValue?.postalCode || "",
-            country: defaultValue?.country || "South Africa",
-          }}
-        />
-      ) : (
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">Manual Address Entry</CardTitle>
-              {mapsLoadError && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRetryGoogleMaps}
-                  className="text-xs"
-                >
-                  <RefreshCw className="h-3 w-3 mr-1" />
-                  Retry Smart Address
-                </Button>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Street Address */}
-            <div>
-              <Label htmlFor="manual-street" className="text-sm font-medium">
-                Street Address {required && <span className="text-red-500">*</span>}
-              </Label>
-              <Input
-                id="manual-street"
-                type="text"
-                placeholder="e.g., 123 Main Street"
-                value={manualAddress.street}
-                onChange={(e) => handleManualUpdate("street", e.target.value)}
-                className={error ? "border-red-500" : ""}
-                required={required}
-              />
-            </div>
-
-            {/* City */}
-            <div>
-              <Label htmlFor="manual-city" className="text-sm font-medium">
-                City {required && <span className="text-red-500">*</span>}
-              </Label>
-              <Input
-                id="manual-city"
-                type="text"
-                placeholder="e.g., Cape Town"
-                value={manualAddress.city}
-                onChange={(e) => handleManualUpdate("city", e.target.value)}
-                className={error ? "border-red-500" : ""}
-                required={required}
-              />
-            </div>
-
-            {/* Province and Postal Code */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="manual-province" className="text-sm font-medium">
-                  Province {required && <span className="text-red-500">*</span>}
-                </Label>
-                <Select
-                  value={manualAddress.province}
-                  onValueChange={(value) => handleManualUpdate("province", value)}
-                >
-                  <SelectTrigger className={error ? "border-red-500" : ""}>
-                    <SelectValue placeholder="Select province" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {southAfricanProvinces.map((province) => (
-                      <SelectItem key={province} value={province}>
-                        {province}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="manual-postal" className="text-sm font-medium">
-                  Postal Code {required && <span className="text-red-500">*</span>}
-                </Label>
-                <Input
-                  id="manual-postal"
-                  type="text"
-                  placeholder="e.g., 8001"
-                  value={manualAddress.postalCode}
-                  onChange={(e) => handleManualUpdate("postalCode", e.target.value)}
-                  className={error ? "border-red-500" : ""}
-                  required={required}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Address Input - Manual Only */}
+      <ManualAddressInput
+        onAddressSelect={handleManualAddressSelect}
+        label={undefined}
+        placeholder={placeholder}
+        required={required}
+        defaultValue={{
+          formattedAddress: defaultValue?.formattedAddress || "",
+          street: defaultValue?.street || "",
+          city: defaultValue?.city || "",
+          province: defaultValue?.province || "",
+          postalCode: defaultValue?.postalCode || "",
+          country: defaultValue?.country || "South Africa",
+        }}
+      />
 
       {/* Error Display */}
       {error && (
         <Alert className="border-red-200 bg-red-50">
           <AlertCircle className="h-4 w-4 text-red-600" />
           <AlertDescription className="text-red-800">{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {/* Show fallback notification */}
-      {activeMethod === 'manual' && autoFallback && (mapsLoadError || connectionStatus === 'offline') && (
-        <Alert className="border-blue-200 bg-blue-50">
-          <AlertCircle className="h-4 w-4 text-blue-600" />
-          <AlertDescription className="text-blue-800">
-            {connectionStatus === 'offline' 
-              ? "You're offline. Using manual address entry."
-              : "Smart address lookup isn't available right now. Using manual entry as backup."
-            }
-          </AlertDescription>
         </Alert>
       )}
 
