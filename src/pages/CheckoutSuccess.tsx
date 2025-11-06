@@ -66,7 +66,7 @@ const CheckoutSuccess: React.FC = () => {
       // Construct OrderConfirmation object from order data
       const confirmation: OrderConfirmation = {
         order_id: order.id,
-        payment_reference: paymentTx.custom_payment_id,
+        payment_reference: paymentTx.reference,
         book_id: order.book_id,
         seller_id: order.seller_id,
         buyer_id: order.buyer_id,
