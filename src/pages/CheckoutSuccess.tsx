@@ -31,46 +31,35 @@ const CheckoutSuccess: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      console.log("Fetching order data for reference:", reference);
+      console.log("Fetching order data for order_id:", reference);
 
       // Clean the reference - remove any suffixes like ":1" that may be appended by payment providers
       const cleanReference = reference ? reference.split(':')[0] : reference;
       console.log("Clean reference:", cleanReference);
 
-      // Query payment_transactions to find the order by reference
-      const { data: paymentTx, error: txError } = await supabase
-        .from("payment_transactions")
-        .select("*")
-        .eq("reference", cleanReference)
-        .single();
-
-      if (txError || !paymentTx) {
-        console.error("Payment transaction not found:", txError);
-        setError("Order not found. Please check your reference number.");
-        return;
-      }
-
-      console.log("Payment transaction found:", paymentTx);
-
-      // Now fetch the corresponding order from orders table
+      // Fetch the order directly from orders table using order_id
       const { data: order, error: orderError } = await supabase
         .from("orders")
         .select("*")
-        .eq("id", paymentTx.order_id)
+        .eq("order_id", cleanReference)
         .single();
 
       if (orderError || !order) {
         console.error("Order not found:", orderError);
-        setError("Order details could not be retrieved");
+        setError("Order not found. Please check your reference number.");
         return;
       }
 
       console.log("Order found:", order);
 
+      // Get the payment_reference from the order record
+      const paymentReference = order.payment_reference || cleanReference;
+      console.log("Payment reference from order:", paymentReference);
+
       // Construct OrderConfirmation object from order data
       const confirmation: OrderConfirmation = {
-        order_id: order.id,
-        payment_reference: paymentTx.reference,
+        order_id: order.order_id || order.id,
+        payment_reference: paymentReference,
         book_id: order.book_id,
         seller_id: order.seller_id,
         buyer_id: order.buyer_id,
