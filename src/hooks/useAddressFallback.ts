@@ -167,13 +167,11 @@ export const useAddressFallback = () => {
     // State
     state,
     addresses,
-    
+
     // Actions
-    saveGoogleMapsAddress,
     saveManualAddress,
-    retryGoogleMaps,
     clearAddresses,
-    
+
     // Utilities
     validateAddress,
     compareAddresses,
@@ -181,11 +179,11 @@ export const useAddressFallback = () => {
     getAddressConfidence,
     exportAddressData,
     importAddressData,
-    
+
     // Computed values
     hasAddress: !!getBestAddress(),
-    isGoogleMapsPreferred: state.isGoogleMapsAvailable && state.recommendedMethod === 'google_maps',
-    shouldShowFallback: !state.isGoogleMapsAvailable || !!state.lastError,
+    isGoogleMapsPreferred: false,
+    shouldShowFallback: false,
   };
 };
 
