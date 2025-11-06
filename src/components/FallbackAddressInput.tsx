@@ -158,54 +158,16 @@ const FallbackAddressInput: React.FC<FallbackAddressInputProps> = ({
     }
   };
 
-  // Retry Google Maps
-  const handleRetryGoogleMaps = () => {
-    setForceManual(false);
-    setInputMethod('google');
-    window.location.reload(); // Force reload to retry Google Maps
-  };
-
   const renderMethodIndicator = () => {
     if (!showMethodIndicator) return null;
 
     return (
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Badge variant={activeMethod === 'google' ? 'default' : 'secondary'} className="flex items-center gap-1">
-            {activeMethod === 'google' ? <MapIcon className="h-3 w-3" /> : <Keyboard className="h-3 w-3" />}
-            {activeMethod === 'google' ? 'Smart Address' : 'Manual Entry'}
+          <Badge variant="secondary" className="flex items-center gap-1">
+            <Keyboard className="h-3 w-3" />
+            Manual Entry
           </Badge>
-          
-          <Badge variant={connectionStatus === 'online' ? 'default' : 'destructive'} className="flex items-center gap-1">
-            {connectionStatus === 'online' ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
-            {connectionStatus === 'online' ? 'Online' : 'Offline'}
-          </Badge>
-        </div>
-
-        <div className="flex gap-2">
-          {activeMethod === 'manual' && mapsLoaded && connectionStatus === 'online' && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleMethodToggle('google')}
-              className="text-xs"
-            >
-              <MapIcon className="h-3 w-3 mr-1" />
-              Use Smart Address
-            </Button>
-          )}
-          
-          {activeMethod === 'google' && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleMethodToggle('manual')}
-              className="text-xs"
-            >
-              <Keyboard className="h-3 w-3 mr-1" />
-              Manual Entry
-            </Button>
-          )}
         </div>
       </div>
     );
