@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -376,7 +375,7 @@ const BankingProfileTab = () => {
                     <p className="text-book-900">
                       {showFullAccount && decryptedDetails?.email
                         ? decryptedDetails.email
-                        : "••••••••"}
+                        : "••��•••••"}
                     </p>
                   </div>
                   <div className="space-y-2">
