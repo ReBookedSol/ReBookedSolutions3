@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import GoogleMapsAddressAutocomplete, {
+import ManualAddressInput, {
   AddressData as GoogleAddressData,
-} from "@/components/GoogleMapsAddressAutocomplete";
+} from "@/components/ManualAddressInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MapPin, AlertCircle } from "lucide-react";
 
