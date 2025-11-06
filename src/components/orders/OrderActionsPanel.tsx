@@ -83,7 +83,7 @@ const OrderActionsPanel: React.FC<OrderActionsPanelProps> = ({
           .from("orders")
           .select("payment_reference")
           .eq("id", order.id)
-          .single();
+          .maybeSingle();
 
         if (orderFetchError || !orderRow?.payment_reference) {
           throw new Error("Payment reference not found for refund");
