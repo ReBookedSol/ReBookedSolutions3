@@ -70,7 +70,65 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
       const customPaymentId = `ORDER-${Date.now()}-${userId}`;
       const baseUrl = window.location.origin;
 
+      // Step 1: Create the order first (before payment) to get order_id
+      console.log("📦 Creating order before payment initialization...");
+
+      const { data: createdOrder, error: orderError } = await supabase
+        .from("orders")
+        .insert([
+          {
+            buyer_email: userData.user.email,
+            seller_id: orderSummary.book.seller_id,
+            amount: Math.round(orderSummary.total_price * 100),
+            status: "pending",
+            payment_reference: customPaymentId,
+
+            items: [
+              {
+                type: "book",
+                book_id: orderSummary.book.id,
+                book_title: orderSummary.book.title,
+                price: Math.round(orderSummary.book_price * 100),
+                quantity: 1,
+                condition: orderSummary.book.condition,
+                seller_id: orderSummary.book.seller_id,
+              },
+            ],
+
+            shipping_address: orderSummary.buyer_address,
+
+            delivery_data: {
+              delivery_method: orderSummary.delivery.service_name,
+              delivery_price: Math.round(orderSummary.delivery_price * 100),
+              courier: orderSummary.delivery.courier,
+              estimated_days: orderSummary.delivery.estimated_days,
+              pickup_address: orderSummary.seller_address,
+              delivery_quote: orderSummary.delivery,
+            },
+
+            metadata: {
+              buyer_id: userId,
+              platform_fee: Math.round(orderSummary.book_price * 0.1 * 100),
+              seller_amount: Math.round(orderSummary.book_price * 0.9 * 100),
+              original_total: orderSummary.total_price,
+              original_book_price: orderSummary.book_price,
+              original_delivery_price: orderSummary.delivery_price,
+            },
+          },
+        ])
+        .select()
+        .single();
+
+      if (orderError) {
+        console.error("❌ Failed to create order:", orderError);
+        throw new Error(`Failed to create order: ${orderError.message}`);
+      }
+
+      console.log("✅ Order created successfully:", createdOrder.id);
+
+      // Step 2: Initialize BobPay payment with the order_id
       const paymentRequest = {
+        order_id: createdOrder.id,
         amount: orderSummary.total_price,
         email: userData.user.email,
         mobile_number: "",
@@ -81,16 +139,10 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
         success_url: `${baseUrl}/checkout/success?reference=${customPaymentId}`,
         pending_url: `${baseUrl}/checkout/pending?reference=${customPaymentId}`,
         cancel_url: `${baseUrl}/checkout/cancel?reference=${customPaymentId}`,
-        order_summary: {
-          book_id: orderSummary.book.id,
-          seller_id: orderSummary.book.seller_id,
-          buyer_id: userId,
-          delivery_method: orderSummary.delivery.service_name,
-          delivery_price: orderSummary.delivery_price,
-        },
+        buyer_id: userId,
       };
 
-      console.log("Calling bobpay-initialize-payment with:", paymentRequest);
+      console.log("Calling bobpay-initialize-payment with order_id:", paymentRequest.order_id);
 
       const { data: bobpayResult, error: bobpayError } = await supabase.functions.invoke(
         "bobpay-initialize-payment",
@@ -114,7 +166,7 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
       // Open payment page in a new tab
       window.open(paymentUrl, "_blank");
 
-      // Optionally show a message to the user
+      // Show a message to the user
       toast.info("Please complete your payment in the new tab. You'll be redirected back here once done.", {
         duration: 7000,
       });
