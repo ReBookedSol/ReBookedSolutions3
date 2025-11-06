@@ -215,11 +215,7 @@ function App() {
                       />
                       <Route
                         path="/checkout/success"
-                        element={
-                          <ProtectedRoute>
-                            <CheckoutSuccess />
-                          </ProtectedRoute>
-                        }
+                        element={<CheckoutSuccess />}
                       />
                       <Route
                         path="/notifications"
