@@ -110,18 +110,22 @@ serve(async (req) => {
       );
     }
 
-    // Create order with denormalized data
+    // Generate unique order_id
+    const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+
+    // Create order with denormalized data from profiles
     const orderData = {
+      order_id: orderId,
       buyer_id: requestData.buyer_id,
       seller_id: requestData.seller_id,
       book_id: requestData.book_id,
-      buyer_full_name: buyer.full_name || buyer.name,
-      seller_full_name: seller.full_name || seller.name,
-      buyer_email: buyer.email,
-      seller_email: seller.email,
-      buyer_phone_number: buyer.phone_number,
-      seller_phone_number: seller.phone_number,
-      pickup_address_encrypted: seller.pickup_address_encrypted,
+      buyer_full_name: buyer.full_name || buyer.name || '',
+      seller_full_name: seller.full_name || seller.name || '',
+      buyer_email: buyer.email || '',
+      seller_email: seller.email || '',
+      buyer_phone_number: buyer.phone_number || '',
+      seller_phone_number: seller.phone_number || '',
+      pickup_address_encrypted: seller.pickup_address_encrypted || '',
       shipping_address_encrypted: requestData.shipping_address_encrypted,
       delivery_option: requestData.delivery_option,
       delivery_data: {
@@ -151,7 +155,7 @@ serve(async (req) => {
         price: book.price,
         condition: book.condition
       }]
-    } as const;
+    };
 
     const { data: order, error: orderError } = await supabase
       .from("orders")
