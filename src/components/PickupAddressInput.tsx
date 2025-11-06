@@ -49,12 +49,11 @@ const PickupAddressInput = ({
     },
   );
 
-  const [useManualEntry, setUseManualEntry] = useState(false);
   const [hasSelectedAddress, setHasSelectedAddress] = useState(
     !!initialAddress?.street,
   );
 
-  const handleGoogleMapsSelect = (addressData: GoogleAddressData) => {
+  const handleAddressSelect = (addressData: GoogleAddressData) => {
     const newAddress: Address = {
       street: addressData.street || "",
       city: addressData.city || "",
@@ -65,20 +64,6 @@ const PickupAddressInput = ({
     setAddress(newAddress);
     setHasSelectedAddress(true);
     onAddressUpdate(newAddress);
-  };
-
-  const handleManualUpdate = (field: keyof Address, value: string) => {
-    const newAddress = { ...address, [field]: value };
-    setAddress(newAddress);
-
-    // Check if address is complete
-    const isComplete = Object.values(newAddress).every(
-      (val) => val.trim() !== "",
-    );
-    if (isComplete) {
-      setHasSelectedAddress(true);
-      onAddressUpdate(newAddress);
-    }
   };
 
   const formatAddressForDisplay = (addr: Address) => {
