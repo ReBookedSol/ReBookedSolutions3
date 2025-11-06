@@ -70,7 +70,30 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
       const customPaymentId = `ORDER-${Date.now()}-${userId}`;
       const baseUrl = window.location.origin;
 
-      // Step 1: Create the order first (before payment) to get order_id
+      // Step 1: Encrypt the shipping address
+      console.log("🔐 Encrypting shipping address...");
+      const shippingObject = {
+        streetAddress: orderSummary.buyer_address.street,
+        city: orderSummary.buyer_address.city,
+        province: orderSummary.buyer_address.province,
+        postalCode: orderSummary.buyer_address.postal_code,
+        country: orderSummary.buyer_address.country,
+        phone: orderSummary.buyer_address.phone,
+        additional_info: orderSummary.buyer_address.additional_info,
+      };
+
+      const { data: encResult, error: encError } = await supabase.functions.invoke(
+        'encrypt-address',
+        { body: { object: shippingObject } }
+      );
+
+      if (encError || !encResult?.success || !encResult?.data) {
+        throw new Error(encError?.message || 'Failed to encrypt shipping address');
+      }
+
+      const shipping_address_encrypted = JSON.stringify(encResult.data);
+
+      // Step 2: Create the order with encrypted address (before payment)
       console.log("📦 Creating order before payment initialization...");
 
       const { data: createdOrder, error: orderError } = await supabase
@@ -95,7 +118,7 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
               },
             ],
 
-            shipping_address: orderSummary.buyer_address,
+            shipping_address_encrypted,
 
             delivery_data: {
               delivery_method: orderSummary.delivery.service_name,
@@ -126,7 +149,7 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
 
       console.log("✅ Order created successfully:", createdOrder.id);
 
-      // Step 2: Initialize BobPay payment with the order_id
+      // Step 3: Initialize BobPay payment with the order_id
       const paymentRequest = {
         order_id: createdOrder.id,
         amount: orderSummary.total_price,
