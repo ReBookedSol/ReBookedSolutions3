@@ -122,7 +122,7 @@ const CheckoutSuccess: React.FC = () => {
               <p className="font-semibold">Unable to Load Order</p>
               <p>{error}</p>
               <p className="text-sm text-gray-600 mt-2">
-                Reference: {reference}
+                Reference: {reference ? reference.split(':')[0] : 'N/A'}
               </p>
             </div>
           </AlertDescription>
