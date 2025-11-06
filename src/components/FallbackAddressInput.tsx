@@ -217,133 +217,27 @@ const FallbackAddressInput: React.FC<FallbackAddressInputProps> = ({
 
       {renderMethodIndicator()}
 
-      {/* Address Input */}
-      {activeMethod === 'google' ? (
-        <GoogleMapsAddressAutocomplete
-          onAddressSelect={handleGoogleMapsSelect}
-          placeholder={placeholder}
-          required={required}
-          error={error}
-          defaultValue={{
-            formattedAddress: defaultValue?.formattedAddress || "",
-            street: defaultValue?.street || "",
-            city: defaultValue?.city || "",
-            province: defaultValue?.province || "",
-            postalCode: defaultValue?.postalCode || "",
-            country: defaultValue?.country || "South Africa",
-          }}
-        />
-      ) : (
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">Manual Address Entry</CardTitle>
-              {mapsLoadError && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRetryGoogleMaps}
-                  className="text-xs"
-                >
-                  <RefreshCw className="h-3 w-3 mr-1" />
-                  Retry Smart Address
-                </Button>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Street Address */}
-            <div>
-              <Label htmlFor="manual-street" className="text-sm font-medium">
-                Street Address {required && <span className="text-red-500">*</span>}
-              </Label>
-              <Input
-                id="manual-street"
-                type="text"
-                placeholder="e.g., 123 Main Street"
-                value={manualAddress.street}
-                onChange={(e) => handleManualUpdate("street", e.target.value)}
-                className={error ? "border-red-500" : ""}
-                required={required}
-              />
-            </div>
-
-            {/* City */}
-            <div>
-              <Label htmlFor="manual-city" className="text-sm font-medium">
-                City {required && <span className="text-red-500">*</span>}
-              </Label>
-              <Input
-                id="manual-city"
-                type="text"
-                placeholder="e.g., Cape Town"
-                value={manualAddress.city}
-                onChange={(e) => handleManualUpdate("city", e.target.value)}
-                className={error ? "border-red-500" : ""}
-                required={required}
-              />
-            </div>
-
-            {/* Province and Postal Code */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="manual-province" className="text-sm font-medium">
-                  Province {required && <span className="text-red-500">*</span>}
-                </Label>
-                <Select
-                  value={manualAddress.province}
-                  onValueChange={(value) => handleManualUpdate("province", value)}
-                >
-                  <SelectTrigger className={error ? "border-red-500" : ""}>
-                    <SelectValue placeholder="Select province" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {southAfricanProvinces.map((province) => (
-                      <SelectItem key={province} value={province}>
-                        {province}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="manual-postal" className="text-sm font-medium">
-                  Postal Code {required && <span className="text-red-500">*</span>}
-                </Label>
-                <Input
-                  id="manual-postal"
-                  type="text"
-                  placeholder="e.g., 8001"
-                  value={manualAddress.postalCode}
-                  onChange={(e) => handleManualUpdate("postalCode", e.target.value)}
-                  className={error ? "border-red-500" : ""}
-                  required={required}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Address Input - Manual Only */}
+      <ManualAddressInput
+        onAddressSelect={handleManualAddressSelect}
+        label={undefined}
+        placeholder={placeholder}
+        required={required}
+        defaultValue={{
+          formattedAddress: defaultValue?.formattedAddress || "",
+          street: defaultValue?.street || "",
+          city: defaultValue?.city || "",
+          province: defaultValue?.province || "",
+          postalCode: defaultValue?.postalCode || "",
+          country: defaultValue?.country || "South Africa",
+        }}
+      />
 
       {/* Error Display */}
       {error && (
         <Alert className="border-red-200 bg-red-50">
           <AlertCircle className="h-4 w-4 text-red-600" />
           <AlertDescription className="text-red-800">{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {/* Show fallback notification */}
-      {activeMethod === 'manual' && autoFallback && (mapsLoadError || connectionStatus === 'offline') && (
-        <Alert className="border-blue-200 bg-blue-50">
-          <AlertCircle className="h-4 w-4 text-blue-600" />
-          <AlertDescription className="text-blue-800">
-            {connectionStatus === 'offline' 
-              ? "You're offline. Using manual address entry."
-              : "Smart address lookup isn't available right now. Using manual entry as backup."
-            }
-          </AlertDescription>
         </Alert>
       )}
 
