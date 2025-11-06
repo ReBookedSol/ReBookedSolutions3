@@ -89,8 +89,8 @@ const FallbackAddressInput: React.FC<FallbackAddressInputProps> = ({
 
   const activeMethod = 'manual';
 
-  // Handle Google Maps address selection
-  const handleGoogleMapsSelect = (addressData: GoogleAddressData) => {
+  // Handle manual address selection
+  const handleManualAddressSelect = (addressData: GoogleAddressData) => {
     const fallbackData: FallbackAddressData = {
       formattedAddress: addressData.formattedAddress,
       street: addressData.street,
@@ -98,14 +98,12 @@ const FallbackAddressInput: React.FC<FallbackAddressInputProps> = ({
       province: addressData.province,
       postalCode: addressData.postalCode,
       country: addressData.country,
-      latitude: addressData.latitude,
-      longitude: addressData.longitude,
-      source: 'google_maps',
+      source: 'manual_entry',
       timestamp: new Date().toISOString(),
     };
 
     setSelectedAddress(fallbackData);
-    
+
     // Update manual fields too (for consistency)
     setManualAddress({
       street: addressData.street,
