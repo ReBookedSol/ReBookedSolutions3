@@ -28,6 +28,7 @@ import Profile from "./pages/Profile";
 import CreateListing from "./pages/CreateListing";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
+import CheckoutSuccess from "./pages/CheckoutSuccess";
 
 // University Pages
 import UniversityInfo from "./pages/UniversityInfo";
