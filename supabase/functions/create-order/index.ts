@@ -121,7 +121,7 @@ serve(async (req) => {
       price: book?.price
     });
 
-    // Check if book is available
+    // Step 2: Check if book is available (BEFORE marking sold)
     if (book.sold || book.available_quantity < 1) {
       console.error("❌ Book is not available");
       return new Response(
@@ -130,9 +130,33 @@ serve(async (req) => {
       );
     }
 
-    // Note: Book will be marked as sold only AFTER payment is confirmed by the webhook
-    // This prevents marking books as sold for orders that fail payment
-    console.log("📦 Order created - Book will be marked as sold after payment confirmation");
+    // ⭐ Step 3: MARK BOOK AS SOLD (THE CRITICAL UPDATE)
+    // This happens BEFORE order insertion to ensure atomicity
+    console.log("📝 Marking book as sold...");
+    const { error: updateBookError } = await supabase
+      .from("books")
+      .update({
+        sold: true,
+        available_quantity: book.available_quantity - 1,
+        sold_quantity: (book.sold_quantity || 0) + 1,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", requestData.book_id);
+
+    if (updateBookError) {
+      console.error("❌ Failed to mark book as sold:", updateBookError);
+      return new Response(
+        JSON.stringify({ success: false, error: "Failed to reserve book" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log("✅ Book marked as sold:", {
+      id: book.id,
+      title: book.title,
+      new_available_quantity: book.available_quantity - 1,
+      new_sold_quantity: (book.sold_quantity || 0) + 1
+    });
 
     // Generate unique order_id
     const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
@@ -211,16 +235,23 @@ serve(async (req) => {
       console.error("❌ Failed to create order:", orderError);
       console.error("Order data that failed:", JSON.stringify(orderData, null, 2));
 
-      // Rollback book reservation
-      console.log("🔄 Rolling back book reservation...");
-      await supabase
+      // ROLLBACK: Undo the book marking
+      console.log("🔄 Rolling back book marking...");
+      const { error: rollbackError } = await supabase
         .from("books")
         .update({
           sold: false,
           available_quantity: book.available_quantity,
-          sold_quantity: book.sold_quantity
+          sold_quantity: book.sold_quantity,
+          updated_at: new Date().toISOString()
         })
         .eq("id", requestData.book_id);
+
+      if (rollbackError) {
+        console.error("❌ Failed to rollback book marking:", rollbackError);
+      } else {
+        console.log("✅ Book marking rolled back successfully");
+      }
 
       return new Response(
         JSON.stringify({ success: false, error: "Failed to create order: " + orderError.message }),

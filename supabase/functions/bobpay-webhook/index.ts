@@ -201,32 +201,70 @@ Deno.serve(async (req) => {
         console.error('Error updating order:', orderUpdateError);
       }
 
-      // Mark book as sold
+      // Mark book as sold (PRIMARY MECHANISM for BobPay)
       const bookId = orders.book_id || (orders.items?.[0]?.book_id);
       if (bookId) {
-        // Get current book data
-        const { data: bookData } = await supabaseClient
-          .from('books')
-          .select('id, title, available_quantity, sold_quantity')
-          .eq('id', bookId)
-          .single();
+        console.log('📚 Attempting to mark book as sold:', bookId);
 
-        const { error: bookUpdateError } = await supabaseClient
-          .from('books')
-          .update({
-            sold: true,
-            availability: 'sold',
-            sold_at: new Date().toISOString(),
-            sold_quantity: (bookData?.sold_quantity || 0) + 1,
-            available_quantity: Math.max(0, (bookData?.available_quantity || 0) - 1),
-          })
-          .eq('id', bookId);
+        try {
+          // Get current book data FIRST with all required fields
+          const { data: bookData, error: bookFetchError } = await supabaseClient
+            .from('books')
+            .select('id, title, available_quantity, sold_quantity, sold, availability')
+            .eq('id', bookId)
+            .single();
 
-        if (bookUpdateError) {
-          console.error('Error marking book as sold:', bookUpdateError);
-        } else {
-          console.log('✅ Book marked as sold:', bookId);
+          if (bookFetchError) {
+            console.error('❌ Failed to fetch book data:', bookFetchError);
+            throw bookFetchError;
+          }
+
+          if (!bookData) {
+            console.error('❌ Book not found:', bookId);
+            throw new Error(`Book ${bookId} not found`);
+          }
+
+          console.log('📖 Book current state:', {
+            id: bookData.id,
+            title: bookData.title,
+            sold: bookData.sold,
+            availability: bookData.availability,
+            available_quantity: bookData.available_quantity,
+            sold_quantity: bookData.sold_quantity
+          });
+
+          // Check if already marked as sold (prevents double-selling)
+          if (bookData.sold) {
+            console.log('ℹ️ Book already marked as sold, skipping update:', bookId);
+          } else {
+            // Mark as sold with ALL required fields
+            const { error: bookUpdateError } = await supabaseClient
+              .from('books')
+              .update({
+                sold: true,
+                availability: 'sold',
+                sold_at: new Date().toISOString(),
+                sold_quantity: (bookData.sold_quantity || 0) + 1,
+                available_quantity: Math.max(0, (bookData.available_quantity || 0) - 1),
+              })
+              .eq('id', bookId);
+
+            if (bookUpdateError) {
+              console.error('❌ Error marking book as sold:', bookUpdateError);
+              throw bookUpdateError;
+            }
+
+            console.log('✅ Book successfully marked as sold:', bookId);
+          }
+        } catch (bookError) {
+          console.error('❌ Critical error in book marking:', bookError);
+          // Continue processing - book marking failure shouldn't prevent order update
         }
+      } else {
+        console.warn('⚠️ No book ID found in order:', {
+          book_id: orders.book_id,
+          items: orders.items
+        });
       }
 
       // Log activity for buyer's purchase

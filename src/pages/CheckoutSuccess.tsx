@@ -39,36 +39,55 @@ const CheckoutSuccess: React.FC = () => {
       const bookItem = order.items?.[0];
       const bookId = bookItem?.book_id || order.book_id;
 
-      // Step 1: Mark book as sold (idempotent operation)
-      if (bookId && !order.sold) {
+      console.log("📚 Book ID extracted:", {
+        fromItems: bookItem?.book_id,
+        fromOrder: order.book_id,
+        final: bookId
+      });
+
+      // Step 1: Invoke create-order function to mark book as sold
+      // This is a fallback mechanism in case the webhook didn't fire
+      if (bookId && order.buyer_id && order.seller_id) {
         try {
-          const { data: bookData } = await supabase
-            .from("books")
-            .select("id, title, available_quantity, sold_quantity, sold")
-            .eq("id", bookId)
-            .single();
+          console.log("📞 Invoking create-order function to mark book as sold...");
 
-          if (bookData && !bookData.sold) {
-            const { error: bookUpdateError } = await supabase
-              .from("books")
-              .update({
-                sold: true,
-                availability: "sold",
-                sold_at: new Date().toISOString(),
-                sold_quantity: (bookData.sold_quantity || 0) + 1,
-                available_quantity: Math.max(0, (bookData.available_quantity || 0) - 1),
-              })
-              .eq("id", bookId);
-
-            if (bookUpdateError) {
-              console.warn("⚠️ Failed to mark book as sold:", bookUpdateError);
-            } else {
-              console.log("✅ Book marked as sold:", bookId);
+          const { data: createOrderResult, error: createOrderError } = await supabase.functions.invoke(
+            'create-order',
+            {
+              body: {
+                buyer_id: order.buyer_id,
+                seller_id: order.seller_id,
+                book_id: bookId,
+                delivery_option: order.delivery_option || "delivery",
+                shipping_address_encrypted: order.shipping_address_encrypted || "",
+                payment_reference: order.payment_reference,
+                selected_courier_slug: order.selected_courier_slug,
+                selected_service_code: order.selected_service_code,
+                selected_courier_name: order.selected_courier_name,
+                selected_service_name: order.selected_service_name,
+                selected_shipping_cost: order.selected_shipping_cost,
+              }
             }
+          );
+
+          if (createOrderError) {
+            console.warn("⚠️ create-order function returned error (book may already be marked):", createOrderError);
+            // Don't throw - this might be expected if already marked
+          } else if (createOrderResult?.success) {
+            console.log("✅ create-order function executed successfully - book marked as sold");
+          } else {
+            console.warn("⚠️ create-order function returned non-success response:", createOrderResult);
           }
-        } catch (bookError) {
-          console.warn("⚠️ Book update error (non-critical):", bookError);
+        } catch (functionError) {
+          console.warn("⚠️ Error invoking create-order function:", functionError);
+          // Continue with other actions even if function call fails
         }
+      } else {
+        console.warn("⚠️ Missing required data to invoke create-order:", {
+          bookId,
+          buyer_id: order.buyer_id,
+          seller_id: order.seller_id
+        });
       }
 
       // Step 2: Send emails via EnhancedPurchaseEmailService
