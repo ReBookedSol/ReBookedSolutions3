@@ -42,13 +42,43 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from("order_feedback").insert({
-        order_id: orderId,
-        received: receivedStatus === "received",
-        received_status: receivedStatus,
-        comments: feedback.trim(),
-        submitted_at: new Date().toISOString(),
-      });
+      // Get current user
+      const { data: authData } = await supabase.auth.getUser();
+      const userId = authData?.user?.id;
+
+      if (!userId) {
+        toast.error("User not authenticated");
+        return;
+      }
+
+      // Fetch order details
+      const { data: order, error: orderFetchError } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("id", orderId)
+        .single();
+
+      if (orderFetchError || !order) {
+        console.error("Error fetching order:", orderFetchError);
+        toast.error("Could not find order details");
+        return;
+      }
+
+      // Update or insert buyer feedback
+      const { error } = await supabase.from("buyer_feedback_orders").upsert(
+        {
+          order_id: orderId,
+          buyer_id: userId,
+          seller_id: order.seller_id,
+          book_id: order.book_id,
+          buyer_status: receivedStatus,
+          buyer_feedback: feedback.trim(),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "order_id",
+        }
+      );
 
       if (error) {
         console.error("Error submitting feedback:", error);
@@ -61,24 +91,21 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
 
       // Create notification
       try {
-        const { data: user } = await supabase.auth.getUser();
-        if (user?.user?.id) {
-          await supabase.from("order_notifications").insert({
-            order_id: orderId,
-            user_id: user.user.id,
-            type: "feedback_submitted",
-            title: "Order Feedback Received",
-            message: `Thank you for confirming delivery of ${bookTitle}.`,
-          });
-        }
+        await supabase.from("order_notifications").insert({
+          order_id: orderId,
+          user_id: userId,
+          type: "feedback_submitted",
+          title: "Order Feedback Received",
+          message: `Thank you for confirming delivery of ${bookTitle}.`,
+        });
       } catch (notifErr) {
         console.warn("Failed to create notification:", notifErr);
       }
 
       if (onFeedbackSubmitted) {
         onFeedbackSubmitted({
-          received_status: receivedStatus,
-          comments: feedback.trim(),
+          buyer_status: receivedStatus,
+          buyer_feedback: feedback.trim(),
         });
       }
     } catch (err) {
