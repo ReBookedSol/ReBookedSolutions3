@@ -101,7 +101,7 @@ const PaymentConfirmation: React.FC<PaymentConfirmationProps> = ({
         .from("payment_transactions")
         .insert({
           reference: paymentData.payment_reference,
-          order_id: result.orders[0].id,
+          order_id: result.order.id,
           user_id: paymentData.buyer_id,
           amount: paymentData.total_paid,
           currency: "ZAR",
@@ -122,7 +122,7 @@ const PaymentConfirmation: React.FC<PaymentConfirmationProps> = ({
       }
 
       // Send confirmation emails
-      await sendConfirmationEmails(result.orders[0], userData.user);
+      await sendConfirmationEmails(result.order, userData.user);
 
       toast.success("Order confirmed! Confirmation emails sent.", {
         description: `Order #${result.orders[0].id}`,
