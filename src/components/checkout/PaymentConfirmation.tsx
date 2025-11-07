@@ -62,52 +62,61 @@ const PaymentConfirmation: React.FC<PaymentConfirmationProps> = ({
         throw new Error("User authentication error");
       }
 
-      // Create order via API
-      const response = await fetch("/api/create-order", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: paymentData.buyer_id,
-          items: [
-            {
-              book_id: paymentData.book_id,
-              seller_id: paymentData.seller_id,
-              title: paymentData.book_title,
-              price: paymentData.book_price,
-            },
-          ],
-          total_amount: paymentData.total_paid,
-          shipping_address: {
-            name: userData.user.user_metadata?.name || "Customer",
-            email: userData.user.email,
-          },
-          payment_reference: paymentData.payment_reference,
-          payment_data: {
-            reference: paymentData.payment_reference,
-            amount: paymentData.total_paid,
-            status: "success",
-            verified_at: new Date().toISOString(),
-          },
-        }),
-      });
+      // Encrypt shipping address
+      const shippingObject = {
+        name: userData.user.user_metadata?.name || "Customer",
+        email: userData.user.email,
+      };
 
-      const result = await response.json();
+      console.log("🔐 Encrypting shipping address...");
+      const { data: encResult, error: encError } = await supabase.functions.invoke(
+        "encrypt-address",
+        { body: { object: shippingObject } }
+      );
 
-      if (!result.success) {
-        throw new Error(result.error || "Failed to create order");
+      if (encError || !encResult?.success || !encResult?.data) {
+        throw new Error(encError?.message || "Failed to encrypt shipping address");
+      }
+
+      const shipping_address_encrypted = JSON.stringify(encResult.data);
+
+      // Create order via Supabase Edge Function
+      console.log("📦 Invoking create-order function...");
+
+      const { data: invokeData, error: invokeError } = await supabase.functions.invoke(
+        "create-order",
+        {
+          body: {
+            buyer_id: paymentData.buyer_id,
+            seller_id: paymentData.seller_id,
+            book_id: paymentData.book_id,
+            delivery_option: paymentData.delivery_method,
+            shipping_address_encrypted,
+            payment_reference: paymentData.payment_reference,
+          },
+        }
+      );
+
+      if (invokeError) {
+        console.error("🚫 Function invoke error:", invokeError);
+        throw new Error(invokeError.message || "Failed to invoke create-order function");
+      }
+
+      const result = invokeData;
+
+      if (!result?.success) {
+        throw new Error(result?.error || "Failed to create order");
       }
 
       console.log("✅ Order created successfully:", result);
-      setOrderDetails(result.orders[0]);
+      setOrderDetails(result.order);
 
       // Store payment transaction
       const { error: paymentError } = await supabase
         .from("payment_transactions")
         .insert({
           reference: paymentData.payment_reference,
-          order_id: result.orders[0].id,
+          order_id: result.order.id,
           user_id: paymentData.buyer_id,
           amount: paymentData.total_paid,
           currency: "ZAR",
@@ -128,7 +137,7 @@ const PaymentConfirmation: React.FC<PaymentConfirmationProps> = ({
       }
 
       // Send confirmation emails
-      await sendConfirmationEmails(result.orders[0], userData.user);
+      await sendConfirmationEmails(result.order, userData.user);
 
       toast.success("Order confirmed! Confirmation emails sent.", {
         description: `Order #${result.orders[0].id}`,
