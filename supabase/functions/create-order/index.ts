@@ -235,16 +235,23 @@ serve(async (req) => {
       console.error("❌ Failed to create order:", orderError);
       console.error("Order data that failed:", JSON.stringify(orderData, null, 2));
 
-      // Rollback book reservation
-      console.log("🔄 Rolling back book reservation...");
-      await supabase
+      // ROLLBACK: Undo the book marking
+      console.log("🔄 Rolling back book marking...");
+      const { error: rollbackError } = await supabase
         .from("books")
         .update({
           sold: false,
           available_quantity: book.available_quantity,
-          sold_quantity: book.sold_quantity
+          sold_quantity: book.sold_quantity,
+          updated_at: new Date().toISOString()
         })
         .eq("id", requestData.book_id);
+
+      if (rollbackError) {
+        console.error("❌ Failed to rollback book marking:", rollbackError);
+      } else {
+        console.log("✅ Book marking rolled back successfully");
+      }
 
       return new Response(
         JSON.stringify({ success: false, error: "Failed to create order: " + orderError.message }),
