@@ -47,10 +47,10 @@ Deno.serve(async (req) => {
     const reason = refundData.reason;
     console.log('Processing BobPay refund:', refundData);
 
-    // Get order details
+    // Get order details with payment transactions
     const { data: order, error: orderError } = await supabaseClient
       .from('orders')
-      .select('*, payment_transactions(*)')
+      .select('*')
       .eq('id', orderId)
       .single();
 
@@ -58,49 +58,78 @@ Deno.serve(async (req) => {
       throw new Error('Order not found');
     }
 
+    // Get payment transactions for this order
+    const { data: payments, error: paymentsError } = await supabaseClient
+      .from('payment_transactions')
+      .select('*')
+      .eq('order_id', orderId)
+      .order('created_at', { ascending: false });
+
+    if (paymentsError) {
+      console.error('Error fetching payment transactions:', paymentsError);
+    }
+
+    console.log('Found payment transactions:', payments?.length || 0);
+
     // Skip authorization checks and eligibility checks - allow refund regardless of status
     console.log('Forcing refund regardless of status for order:', order.id);
 
-    // Get BobPay payment ID from request or latest payment transaction
+    // Get BobPay payment ID from request or payment transaction
     let bobpayPaymentId = body?.payment_id as number | undefined;
+    let paymentTransaction = null;
 
-    if (!bobpayPaymentId) {
-      // Fallback: query latest payment_transaction for this order
-      const { data: payments, error: paymentsError } = await supabaseClient
-        .from('payment_transactions')
-        .select('*')
-        .eq('order_id', orderId)
-        .order('created_at', { ascending: false })
-        .limit(1);
-
-      if (paymentsError) {
-        console.log('Could not fetch payment_transactions:', paymentsError);
-      } else if (payments && payments.length > 0) {
-        const tx = payments[0] as any;
-        const txResponse = tx.bobpay_response || tx.paystack_response || {};
-        if (txResponse?.id) {
-          bobpayPaymentId = txResponse.id;
-        } else if (txResponse?.payment_id) {
-          bobpayPaymentId = txResponse.payment_id;
+    if (!bobpayPaymentId && payments && payments.length > 0) {
+      // Find the latest successful BobPay payment
+      for (const tx of payments) {
+        const bobpayResponse = tx.bobpay_response as any;
+        if (bobpayResponse?.id) {
+          bobpayPaymentId = bobpayResponse.id;
+          paymentTransaction = tx;
+          console.log('Found BobPay payment ID from bobpay_response:', bobpayPaymentId);
+          break;
+        }
+        // Fallback: check paystack_response for legacy data
+        const paystackResponse = tx.paystack_response as any;
+        if (paystackResponse?.id || paystackResponse?.payment_id) {
+          bobpayPaymentId = paystackResponse.id || paystackResponse.payment_id;
+          paymentTransaction = tx;
+          console.log('Found payment ID from paystack_response (legacy):', bobpayPaymentId);
+          break;
         }
       }
     }
 
     if (!bobpayPaymentId) {
       console.log('No payment ID found, creating manual refund record');
-      // Continue without payment ID - create manual refund
     }
 
     console.log('Initiating BobPay refund for payment ID:', bobpayPaymentId);
 
+    // Calculate refund amount - payment_transactions stores in cents (bigint)
+    let refundAmountInCents = 0;
+    let refundAmountInZAR = 0;
+
+    if (paymentTransaction) {
+      refundAmountInCents = paymentTransaction.amount;
+      refundAmountInZAR = refundAmountInCents / 100;
+      console.log('Using amount from payment_transaction:', { cents: refundAmountInCents, zar: refundAmountInZAR });
+    } else if (order.total_amount) {
+      refundAmountInZAR = parseFloat(order.total_amount);
+      refundAmountInCents = Math.round(refundAmountInZAR * 100);
+      console.log('Using total_amount from order:', { cents: refundAmountInCents, zar: refundAmountInZAR });
+    } else if (order.amount) {
+      // order.amount is integer, might be in cents
+      refundAmountInCents = order.amount;
+      refundAmountInZAR = refundAmountInCents / 100;
+      console.log('Using amount from order:', { cents: refundAmountInCents, zar: refundAmountInZAR });
+    }
+
     // Get BobPay credentials
     const bobpayApiUrl = Deno.env.get('BOBPAY_API_URL');
     const bobpayApiToken = Deno.env.get('BOBPAY_API_TOKEN');
-    // Normalize base URL: expect no trailing /v2 in env
     const apiBase = (bobpayApiUrl || '').replace(/\/v2\/?$/, '');
 
     let refundResult: any = null;
-    let refundAmount = order.total_amount || order.amount || 0;
 
     // Try to process with BobPay API if credentials available
     if (bobpayApiUrl && bobpayApiToken && bobpayPaymentId) {
@@ -145,21 +174,23 @@ Deno.serve(async (req) => {
       };
     }
 
-    // Create refund transaction record - always succeed
+    // Create refund transaction record using correct BobPay columns
     const { data: refundTransaction, error: refundTxError } = await supabaseClient
       .from('refund_transactions')
       .insert({
         order_id: orderId,
         initiated_by: user?.id || null,
-        amount: refundAmount,
+        amount: refundAmountInZAR,
         reason: reason || 'Forced refund - processed regardless of status',
         status: 'success',
-        transaction_reference: order.payment_reference || `tx-${Date.now()}`,
-        paystack_refund_reference: refundResult?.payment_method?.merchant_reference || `manual-${Date.now()}`,
-        paystack_response: {
+        transaction_reference: order.payment_reference || paymentTransaction?.reference || `tx-${Date.now()}`,
+        bobpay_refund_reference: refundResult?.payment_method?.merchant_reference || refundResult?.id || `manual-${Date.now()}`,
+        bobpay_response: {
           ...refundResult,
           provider: 'bobpay',
           forced_refund: true,
+          original_amount_cents: refundAmountInCents,
+          refund_amount_zar: refundAmountInZAR,
         },
         completed_at: new Date().toISOString(),
       })
@@ -172,7 +203,7 @@ Deno.serve(async (req) => {
     }
 
     // Update order status - always update
-    await supabaseClient
+    const { error: orderUpdateError } = await supabaseClient
       .from('orders')
       .update({
         status: 'refunded',
@@ -182,6 +213,10 @@ Deno.serve(async (req) => {
       })
       .eq('id', orderId);
 
+    if (orderUpdateError) {
+      console.error('Error updating order status:', orderUpdateError);
+    }
+
     // Create notifications - don't fail if this fails
     try {
       await supabaseClient.from('order_notifications').insert([
@@ -190,7 +225,7 @@ Deno.serve(async (req) => {
           user_id: order.buyer_id,
           type: 'refund_success',
           title: 'Refund Processed',
-          message: `Your refund of R${refundAmount.toFixed(2)} has been processed successfully.`,
+          message: `Your refund of R${refundAmountInZAR.toFixed(2)} has been processed successfully.`,
         },
         {
           order_id: orderId,
@@ -209,7 +244,8 @@ Deno.serve(async (req) => {
         success: true,
         data: {
           refund_id: refundTransaction?.id || 'manual',
-          amount: refundAmount,
+          amount: refundAmountInZAR,
+          amount_cents: refundAmountInCents,
           status: 'success',
           message: 'Refund processed successfully - forced regardless of status',
           refund_method: refundResult?.manual_refund ? 'manual' : 'bobpay_api',
@@ -225,7 +261,7 @@ Deno.serve(async (req) => {
 
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
 
-    // Log failed refund attempt if order_id is available - but don't read req.json() again
+    // Log failed refund attempt if order_id is available
     if (refundData) {
       try {
         const supabaseClient = createClient(
@@ -239,6 +275,10 @@ Deno.serve(async (req) => {
           status: 'failed',
           reason: errorMessage,
           transaction_reference: `failed-${Date.now()}`,
+          bobpay_response: {
+            error: errorMessage,
+            failed_at: new Date().toISOString(),
+          },
         });
       } catch (logError) {
         console.error('Failed to log refund error:', logError);
