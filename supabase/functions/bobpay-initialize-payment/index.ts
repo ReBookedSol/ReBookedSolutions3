@@ -27,7 +27,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
+    // Create client with anon key for auth verification
+    const supabaseAuth = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
@@ -37,13 +38,19 @@ Deno.serve(async (req) => {
       throw new Error('Missing authorization header');
     }
 
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(
       authHeader.replace('Bearer ', '')
     );
 
     if (authError || !user) {
       throw new Error('Invalid authentication');
     }
+
+    // Create client with service role for database operations (bypass RLS)
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
     const paymentData: PaymentInitRequest = await req.json();
     console.log('Initializing BobPay payment:', paymentData);
