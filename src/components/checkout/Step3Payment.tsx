@@ -105,7 +105,10 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
             amount: Math.round(orderSummary.total_price * 100),
             status: "pending",
             payment_reference: customPaymentId,
-            paystack_ref: customPaymentId,
+            buyer_id: userId,
+            book_id: orderSummary.book.id,
+            delivery_option: orderSummary.delivery.service_name,
+            payment_status: "pending",
 
             items: [
               {
@@ -138,6 +141,13 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
               original_book_price: orderSummary.book_price,
               original_delivery_price: orderSummary.delivery_price,
             },
+
+            total_amount: orderSummary.total_price,
+            selected_courier_name: orderSummary.delivery.provider_name || orderSummary.delivery.courier,
+            selected_courier_slug: orderSummary.delivery.provider_slug || orderSummary.delivery.courier,
+            selected_service_code: orderSummary.delivery.service_level_code || "",
+            selected_service_name: orderSummary.delivery.service_name,
+            selected_shipping_cost: orderSummary.delivery_price,
           },
         ])
         .select()
