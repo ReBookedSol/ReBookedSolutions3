@@ -24,7 +24,7 @@ serve(async (req) => {
 
     const { data: order, error: orderError } = await supabase
       .from("orders")
-      .select("payment_reference, total_amount, amount, tracking_number, delivery_status, status")
+      .select("payment_reference, total_amount, amount, tracking_number, delivery_status, status, committed_at, payment_transactions(*)")
       .eq("id", order_id)
       .single();
 
@@ -64,26 +64,58 @@ serve(async (req) => {
     let refundResult: any = null;
 
     if (shouldRefund && order.payment_reference) {
-      const refundResponse = await supabase.functions.invoke("refund-management", {
-        body: {
-          payment_reference: order.payment_reference,
-          amount: null,
-          reason: reason || "Order cancelled",
-          order_id,
-        },
-      });
+      // Determine if this is an uncommitted BobPay order
+      const isUncommitted = !order.committed_at;
+      const paymentTransactions = order.payment_transactions as any[];
+      const isBobPayOrder = paymentTransactions?.some(tx =>
+        tx.payment_method?.toLowerCase() === 'bobpay' ||
+        tx.payment_method?.toLowerCase() === 'bob_pay'
+      );
 
-      refundResult = refundResponse.data;
+      // For uncommitted BobPay orders, use BobPayRefund instead of Refund Management
+      if (isUncommitted && isBobPayOrder) {
+        const refundResponse = await supabase.functions.invoke("bobpay-refund", {
+          body: {
+            order_id,
+            reason: reason || "Order cancelled",
+          },
+        });
 
-      if (refundResult?.success) {
-        await supabase
-          .from("orders")
-          .update({
-            refund_status: refundResult.data?.status || "pending",
-            refund_reference: refundResult.data?.id,
-            refunded_at: new Date().toISOString(),
-          })
-          .eq("id", order_id);
+        refundResult = refundResponse.data;
+
+        if (refundResult?.success) {
+          await supabase
+            .from("orders")
+            .update({
+              refund_status: refundResult.data?.status || "success",
+              refund_reference: refundResult.data?.refund_id,
+              refunded_at: new Date().toISOString(),
+            })
+            .eq("id", order_id);
+        }
+      } else {
+        // Use Refund Management for committed orders or non-BobPay orders
+        const refundResponse = await supabase.functions.invoke("refund-management", {
+          body: {
+            payment_reference: order.payment_reference,
+            amount: null,
+            reason: reason || "Order cancelled",
+            order_id,
+          },
+        });
+
+        refundResult = refundResponse.data;
+
+        if (refundResult?.success) {
+          await supabase
+            .from("orders")
+            .update({
+              refund_status: refundResult.data?.status || "pending",
+              refund_reference: refundResult.data?.id,
+              refunded_at: new Date().toISOString(),
+            })
+            .eq("id", order_id);
+        }
       }
     }
 
