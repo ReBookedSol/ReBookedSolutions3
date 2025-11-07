@@ -83,7 +83,9 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
           id, buyer_id, seller_id, status, delivery_status, created_at, updated_at,
           cancelled_at, cancellation_reason, tracking_number, tracking_data,
           selected_courier_name, selected_service_name, total_amount, delivery_data,
-          book:books(id, title, author, price, image_url, additional_images)
+          book:books(id, title, author, price, image_url, additional_images),
+          buyer:profiles!buyer_id(id, full_name, name, email),
+          seller:profiles!seller_id(id, full_name, name, email)
         `)
         .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
         .order("created_at", { ascending: false });
