@@ -392,29 +392,22 @@ const BankingProfileTab = () => {
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-3">
                 <Button
-                  onClick={handleDecryptAndView}
+                  onClick={showFullAccount ? () => {
+                    setShowFullAccount(false);
+                    setDecryptedDetails(null);
+                  } : handleDecryptAndView}
                   className="bg-book-600 hover:bg-book-700 flex items-center gap-2"
                   disabled={isDecrypting}
                 >
                   {isDecrypting ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : showFullAccount ? (
+                    <Eye className="h-4 w-4" />
                   ) : (
                     <Eye className="h-4 w-4" />
                   )}
-                  View Details
+                  {showFullAccount ? "Hide Details" : "View Details"}
                 </Button>
-                {showFullAccount && (
-                  <Button
-                    onClick={() => {
-                      setShowFullAccount(false);
-                      setDecryptedDetails(null);
-                    }}
-                    variant="outline"
-                    className="border-book-200 text-book-600 hover:bg-book-50"
-                  >
-                    Hide Details
-                  </Button>
-                )}
                 <Button
                   onClick={() => setShowUpdateDialog(true)}
                   variant="outline"
