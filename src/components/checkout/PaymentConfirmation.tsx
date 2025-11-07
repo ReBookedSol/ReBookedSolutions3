@@ -62,6 +62,24 @@ const PaymentConfirmation: React.FC<PaymentConfirmationProps> = ({
         throw new Error("User authentication error");
       }
 
+      // Encrypt shipping address
+      const shippingObject = {
+        name: userData.user.user_metadata?.name || "Customer",
+        email: userData.user.email,
+      };
+
+      console.log("🔐 Encrypting shipping address...");
+      const { data: encResult, error: encError } = await supabase.functions.invoke(
+        "encrypt-address",
+        { body: { object: shippingObject } }
+      );
+
+      if (encError || !encResult?.success || !encResult?.data) {
+        throw new Error(encError?.message || "Failed to encrypt shipping address");
+      }
+
+      const shipping_address_encrypted = JSON.stringify(encResult.data);
+
       // Create order via Supabase Edge Function
       console.log("📦 Invoking create-order function...");
 
@@ -73,10 +91,7 @@ const PaymentConfirmation: React.FC<PaymentConfirmationProps> = ({
             seller_id: paymentData.seller_id,
             book_id: paymentData.book_id,
             delivery_option: paymentData.delivery_method,
-            shipping_address_encrypted: JSON.stringify({
-              name: userData.user.user_metadata?.name || "Customer",
-              email: userData.user.email,
-            }),
+            shipping_address_encrypted,
             payment_reference: paymentData.payment_reference,
           },
         }
