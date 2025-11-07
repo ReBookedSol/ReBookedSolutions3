@@ -137,7 +137,6 @@ const BankingProfileTab = () => {
         return;
       }
 
-      // Clear profile subaccount code
       const { error: profileError } = await supabase
         .from("profiles")
         .update({
@@ -220,7 +219,6 @@ const BankingProfileTab = () => {
 
           {!hasBankingSetup && (
             <div className="space-y-6">
-              {/* Modern Banking Setup Card */}
               <div className="bg-gradient-to-r from-book-50 to-green-50 p-6 rounded-lg border border-book-200">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="space-y-2">
@@ -267,7 +265,6 @@ const BankingProfileTab = () => {
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex flex-wrap gap-3">
                 <Button
                   onClick={handleSetupBanking}
@@ -296,7 +293,6 @@ const BankingProfileTab = () => {
 
           {hasBankingSetup && bankingDetails && (
             <div className="space-y-6">
-              {/* Banking Overview Card */}
               <div className="bg-gradient-to-r from-book-50 to-green-50 p-6 rounded-lg border border-book-200">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="space-y-2">
@@ -375,7 +371,7 @@ const BankingProfileTab = () => {
                     <p className="text-book-900">
                       {showFullAccount && decryptedDetails?.email
                         ? decryptedDetails.email
-                        : "••��•••••"}
+                        : user?.email || "Not Set"}
                     </p>
                   </div>
                   <div className="space-y-2">
@@ -389,10 +385,12 @@ const BankingProfileTab = () => {
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex flex-wrap gap-3">
                 <Button
-                  onClick={handleDecryptAndView}
+                  onClick={showFullAccount ? () => {
+                    setShowFullAccount(false);
+                    setDecryptedDetails(null);
+                  } : handleDecryptAndView}
                   className="bg-book-600 hover:bg-book-700 flex items-center gap-2"
                   disabled={isDecrypting}
                 >
@@ -401,20 +399,8 @@ const BankingProfileTab = () => {
                   ) : (
                     <Eye className="h-4 w-4" />
                   )}
-                  View Details
+                  {showFullAccount ? "Hide Details" : "View Details"}
                 </Button>
-                {showFullAccount && (
-                  <Button
-                    onClick={() => {
-                      setShowFullAccount(false);
-                      setDecryptedDetails(null);
-                    }}
-                    variant="outline"
-                    className="border-book-200 text-book-600 hover:bg-book-50"
-                  >
-                    Hide Details
-                  </Button>
-                )}
                 <Button
                   onClick={() => setShowUpdateDialog(true)}
                   variant="outline"
@@ -434,7 +420,6 @@ const BankingProfileTab = () => {
                   Delete Details
                 </Button>
               </div>
-
 
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div className="flex items-start gap-3">
@@ -466,23 +451,15 @@ const BankingProfileTab = () => {
               <ul className="text-sm text-green-800 space-y-1">
                 <li>• You receive 90% of each book sale</li>
                 <li>• ReBooked Marketplace keeps 10% as platform fee</li>
-                <li>
-                  • Payments are held in escrow until delivery confirmation
-                </li>
-                <li>
-                  • Funds are released to your account within 1-2 business days
-                  after delivery
-                </li>
-                <li>
-                  • All transactions are processed securely through Paystack
-                </li>
+                <li>• Payments are held in escrow until delivery confirmation</li>
+                <li>• Funds are released to your account within 1-2 business days after delivery</li>
+                <li>• All transactions are processed securely through Paystack</li>
               </ul>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Additional information for new banking system */}
       {hasBankingSetup && (
         <Card>
           <CardHeader>
@@ -509,7 +486,6 @@ const BankingProfileTab = () => {
         </Card>
       )}
 
-      {/* Update Banking Details Dialog */}
       <Dialog open={showUpdateDialog} onOpenChange={handleCancelUpdate}>
         <DialogContent className="w-[88vw] max-w-sm sm:max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl mx-auto">
           <DialogHeader>
@@ -537,7 +513,6 @@ const BankingProfileTab = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Setup Banking Details Dialog */}
       <Dialog open={showSetupDialog} onOpenChange={handleCancelSetup}>
         <DialogContent className="w-[88vw] max-w-sm sm:max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl mx-auto">
           <DialogHeader>
@@ -557,7 +532,6 @@ const BankingProfileTab = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Banking Details Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

@@ -17,6 +17,8 @@ import {
   DollarSign,
   Calendar,
   Info,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,15 +47,32 @@ export type Order = BaseOrder & {
     image_url?: string | null;
     additional_images?: string[] | null;
   };
+  buyer?: {
+    id?: string;
+    full_name?: string | null;
+    name?: string | null;
+    email?: string | null;
+  } | null;
+  seller?: {
+    id?: string;
+    full_name?: string | null;
+    name?: string | null;
+    email?: string | null;
+  } | null;
 };
 
 interface OrderManagementViewProps {}
+
+interface CollapsibleOrderState {
+  [key: string]: boolean;
+}
 
 const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [expandedOrders, setExpandedOrders] = useState<CollapsibleOrderState>({});
 
   useEffect(() => {
     if (user) {
@@ -81,7 +100,9 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
           id, buyer_id, seller_id, status, delivery_status, created_at, updated_at,
           cancelled_at, cancellation_reason, tracking_number, tracking_data,
           selected_courier_name, selected_service_name, total_amount, delivery_data,
-          book:books(id, title, author, price, image_url, additional_images)
+          book:books(id, title, author, price, image_url, additional_images),
+          buyer:profiles!buyer_id(id, full_name, name, email),
+          seller:profiles!seller_id(id, full_name, name, email)
         `)
         .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
         .order("created_at", { ascending: false });
@@ -125,9 +146,20 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
     try { return new Date(d).toLocaleString(); } catch { return d as string; }
   };
 
+  const toggleOrderExpand = (orderId: string) => {
+    setExpandedOrders(prev => ({
+      ...prev,
+      [orderId]: !prev[orderId]
+    }));
+  };
+
   const OrderHeaderDetails: React.FC<{ order: Order }> = ({ order }) => {
     const role = getUserRole(order);
     const img = order.book?.additional_images?.[0] || order.book?.image_url || "/placeholder.svg";
+    const otherPartyName = role === "buyer" 
+      ? (order.seller?.full_name || order.seller?.name || "Seller") 
+      : (order.buyer?.full_name || order.buyer?.name || "Buyer");
+    
     return (
       <div className="flex gap-4">
         <div className="w-16 h-20 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
@@ -148,7 +180,7 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
                 {order.book?.author ? `by ${order.book.author}` : ""}
               </p>
               <p className="text-sm text-gray-500 mt-1">
-                Order #{order.id.slice(-8)} ��� {role === "buyer" ? `Seller` : `Buyer`}: {role === "buyer" ? (order.seller?.name || "Unknown") : (order.buyer?.name || "Unknown")}
+                Order #{order.id.slice(-8)} • {role === "buyer" ? "Seller" : "Buyer"}: {otherPartyName}
               </p>
             </div>
             <div className="text-right">
@@ -299,73 +331,97 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
     );
   };
 
-  const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
+  const OrderCard: React.FC<{ order: Order; isCollapsible?: boolean }> = ({ order, isCollapsible = false }) => {
     const userRole = getUserRole(order);
+    const isExpanded = expandedOrders[order.id] ?? true;
+
+    const handleToggle = () => {
+      if (isCollapsible) {
+        toggleOrderExpand(order.id);
+      }
+    };
 
     return (
       <Card className="mb-4 border border-gray-200 shadow-sm rounded-lg">
         <CardHeader className="pb-3">
-          <OrderHeaderDetails order={order} />
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <OrderHeaderDetails order={order} />
+            </div>
+            {isCollapsible && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleToggle}
+                className="ml-2"
+              >
+                {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+              </Button>
+            )}
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {order.delivery_status === "pickup_failed" && userRole === "seller" && (
-            <Alert className="border-orange-200 bg-orange-50">
-              <AlertTriangle className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="text-orange-800">
-                <strong>Action Required:</strong> Courier attempted pickup but you were unavailable. Please reschedule or cancel within 24 hours.
-              </AlertDescription>
-            </Alert>
-          )}
+        
+        {isExpanded && (
+          <CardContent className="space-y-4">
+            {order.delivery_status === "pickup_failed" && userRole === "seller" && (
+              <Alert className="border-orange-200 bg-orange-50">
+                <AlertTriangle className="h-4 w-4 text-orange-600" />
+                <AlertDescription className="text-orange-800">
+                  <strong>Action Required:</strong> Courier attempted pickup but you were unavailable. Please reschedule or cancel within 24 hours.
+                </AlertDescription>
+              </Alert>
+            )}
 
-          {order.delivery_status === "pickup_failed" && userRole === "buyer" && (
-            <Alert className="border-blue-200 bg-blue-50">
-              <Clock className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-blue-800">
-                <strong>Pickup Delayed:</strong> The seller missed the scheduled pickup. We'll update you once they take action.
-              </AlertDescription>
-            </Alert>
-          )}
+            {order.delivery_status === "pickup_failed" && userRole === "buyer" && (
+              <Alert className="border-blue-200 bg-blue-50">
+                <Clock className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800">
+                  <strong>Pickup Delayed:</strong> The seller missed the scheduled pickup. We'll update you once they take action.
+                </AlertDescription>
+              </Alert>
+            )}
 
-          {order.delivery_status === "rescheduled_by_seller" && (
-            <Alert className="border-blue-200 bg-blue-50">
-              <Calendar className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-blue-800">
-                <strong>Pickup Rescheduled</strong>
-              </AlertDescription>
-            </Alert>
-          )}
+            {order.delivery_status === "rescheduled_by_seller" && (
+              <Alert className="border-blue-200 bg-blue-50">
+                <Calendar className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800">
+                  <strong>Pickup Rescheduled</strong>
+                </AlertDescription>
+              </Alert>
+            )}
 
-          <Separator />
-          <OrderTimeline order={order} />
-          <Separator />
-          <OrderShipmentSummary order={order} />
-          <Separator />
+            <Separator />
+            <OrderTimeline order={order} />
+            <Separator />
+            <OrderShipmentSummary order={order} />
+            <Separator />
 
-          <OrderActionsPanel order={order} userRole={userRole} onOrderUpdate={fetchOrders} />
+            <OrderActionsPanel order={order} userRole={userRole} onOrderUpdate={fetchOrders} />
 
-          {userRole === "buyer" && ["delivered", "completed"].includes(order.status) && (
-            <>
-              <Separator />
-              <OrderCompletionCard
-                orderId={order.id}
-                bookTitle={order.book?.title || "Book"}
-                sellerName={order.seller?.name || "Seller"}
-                deliveredDate={order.updated_at}
-                onFeedbackSubmitted={() => {
-                  fetchOrders();
-                }}
-              />
-            </>
-          )}
+            {userRole === "buyer" && ["delivered", "completed"].includes(order.status) && (
+              <>
+                <Separator />
+                <OrderCompletionCard
+                  orderId={order.id}
+                  bookTitle={order.book?.title || "Book"}
+                  sellerName={order.seller?.name || "Seller"}
+                  deliveredDate={order.updated_at}
+                  onFeedbackSubmitted={() => {
+                    fetchOrders();
+                  }}
+                />
+              </>
+            )}
 
-          <Separator />
-          {["delivered", "completed"].includes(order.status) && userRole === "seller" && (
-            <div className="text-xs text-gray-500">Completed on {formatDate(order.updated_at)}</div>
-          )}
-          {order.status === "cancelled" && (
-            <div className="text-xs text-red-600">Cancelled: {order.cancellation_reason || "Cancelled"} {order.cancelled_at ? `• ${formatDate(order.cancelled_at)}` : ""}</div>
-          )}
-        </CardContent>
+            <Separator />
+            {["delivered", "completed"].includes(order.status) && userRole === "seller" && (
+              <div className="text-xs text-gray-500">Completed on {formatDate(order.updated_at)}</div>
+            )}
+            {order.status === "cancelled" && (
+              <div className="text-xs text-red-600">Cancelled: {order.cancellation_reason || "Cancelled"} {order.cancelled_at ? `• ${formatDate(order.cancelled_at)}` : ""}</div>
+            )}
+          </CardContent>
+        )}
       </Card>
     );
   };
@@ -441,7 +497,7 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
         ) : (
           <div className="space-y-4">
             {activeOrders.map((order) => (
-              <OrderCard key={order.id} order={order} />
+              <OrderCard key={order.id} order={order} isCollapsible={false} />
             ))}
           </div>
         )}
@@ -460,7 +516,7 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
         ) : (
           <div className="space-y-4">
             {completedOrders.map((order) => (
-              <OrderCard key={order.id} order={order} />
+              <OrderCard key={order.id} order={order} isCollapsible={true} />
             ))}
           </div>
         )}
@@ -479,7 +535,7 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
         ) : (
           <div className="space-y-4">
             {cancelledOrders.map((order) => (
-              <OrderCard key={order.id} order={order} />
+              <OrderCard key={order.id} order={order} isCollapsible={true} />
             ))}
           </div>
         )}

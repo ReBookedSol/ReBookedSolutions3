@@ -144,13 +144,6 @@ const SimpleAddressEditDialog = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Info Banner */}
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800">
-              📍 <strong>Google Maps Integration:</strong> Coming soon! For now,
-              please enter addresses manually.
-            </p>
-          </div>
 
           {/* Pickup Address */}
           <div className="space-y-4">

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -16,11 +16,7 @@ import {
   MapPin, 
   AlertCircle, 
   CheckCircle, 
-  RefreshCw, 
   Keyboard,
-  MapIcon,
-  Wifi,
-  WifiOff
 } from "lucide-react";
 import ManualAddressInput, {
   AddressData as GoogleAddressData,
@@ -35,7 +31,7 @@ export interface FallbackAddressData {
   country: string;
   latitude?: number;
   longitude?: number;
-  source: 'google_maps' | 'manual_entry';
+  source: 'manual_entry';
   timestamp: string;
 }
 
@@ -48,20 +44,7 @@ interface FallbackAddressInputProps {
   className?: string;
   defaultValue?: Partial<FallbackAddressData>;
   showMethodIndicator?: boolean;
-  autoFallback?: boolean; // Automatically switch to manual if Google Maps fails
 }
-
-const southAfricanProvinces = [
-  "Eastern Cape",
-  "Free State", 
-  "Gauteng",
-  "KwaZulu-Natal",
-  "Limpopo",
-  "Mpumalanga",
-  "Northern Cape",
-  "North West",
-  "Western Cape",
-];
 
 const FallbackAddressInput: React.FC<FallbackAddressInputProps> = ({
   onAddressSelect,
@@ -72,24 +55,9 @@ const FallbackAddressInput: React.FC<FallbackAddressInputProps> = ({
   className = "",
   defaultValue,
   showMethodIndicator = true,
-  autoFallback = true,
 }) => {
-  const [inputMethod, setInputMethod] = useState<'manual'>('manual');
-  
-  // Manual address state
-  const [manualAddress, setManualAddress] = useState({
-    street: defaultValue?.street || "",
-    city: defaultValue?.city || "",
-    province: defaultValue?.province || "",
-    postalCode: defaultValue?.postalCode || "",
-  });
-
   const [selectedAddress, setSelectedAddress] = useState<FallbackAddressData | null>(null);
 
-
-  const activeMethod = 'manual';
-
-  // Handle manual address selection
   const handleManualAddressSelect = (addressData: GoogleAddressData) => {
     const fallbackData: FallbackAddressData = {
       formattedAddress: addressData.formattedAddress,
@@ -103,59 +71,7 @@ const FallbackAddressInput: React.FC<FallbackAddressInputProps> = ({
     };
 
     setSelectedAddress(fallbackData);
-
-    // Update manual fields too (for consistency)
-    setManualAddress({
-      street: addressData.street,
-      city: addressData.city,
-      province: addressData.province,
-      postalCode: addressData.postalCode,
-    });
-
     onAddressSelect(fallbackData);
-  };
-
-  // Handle manual address input
-  const handleManualUpdate = (field: keyof typeof manualAddress, value: string) => {
-    const newAddress = { ...manualAddress, [field]: value };
-    setManualAddress(newAddress);
-
-    // Check if address is complete
-    const isComplete = Object.values(newAddress).every(val => val.trim() !== "");
-    
-    if (isComplete) {
-      const formattedAddress = [
-        newAddress.street,
-        newAddress.city,
-        newAddress.province,
-        newAddress.postalCode,
-        "South Africa"
-      ].filter(Boolean).join(", ");
-
-      const fallbackData: FallbackAddressData = {
-        formattedAddress,
-        street: newAddress.street,
-        city: newAddress.city,
-        province: newAddress.province,
-        postalCode: newAddress.postalCode,
-        country: "South Africa",
-        source: 'manual_entry',
-        timestamp: new Date().toISOString(),
-      };
-
-      setSelectedAddress(fallbackData);
-      onAddressSelect(fallbackData);
-    }
-  };
-
-  // Toggle between methods
-  const handleMethodToggle = (method: 'google' | 'manual') => {
-    setInputMethod(method);
-    if (method === 'manual') {
-      setForceManual(true);
-    } else {
-      setForceManual(false);
-    }
   };
 
   const renderMethodIndicator = () => {
@@ -217,7 +133,6 @@ const FallbackAddressInput: React.FC<FallbackAddressInputProps> = ({
 
       {renderMethodIndicator()}
 
-      {/* Address Input - Manual Only */}
       <ManualAddressInput
         onAddressSelect={handleManualAddressSelect}
         label={undefined}
@@ -233,7 +148,6 @@ const FallbackAddressInput: React.FC<FallbackAddressInputProps> = ({
         }}
       />
 
-      {/* Error Display */}
       {error && (
         <Alert className="border-red-200 bg-red-50">
           <AlertCircle className="h-4 w-4 text-red-600" />

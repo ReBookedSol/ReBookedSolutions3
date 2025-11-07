@@ -202,11 +202,11 @@ Deno.serve(async (req) => {
       // Don't throw error, continue with response
     }
 
-    // Update order status - always update
+    // Update order status - use 'cancelled' since 'refunded' is not a valid status
     const { error: orderUpdateError } = await supabaseClient
       .from('orders')
       .update({
-        status: 'refunded',
+        status: 'cancelled',
         refund_status: 'completed',
         refunded_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

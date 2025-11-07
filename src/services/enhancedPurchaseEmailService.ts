@@ -343,44 +343,20 @@ export class EnhancedPurchaseEmailService {
 
   /**
    * Create in-app notification for seller about new order
+   * NOTE: Notifications are now created in CheckoutSuccess.tsx to prevent duplicates
    */
   private static async createSellerNotification(purchaseData: PurchaseEmailData): Promise<void> {
-    // Get seller user ID from the email
-    const { data: seller } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('email', purchaseData.sellerEmail)
-      .single();
-
-    if (seller) {
-      await NotificationService.createOrderConfirmation(
-        seller.id,
-        purchaseData.orderId,
-        purchaseData.bookTitle,
-        true // isForSeller = true
-      );
-    }
+    // Notifications are created in CheckoutSuccess.tsx to prevent duplicate notifications
+    console.log("ℹ️ Seller notification creation skipped - handled by CheckoutSuccess");
   }
 
   /**
    * Create in-app notification for buyer about order confirmation
+   * NOTE: Notifications are now created in CheckoutSuccess.tsx to prevent duplicates
    */
   private static async createBuyerNotification(purchaseData: PurchaseEmailData): Promise<void> {
-    // Get buyer user ID from the email
-    const { data: buyer } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('email', purchaseData.buyerEmail)
-      .single();
-
-    if (buyer) {
-      await NotificationService.createOrderConfirmation(
-        buyer.id,
-        purchaseData.orderId,
-        purchaseData.bookTitle,
-        false // isForSeller = false
-      );
-    }
+    // Notifications are created in CheckoutSuccess.tsx to prevent duplicate notifications
+    console.log("ℹ️ Buyer notification creation skipped - handled by CheckoutSuccess");
   }
 }
 
