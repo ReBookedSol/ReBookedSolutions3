@@ -27,14 +27,20 @@ serve(async (req) => {
   try {
     const requestData: CreateOrderRequest = await req.json();
 
-    console.log("📋 Processing order creation:", requestData);
+    console.log("📋 Processing order creation:", {
+      buyer_id: requestData.buyer_id,
+      seller_id: requestData.seller_id,
+      book_id: requestData.book_id,
+      delivery_option: requestData.delivery_option
+    });
 
     // Validate required fields
     if (!requestData.buyer_id || !requestData.seller_id || !requestData.book_id || !requestData.delivery_option || !requestData.shipping_address_encrypted) {
+      console.error("❌ Missing required fields");
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: "Missing required fields: buyer_id, seller_id, book_id, delivery_option, shipping_address_encrypted" 
+        JSON.stringify({
+          success: false,
+          error: "Missing required fields: buyer_id, seller_id, book_id, delivery_option, shipping_address_encrypted"
         }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -43,49 +49,81 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
     // Fetch buyer info from profiles
+    console.log("🔍 Fetching buyer profile:", requestData.buyer_id);
     const { data: buyer, error: buyerError } = await supabase
       .from("profiles")
-      .select("full_name, name, email, phone_number")
+      .select("id, full_name, name, first_name, last_name, email, phone_number")
       .eq("id", requestData.buyer_id)
       .single();
 
-    if (buyerError || !buyer) {
+    if (buyerError) {
+      console.error("❌ Buyer fetch error:", buyerError);
       return new Response(
-        JSON.stringify({ success: false, error: "Buyer not found" }),
+        JSON.stringify({ success: false, error: "Buyer not found: " + buyerError.message }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    console.log("✅ Buyer found:", {
+      id: buyer?.id,
+      full_name: buyer?.full_name,
+      name: buyer?.name,
+      email: buyer?.email,
+      phone: buyer?.phone_number
+    });
+
     // Fetch seller info from profiles (including pickup_address_encrypted)
+    console.log("🔍 Fetching seller profile:", requestData.seller_id);
     const { data: seller, error: sellerError } = await supabase
       .from("profiles")
-      .select("full_name, name, email, phone_number, pickup_address_encrypted")
+      .select("id, full_name, name, first_name, last_name, email, phone_number, pickup_address_encrypted")
       .eq("id", requestData.seller_id)
       .single();
 
-    if (sellerError || !seller) {
+    if (sellerError) {
+      console.error("❌ Seller fetch error:", sellerError);
       return new Response(
-        JSON.stringify({ success: false, error: "Seller not found" }),
+        JSON.stringify({ success: false, error: "Seller not found: " + sellerError.message }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    console.log("✅ Seller found:", {
+      id: seller?.id,
+      full_name: seller?.full_name,
+      name: seller?.name,
+      email: seller?.email,
+      phone: seller?.phone_number,
+      has_pickup_address: !!seller?.pickup_address_encrypted
+    });
+
     // Fetch book info
+    console.log("🔍 Fetching book:", requestData.book_id);
     const { data: book, error: bookError } = await supabase
       .from("books")
       .select("*")
       .eq("id", requestData.book_id)
       .single();
 
-    if (bookError || !book) {
+    if (bookError) {
+      console.error("❌ Book fetch error:", bookError);
       return new Response(
-        JSON.stringify({ success: false, error: "Book not found" }),
+        JSON.stringify({ success: false, error: "Book not found: " + bookError.message }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    console.log("✅ Book found:", {
+      id: book?.id,
+      title: book?.title,
+      sold: book?.sold,
+      available_quantity: book?.available_quantity,
+      price: book?.price
+    });
+
     // Check if book is available
     if (book.sold || book.available_quantity < 1) {
+      console.error("❌ Book is not available");
       return new Response(
         JSON.stringify({ success: false, error: "Book is not available" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -93,6 +131,7 @@ serve(async (req) => {
     }
 
     // Reserve the book
+    console.log("📦 Reserving book...");
     const { error: updateBookError } = await supabase
       .from("books")
       .update({
@@ -104,14 +143,36 @@ serve(async (req) => {
       .eq("id", requestData.book_id);
 
     if (updateBookError) {
+      console.error("❌ Failed to reserve book:", updateBookError);
       return new Response(
-        JSON.stringify({ success: false, error: "Failed to reserve book" }),
+        JSON.stringify({ success: false, error: "Failed to reserve book: " + updateBookError.message }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    console.log("✅ Book reserved successfully");
+
     // Generate unique order_id
     const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+
+    // Prepare denormalized data with fallbacks
+    const buyerFullName = buyer.full_name || buyer.name || `${buyer.first_name || ''} ${buyer.last_name || ''}`.trim() || 'Unknown Buyer';
+    const sellerFullName = seller.full_name || seller.name || `${seller.first_name || ''} ${seller.last_name || ''}`.trim() || 'Unknown Seller';
+    const buyerEmail = buyer.email || '';
+    const sellerEmail = seller.email || '';
+    const buyerPhone = buyer.phone_number || '';
+    const sellerPhone = seller.phone_number || '';
+    const pickupAddress = seller.pickup_address_encrypted || '';
+
+    console.log("📝 Preparing order data:", {
+      buyer_full_name: buyerFullName,
+      seller_full_name: sellerFullName,
+      buyer_email: buyerEmail,
+      seller_email: sellerEmail,
+      buyer_phone: buyerPhone ? '***' : 'missing',
+      seller_phone: sellerPhone ? '***' : 'missing',
+      pickup_address: pickupAddress ? 'present' : 'missing'
+    });
 
     // Create order with denormalized data from profiles
     const orderData = {
@@ -119,13 +180,13 @@ serve(async (req) => {
       buyer_id: requestData.buyer_id,
       seller_id: requestData.seller_id,
       book_id: requestData.book_id,
-      buyer_full_name: buyer.full_name || buyer.name || '',
-      seller_full_name: seller.full_name || seller.name || '',
-      buyer_email: buyer.email || '',
-      seller_email: seller.email || '',
-      buyer_phone_number: buyer.phone_number || '',
-      seller_phone_number: seller.phone_number || '',
-      pickup_address_encrypted: seller.pickup_address_encrypted || '',
+      buyer_full_name: buyerFullName,
+      seller_full_name: sellerFullName,
+      buyer_email: buyerEmail,
+      seller_email: sellerEmail,
+      buyer_phone_number: buyerPhone,
+      seller_phone_number: sellerPhone,
+      pickup_address_encrypted: pickupAddress,
       shipping_address_encrypted: requestData.shipping_address_encrypted,
       delivery_option: requestData.delivery_option,
       delivery_data: {
@@ -157,6 +218,7 @@ serve(async (req) => {
       }]
     };
 
+    console.log("💾 Inserting order into database...");
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert(orderData)
@@ -164,8 +226,11 @@ serve(async (req) => {
       .single();
 
     if (orderError) {
-      console.error("Failed to create order:", orderError);
+      console.error("❌ Failed to create order:", orderError);
+      console.error("Order data that failed:", JSON.stringify(orderData, null, 2));
+
       // Rollback book reservation
+      console.log("🔄 Rolling back book reservation...");
       await supabase
         .from("books")
         .update({
@@ -176,32 +241,43 @@ serve(async (req) => {
         .eq("id", requestData.book_id);
 
       return new Response(
-        JSON.stringify({ success: false, error: "Failed to create order" }),
+        JSON.stringify({ success: false, error: "Failed to create order: " + orderError.message }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log("✅ Order created successfully:", (order as any).id);
+    console.log("✅ Order created successfully:", {
+      id: order.id,
+      order_id: order.order_id,
+      buyer_email: order.buyer_email,
+      seller_email: order.seller_email,
+      buyer_full_name: order.buyer_full_name,
+      seller_full_name: order.seller_full_name
+    });
 
     return new Response(
       JSON.stringify({
         success: true,
         message: "Order created successfully",
         order: {
-          id: (order as any).id,
-          status: (order as any).status,
-          payment_status: (order as any).payment_status,
-          total_amount: (order as any).total_amount
+          id: order.id,
+          order_id: order.order_id,
+          status: order.status,
+          payment_status: order.payment_status,
+          total_amount: order.total_amount,
+          buyer_email: order.buyer_email,
+          seller_email: order.seller_email
         }
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("❌ Error creating order:", error);
+    console.error("Stack trace:", error instanceof Error ? error.stack : 'No stack trace');
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error instanceof Error ? error.message : "Unknown error" 
+      JSON.stringify({
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error"
       }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
