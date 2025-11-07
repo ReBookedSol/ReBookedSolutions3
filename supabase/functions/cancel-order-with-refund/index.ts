@@ -64,16 +64,11 @@ serve(async (req) => {
     let refundResult: any = null;
 
     if (shouldRefund && order.payment_reference) {
-      // Determine if this is an uncommitted BobPay order
+      // Check if order is uncommitted - if so, use BobPayRefund
       const isUncommitted = !order.committed_at;
-      const paymentTransactions = order.payment_transactions as any[];
-      const isBobPayOrder = paymentTransactions?.some(tx =>
-        tx.payment_method?.toLowerCase() === 'bobpay' ||
-        tx.payment_method?.toLowerCase() === 'bob_pay'
-      );
 
-      // For uncommitted BobPay orders, use BobPayRefund instead of Refund Management
-      if (isUncommitted && isBobPayOrder) {
+      if (isUncommitted) {
+        // For uncommitted orders, use BobPayRefund
         const refundResponse = await supabase.functions.invoke("bobpay-refund", {
           body: {
             order_id,
@@ -94,7 +89,7 @@ serve(async (req) => {
             .eq("id", order_id);
         }
       } else {
-        // Use Refund Management for committed orders or non-BobPay orders
+        // Use Refund Management for committed orders
         const refundResponse = await supabase.functions.invoke("refund-management", {
           body: {
             payment_reference: order.payment_reference,
