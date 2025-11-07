@@ -300,7 +300,6 @@ Deno.serve(async (req) => {
       });
 
       // Queue emails for buyer and seller
-      const bookTitle = orders.items?.[0]?.book_title || 'Book';
       const buyerEmail = buyerProfile?.email || orders.buyer_email;
       const buyerName = buyerProfile?.full_name || buyerProfile?.name || 'Buyer';
       const sellerEmail = sellerProfile?.email;
