@@ -152,12 +152,12 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Find the order by custom_payment_id (which should be our order_id)
+    // Find the order by payment_reference (which should be our custom_payment_id)
     const { data: orders, error: orderError } = await supabaseClient
       .from('orders')
       .select('*')
-      .eq('id', webhookData.custom_payment_id)
-      .single();
+      .eq('payment_reference', webhookData.custom_payment_id)
+      .maybeSingle();
 
     if (orderError) {
       console.error('Order not found:', orderError);
