@@ -25,10 +25,7 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('Missing authorization header');
-    }
+    const authHeader = req.headers.get('Authorization') || '';
 
     // Get user but don't fail if auth fails - allow admins to process any refund
     let user = null;
@@ -64,15 +61,28 @@ Deno.serve(async (req) => {
     // Skip authorization checks and eligibility checks - allow refund regardless of status
     console.log('Forcing refund regardless of status for order:', order.id);
 
-    // Get BobPay payment ID from transaction or use provided ID
+    // Get BobPay payment ID from request or latest payment transaction
     let bobpayPaymentId = body?.payment_id as number | undefined;
 
-    if (!bobpayPaymentId && order.payment_transactions?.length > 0) {
-      const txResponse = order.payment_transactions[0].paystack_response;
-      if (txResponse?.id) {
-        bobpayPaymentId = txResponse.id;
-      } else if (txResponse?.payment_id) {
-        bobpayPaymentId = txResponse.payment_id;
+    if (!bobpayPaymentId) {
+      // Fallback: query latest payment_transaction for this order
+      const { data: payments, error: paymentsError } = await supabaseClient
+        .from('payment_transactions')
+        .select('*')
+        .eq('order_id', orderId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (paymentsError) {
+        console.log('Could not fetch payment_transactions:', paymentsError);
+      } else if (payments && payments.length > 0) {
+        const tx = payments[0] as any;
+        const txResponse = tx.bobpay_response || tx.paystack_response || {};
+        if (txResponse?.id) {
+          bobpayPaymentId = txResponse.id;
+        } else if (txResponse?.payment_id) {
+          bobpayPaymentId = txResponse.payment_id;
+        }
       }
     }
 
@@ -86,6 +96,8 @@ Deno.serve(async (req) => {
     // Get BobPay credentials
     const bobpayApiUrl = Deno.env.get('BOBPAY_API_URL');
     const bobpayApiToken = Deno.env.get('BOBPAY_API_TOKEN');
+    // Normalize base URL: expect no trailing /v2 in env
+    const apiBase = (bobpayApiUrl || '').replace(/\/v2\/?$/, '');
 
     let refundResult: any = null;
     let refundAmount = order.total_amount || order.amount || 0;
@@ -93,7 +105,7 @@ Deno.serve(async (req) => {
     // Try to process with BobPay API if credentials available
     if (bobpayApiUrl && bobpayApiToken && bobpayPaymentId) {
       try {
-        const refundResponse = await fetch(`${bobpayApiUrl}/v2/payments/reversal`, {
+        const refundResponse = await fetch(`${apiBase}/v2/payments/reversal`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -138,10 +150,11 @@ Deno.serve(async (req) => {
       .from('refund_transactions')
       .insert({
         order_id: orderId,
-        user_id: user?.id || null,
+        initiated_by: user?.id || null,
         amount: refundAmount,
         reason: reason || 'Forced refund - processed regardless of status',
         status: 'success',
+        transaction_reference: order.payment_reference || `tx-${Date.now()}`,
         paystack_refund_reference: refundResult?.payment_method?.merchant_reference || `manual-${Date.now()}`,
         paystack_response: {
           ...refundResult,
@@ -225,6 +238,7 @@ Deno.serve(async (req) => {
           amount: 0,
           status: 'failed',
           reason: errorMessage,
+          transaction_reference: `failed-${Date.now()}`,
         });
       } catch (logError) {
         console.error('Failed to log refund error:', logError);
