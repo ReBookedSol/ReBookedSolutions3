@@ -7,7 +7,9 @@ export type ActivityType =
   | "sale"
   | "listing_created"
   | "login"
-  | "banking_updated";
+  | "banking_updated"
+  | "order_paid"
+  | "order_committed";
 
 export interface Activity {
   id: string;

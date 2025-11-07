@@ -130,27 +130,9 @@ serve(async (req) => {
       );
     }
 
-    // Reserve the book
-    console.log("📦 Reserving book...");
-    const { error: updateBookError } = await supabase
-      .from("books")
-      .update({
-        sold: true,
-        available_quantity: book.available_quantity - 1,
-        sold_quantity: book.sold_quantity + 1,
-        updated_at: new Date().toISOString()
-      })
-      .eq("id", requestData.book_id);
-
-    if (updateBookError) {
-      console.error("❌ Failed to reserve book:", updateBookError);
-      return new Response(
-        JSON.stringify({ success: false, error: "Failed to reserve book: " + updateBookError.message }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    console.log("✅ Book reserved successfully");
+    // Note: Book will be marked as sold only AFTER payment is confirmed by the webhook
+    // This prevents marking books as sold for orders that fail payment
+    console.log("📦 Order created - Book will be marked as sold after payment confirmation");
 
     // Generate unique order_id
     const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;

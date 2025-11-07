@@ -204,13 +204,21 @@ Deno.serve(async (req) => {
       // Mark book as sold
       const bookId = orders.book_id || (orders.items?.[0]?.book_id);
       if (bookId) {
+        // Get current book data
+        const { data: bookData } = await supabaseClient
+          .from('books')
+          .select('id, title, available_quantity, sold_quantity')
+          .eq('id', bookId)
+          .single();
+
         const { error: bookUpdateError } = await supabaseClient
           .from('books')
           .update({
             sold: true,
             availability: 'sold',
             sold_at: new Date().toISOString(),
-            sold_quantity: 1,
+            sold_quantity: (bookData?.sold_quantity || 0) + 1,
+            available_quantity: Math.max(0, (bookData?.available_quantity || 0) - 1),
           })
           .eq('id', bookId);
 
@@ -220,6 +228,45 @@ Deno.serve(async (req) => {
           console.log('✅ Book marked as sold:', bookId);
         }
       }
+
+      // Log activity for buyer's purchase
+      const bookTitle = orders.items?.[0]?.book_title || 'Book';
+      await supabaseClient
+        .from('activity_logs')
+        .insert({
+          user_id: orders.buyer_id,
+          type: 'purchase',
+          title: `Book Purchase - ${bookTitle}`,
+          description: `Successfully purchased "${bookTitle}" for R${webhookData.paid_amount.toFixed(2)}`,
+          metadata: {
+            order_id: orders.id,
+            book_id: bookId,
+            amount: webhookData.paid_amount,
+            seller_id: orders.seller_id,
+            payment_reference: webhookData.custom_payment_id,
+          },
+        })
+        .then(() => console.log('✅ Purchase activity logged for buyer'))
+        .catch(err => console.error('Failed to log purchase activity:', err));
+
+      // Log activity for seller's sale
+      await supabaseClient
+        .from('activity_logs')
+        .insert({
+          user_id: orders.seller_id,
+          type: 'sale',
+          title: `New Sale - ${bookTitle}`,
+          description: `Your book "${bookTitle}" has been purchased. Awaiting your confirmation.`,
+          metadata: {
+            order_id: orders.id,
+            book_id: bookId,
+            amount: webhookData.paid_amount,
+            buyer_id: orders.buyer_id,
+            payment_reference: webhookData.custom_payment_id,
+          },
+        })
+        .then(() => console.log('✅ Sale activity logged for seller'))
+        .catch(err => console.error('Failed to log sale activity:', err));
 
       // Get buyer and seller info for email notifications
       const { data: buyerProfile } = await supabaseClient
@@ -253,7 +300,6 @@ Deno.serve(async (req) => {
       });
 
       // Queue emails for buyer and seller
-      const bookTitle = orders.items?.[0]?.book_title || 'Book';
       const buyerEmail = buyerProfile?.email || orders.buyer_email;
       const buyerName = buyerProfile?.full_name || buyerProfile?.name || 'Buyer';
       const sellerEmail = sellerProfile?.email;

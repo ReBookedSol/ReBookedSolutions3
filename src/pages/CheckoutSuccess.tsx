@@ -46,11 +46,34 @@ const CheckoutSuccess: React.FC = () => {
 
       if (orderError || !order) {
         console.error("Order not found:", orderError);
-        setError("Order not found. Please check your reference number.");
+        setError("Order not found. Please check your reference number. Your payment may still be processing.");
+        // Give user a longer time to see the error
         return;
       }
 
       console.log("Order found:", order);
+
+      // Log that user visited the success page
+      if (order.buyer_id) {
+        try {
+          await supabase
+            .from("activity_logs")
+            .insert({
+              user_id: order.buyer_id,
+              type: "purchase",
+              title: `Order Confirmation Viewed - ${order.items?.[0]?.book_title || 'Book'}`,
+              description: `Checkout completed for order #${order.id}`,
+              metadata: {
+                order_id: order.id,
+                payment_reference: cleanReference,
+              },
+            })
+            .then(() => console.log("✅ Success page visit logged"))
+            .catch(err => console.error("Failed to log success page visit:", err));
+        } catch (logError) {
+          console.warn("Activity logging failed (non-critical):", logError);
+        }
+      }
 
       // Get the payment_reference from the order record
       const paymentReference = order.payment_reference || cleanReference;
