@@ -130,23 +130,36 @@ export async function addNotification(data: CreateNotificationData): Promise<boo
 }
 
 /**
- * Mark a notification as read
+ * Mark a notification as read (tries both notifications and order_notifications tables)
  */
 export async function markNotificationAsRead(notificationId: string): Promise<boolean> {
   try {
-    const { error } = await supabase
+    // Try to update in notifications table first
+    const { error: notifError } = await supabase
       .from('notifications')
       .update({ read: true })
       .eq('id', notificationId);
 
-    if (error) {
-      const serializedError = serializeError(error);
-      console.error('Failed to mark notification as read:', serializedError);
-      return false;
+    if (!notifError) {
+      console.log(`📖 Marked notification ${notificationId} as read in notifications table`);
+      return true;
     }
 
-    console.log(`📖 Marked notification ${notificationId} as read`);
-    return true;
+    // If it fails, try order_notifications table
+    const { error: orderNotifError } = await supabase
+      .from('order_notifications')
+      .update({ read: true })
+      .eq('id', notificationId);
+
+    if (!orderNotifError) {
+      console.log(`📖 Marked notification ${notificationId} as read in order_notifications table`);
+      return true;
+    }
+
+    // If both fail, log the error
+    const serializedError = serializeError(orderNotifError);
+    console.error('Failed to mark notification as read in either table:', serializedError);
+    return false;
   } catch (error) {
     const serializedError = serializeError(error);
     console.error('Error marking notification as read:', serializedError);
