@@ -88,18 +88,36 @@ export class UserDeletionService {
 
       // Delete user data from all tables in correct order (respecting foreign key constraints)
       
-      // 1. Delete notifications
+      // 1. Delete notifications from both tables
       try {
-        const { count: notifCount, error: notifError } = await supabase
-          .from('notifications')
-          .delete({ count: 'exact' })
-          .eq('user_id', userProfile.id);
-        
+        const [notifResult, orderNotifResult] = await Promise.all([
+          supabase
+            .from('notifications')
+            .delete({ count: 'exact' })
+            .eq('user_id', userProfile.id),
+          supabase
+            .from('order_notifications')
+            .delete({ count: 'exact' })
+            .eq('user_id', userProfile.id),
+        ]);
+
+        const notifError = notifResult.error;
+        const orderNotifError = orderNotifResult.error;
+
         if (notifError) {
           report.errors.push(`Notifications deletion failed: ${notifError.message}`);
         } else {
-          report.deletedRecords.notifications = notifCount || 0;
+          const notifCount = notifResult.count || 0;
+          report.deletedRecords.notifications = notifCount;
           console.log('✅ Deleted notifications:', notifCount);
+        }
+
+        if (orderNotifError) {
+          report.errors.push(`Order notifications deletion failed: ${orderNotifError.message}`);
+        } else {
+          const orderNotifCount = orderNotifResult.count || 0;
+          report.deletedRecords.notifications = (report.deletedRecords.notifications || 0) + orderNotifCount;
+          console.log('✅ Deleted order notifications:', orderNotifCount);
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
