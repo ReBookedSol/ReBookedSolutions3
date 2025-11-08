@@ -792,6 +792,32 @@ Time: ${new Date().toISOString()}
 
       console.log("Order created successfully:", orderData);
 
+      // Step 1.5: Process affiliate earning if seller was referred
+      try {
+        console.log("📊 Processing affiliate earning...");
+        const { data: affiliateResult, error: affiliateError } = await supabase.functions.invoke(
+          "process-affiliate-earning",
+          {
+            body: {
+              book_id: orderSummary.book.id,
+              order_id: orderData.order.id,
+              seller_id: orderSummary.book.seller_id,
+            },
+          }
+        );
+
+        if (affiliateError) {
+          console.warn("⚠️ Affiliate earning processing error (non-blocking):", affiliateError);
+        } else if (affiliateResult?.success) {
+          console.log("✅ Affiliate earning processed:", affiliateResult.earning);
+        } else {
+          console.log("ℹ️ Affiliate earning info:", affiliateResult?.message);
+        }
+      } catch (affiliateException) {
+        console.warn("⚠️ Exception processing affiliate earning:", affiliateException);
+        // Don't throw - affiliate earning is not critical to order completion
+      }
+
       // Step 2: Initialize payment with the correct parameters for the function
       const paymentRequest = {
         user_id: userId,

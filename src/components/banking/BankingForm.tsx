@@ -119,8 +119,8 @@ export default function BankingForm({ onSuccess, onCancel }: BankingFormProps) {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Please log in to continue");
 
-      // Encrypt banking details before saving
-      console.log("🔒 Starting banking details encryption...");
+      // Encrypt and save banking details via edge function (which handles DB save)
+      console.log("🔒 Starting banking details encryption and save...");
       const encryptionResult = await BankingEncryptionService.encryptBankingDetails(
         formData.accountNumber,
         branchCode,
@@ -129,71 +129,17 @@ export default function BankingForm({ onSuccess, onCancel }: BankingFormProps) {
         formData.email
       );
 
-      if (!encryptionResult.success || !encryptionResult.data) {
-        throw new Error(encryptionResult.error || "Failed to encrypt banking details");
+      if (!encryptionResult.success) {
+        throw new Error(encryptionResult.error || "Failed to encrypt and save banking details");
       }
 
-      console.log("✅ Banking details encrypted successfully");
+      console.log("✅ Banking details encrypted and saved successfully");
 
-      // Generate encryption key hash for identification
-      const encryptionKeyHash = await BankingEncryptionService.generateKeyHash();
-
-      // Create subaccount code
+      // Edge function already saved to banking_subaccounts, now just update profile
       const subaccountCode = `ACCT_${session.user.id}_${Date.now()}`;
 
-      // Prepare encrypted bundle for storage
-      const encryptedData = encryptionResult.data;
-
-      // Check if user already has banking details
-      const { data: existingRecord } = await supabase
-        .from("banking_subaccounts")
-        .select("id")
-        .eq("user_id", session.user.id)
-        .single();
-
-      const bankingPayload = {
-        user_id: session.user.id,
-        encrypted_account_number: JSON.stringify(encryptedData.encrypted_account_number),
-        encrypted_bank_code: JSON.stringify(encryptedData.encrypted_bank_code),
-        encrypted_bank_name: encryptedData.encrypted_bank_name
-          ? JSON.stringify(encryptedData.encrypted_bank_name)
-          : null,
-        encrypted_business_name: encryptedData.encrypted_business_name
-          ? JSON.stringify(encryptedData.encrypted_business_name)
-          : null,
-        encrypted_email: encryptedData.encrypted_email
-          ? JSON.stringify(encryptedData.encrypted_email)
-          : null,
-        encryption_key_hash: encryptionKeyHash,
-        subaccount_code: subaccountCode,
-        status: "active",
-        updated_at: new Date().toISOString(),
-      };
-
-      // Update if exists, insert if new
-      let error;
-      if (existingRecord?.id) {
-        const result = await supabase
-          .from("banking_subaccounts")
-          .update(bankingPayload)
-          .eq("id", existingRecord.id);
-        error = result.error;
-      } else {
-        const result = await supabase
-          .from("banking_subaccounts")
-          .insert({
-            ...bankingPayload,
-            created_at: new Date().toISOString(),
-          });
-        error = result.error;
-      }
-
-      if (error) throw new Error(error.message || "Failed to save banking details");
-
-      console.log("✅ Banking details saved to database with encryption");
-
-      // Update profile with subaccount code
-      await supabase
+      // Update profile with subaccount code and preferences
+      const { error: profileError } = await supabase
         .from("profiles")
         .update({
           subaccount_code: subaccountCode,
@@ -208,6 +154,10 @@ export default function BankingForm({ onSuccess, onCancel }: BankingFormProps) {
           }
         })
         .eq("id", session.user.id);
+
+      if (profileError) {
+        console.warn("⚠️ Warning: Profile update had an issue (non-critical):", profileError);
+      }
 
       // Log the banking update activity
       try {
