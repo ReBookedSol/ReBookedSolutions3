@@ -12,6 +12,11 @@ export const handleBookServiceError = (
   }
 
   if (error?.message?.includes("Row Level Security")) {
+    if (error?.message?.includes("row-level security")) {
+      throw new Error(
+        "Unable to create book: Security policy violation. Please ensure you are logged in and try again.",
+      );
+    }
     throw new Error(
       "Access denied. You do not have permission to perform this action.",
     );
