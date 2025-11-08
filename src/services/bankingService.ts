@@ -305,40 +305,21 @@ export class BankingService {
     try {
       const bankingDetails = await this.getUserBankingDetails(userId);
 
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("subaccount_code, preferences")
-        .eq("id", userId)
-        .single();
-
-      const subaccountCode = bankingDetails?.subaccount_code ||
-                           bankingDetails?.paystack_subaccount_code ||
-                           bankingDetails?.account_code ||
-                           bankingDetails?.subaccount_id ||
-                           profileData?.subaccount_code;
-
+      // Check if banking details exist and are active (no subaccount code requirement)
       const hasBankingFromTable = !!(
         bankingDetails &&
-        subaccountCode &&
         (bankingDetails.status === "active" || bankingDetails.status === "pending")
       );
-
-      const hasBankingFromProfile = !!(
-        profileData?.preferences?.banking_setup_complete &&
-        profileData?.subaccount_code
-      );
-
-      const hasBankingSetup = hasBankingFromTable || hasBankingFromProfile;
 
       console.log("🏦 [Banking Setup Check] Banking validation:", {
         userId,
         hasBankingDetails: !!bankingDetails,
-        hasSubaccountCode: !!subaccountCode,
-        subaccountCodeValue: subaccountCode,
         currentStatus: bankingDetails?.status,
         isValidStatus: bankingDetails?.status === "active" || bankingDetails?.status === "pending",
-        finalResult: hasBankingSetup,
+        finalResult: hasBankingFromTable,
       });
+
+      const hasBankingSetup = hasBankingFromTable;
 
       let hasPickupAddress = false;
 
