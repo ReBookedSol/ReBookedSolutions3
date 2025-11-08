@@ -1,122 +1,183 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders } from "../_shared/cors.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.78.0';
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+Deno.serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { order_id, reason } = await req.json();
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
-    if (!order_id) {
-      return new Response(
-        JSON.stringify({ success: false, error: "order_id is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Missing authorization header');
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    );
 
-    const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .select("payment_reference, total_amount, amount, tracking_number, delivery_status, status")
-      .eq("id", order_id)
+    if (authError || !user) {
+      throw new Error('Invalid authentication');
+    }
+
+    const cancelData = await req.json();
+    console.log('Processing cancel and refund for order:', cancelData.order_id);
+
+    // Get order details
+    const { data: order, error: orderError } = await supabaseClient
+      .from('orders')
+      .select('*')
+      .eq('id', cancelData.order_id)
       .single();
 
     if (orderError || !order) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Order not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      throw new Error('Order not found');
     }
 
-    let shipmentCancelResult: any = null;
-    let shouldRefund = true;
+    // Check if order status prevents cancellation
+    const blockedStatuses = ['collected', 'in transit', 'out for delivery', 'delivered'];
+    const orderStatus = (order.status || '').toLowerCase();
+    const deliveryStatus = (order.delivery_status || '').toLowerCase();
+    
+    if (blockedStatuses.includes(orderStatus) || blockedStatuses.includes(deliveryStatus)) {
+      const currentStatus = blockedStatuses.includes(orderStatus) ? order.status : order.delivery_status;
+      throw new Error(`Your order is "${currentStatus}". Therefore you cannot cancel the order. Contact support for more assistance.`);
+    }
 
+    if (order.status === 'scheduled') {
+      throw new Error('Cannot cancel order - pickup is already scheduled');
+    }
+
+    // Check if user is authorized (admin, buyer, or seller)
+    const { data: profile } = await supabaseClient
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    const isAuthorized =
+      profile?.role === 'admin' ||
+      profile?.role === 'super_admin' ||
+      order.buyer_id === user.id ||
+      order.seller_id === user.id;
+
+    if (!isAuthorized) {
+      throw new Error('Not authorized to cancel this order');
+    }
+
+    console.log('Authorization check passed');
+
+    // Step 1: Cancel shipment if tracking number exists
     if (order.tracking_number) {
-      const cancelResponse = await supabase.functions.invoke("bobgo-cancel-shipment", {
-        body: { order_id, reason },
-      });
+      console.log('Cancelling shipment with tracking number:', order.tracking_number);
+      try {
+        const { error: cancelShipmentError } = await supabaseClient.functions.invoke(
+          'bobgo-cancel-shipment',
+          {
+            body: { tracking_number: order.tracking_number },
+          }
+        );
 
-      shipmentCancelResult = cancelResponse.data;
-
-      if (cancelResponse.error || !cancelResponse.data?.success) {
-        const responseText = JSON.stringify(cancelResponse.data || {}).toLowerCase();
-        if (
-          responseText.includes("too late") ||
-          responseText.includes("already shipped") ||
-          responseText.includes("in transit") ||
-          responseText.includes("out for delivery") ||
-          responseText.includes("delivered") ||
-          order.delivery_status === "delivered" ||
-          order.delivery_status === "completed"
-        ) {
-          shouldRefund = false;
+        if (cancelShipmentError) {
+          console.error('Error cancelling shipment:', cancelShipmentError);
+          // Continue with refund even if shipment cancellation fails
+        } else {
+          console.log('Shipment cancelled successfully');
         }
+      } catch (shipmentError) {
+        console.error('Failed to cancel shipment:', shipmentError);
+        // Continue with refund
       }
     }
 
-    let refundResult: any = null;
-
-    if (shouldRefund && order.payment_reference) {
-      const refundResponse = await supabase.functions.invoke("refund-management", {
+    // Step 2: Process refund
+    console.log('Processing refund...');
+    const { data: refundResult, error: refundError } = await supabaseClient.functions.invoke(
+      'bobpay-refund',
+      {
         body: {
-          payment_reference: order.payment_reference,
-          amount: null,
-          reason: reason || "Order cancelled",
-          order_id,
+          order_id: cancelData.order_id,
+          reason: cancelData.reason || 'Order cancelled by user',
         },
-      });
-
-      refundResult = refundResponse.data;
-
-      if (refundResult?.success) {
-        await supabase
-          .from("orders")
-          .update({
-            refund_status: refundResult.data?.status || "pending",
-            refund_reference: refundResult.data?.id,
-            refunded_at: new Date().toISOString(),
-          })
-          .eq("id", order_id);
       }
+    );
+
+    if (refundError) {
+      console.error('Refund failed:', refundError);
+      throw new Error(`Refund failed: ${refundError.message}`);
     }
 
-    await supabase
-      .from("orders")
+    console.log('Refund processed successfully');
+
+    // Step 3: Update order status
+    await supabaseClient
+      .from('orders')
       .update({
-        status: "cancelled",
-        cancellation_reason: reason || "Cancelled by user",
+        status: 'cancelled',
+        refund_status: 'completed',
+        refunded_at: new Date().toISOString(),
         cancelled_at: new Date().toISOString(),
+        cancellation_reason: cancelData.reason || 'Order cancelled by user',
         updated_at: new Date().toISOString(),
       })
-      .eq("id", order_id);
+      .eq('id', cancelData.order_id);
+
+    console.log('Order status updated to cancelled');
+
+    // Create notifications
+    await supabaseClient.from('order_notifications').insert([
+      {
+        order_id: cancelData.order_id,
+        user_id: order.buyer_id,
+        type: 'order_cancelled',
+        title: 'Order Cancelled',
+        message: 'Your order has been cancelled and refunded.',
+      },
+      {
+        order_id: cancelData.order_id,
+        user_id: order.seller_id,
+        type: 'order_cancelled',
+        title: 'Order Cancelled',
+        message: 'An order has been cancelled and refunded.',
+      },
+    ]);
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: shouldRefund
-          ? "Order cancelled and refund processed"
-          : "Order cancelled but refund skipped (shipment already in progress)",
-        shipment_cancelled: shipmentCancelResult?.success || false,
-        refund_processed: shouldRefund && refundResult?.success,
-        shipment_result: shipmentCancelResult,
-        refund_result: refundResult,
-        refund_skipped: !shouldRefund,
-        refund_skip_reason: !shouldRefund ? "Shipment already in progress or delivered" : null,
+        message: 'Order cancelled and refund processed successfully',
+        data: {
+          order_id: cancelData.order_id,
+          refund_status: 'completed',
+        },
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      }
     );
-  } catch (error: any) {
-    console.error("cancel-order-with-refund error:", error);
+  } catch (error) {
+    console.error('Error in cancel-and-refund-order:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(
-      JSON.stringify({ success: false, error: error.message || "Internal error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({
+        success: false,
+        error: errorMessage,
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      }
     );
   }
 });
