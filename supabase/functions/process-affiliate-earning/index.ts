@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
 serve(async (req) => {
@@ -14,21 +14,36 @@ serve(async (req) => {
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
     const { book_id, order_id, seller_id } = await req.json();
-
+    
     console.log('Processing affiliate earning:', { book_id, order_id, seller_id });
 
-    // Check if seller was referred by an affiliate
-    const { data: referral, error: referralError } = await supabaseClient
+    // Check if order already tracked
+    const { data: existingOrder } = await supabaseClient
+      .from('affiliate_orders')
+      .select('id')
+      .eq('order_id', order_id)
+      .single();
+
+    if (existingOrder) {
+      console.log('Order already tracked for affiliate commission');
+      return new Response(
+        JSON.stringify({ message: 'Order already tracked' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
+    }
+
+    // Check affiliates_referrals table only
+    const { data: affiliateReferral } = await supabaseClient
       .from('affiliates_referrals')
-      .select('affiliate_id')
+      .select('affiliate_id, id')
       .eq('referred_user_id', seller_id)
       .single();
 
-    if (referralError || !referral) {
+    if (!affiliateReferral) {
       console.log('Seller not referred by any affiliate');
       return new Response(
         JSON.stringify({ message: 'Seller not referred' }),
@@ -36,43 +51,32 @@ serve(async (req) => {
       );
     }
 
-    // Check if earning already exists for this order
-    const { data: existing } = await supabaseClient
-      .from('affiliate_earnings')
-      .select('id')
-      .eq('order_id', order_id)
-      .single();
+    console.log('Seller referred by affiliate:', affiliateReferral.affiliate_id);
 
-    if (existing) {
-      console.log('Earning already processed for this order');
-      return new Response(
-        JSON.stringify({ message: 'Earning already processed' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-      );
-    }
-
-    // Create earning record (R10)
-    const { data: earning, error: earningError } = await supabaseClient
-      .from('affiliate_earnings')
+    // Create affiliate_orders record with Pending status
+    const { data: affiliateOrder, error: orderError } = await supabaseClient
+      .from('affiliate_orders')
       .insert({
-        affiliate_id: referral.affiliate_id,
-        referred_user_id: seller_id,
-        book_id: book_id,
         order_id: order_id,
-        amount: 10.00
+        referral_id: affiliateReferral.id,
+        affiliate_id: affiliateReferral.affiliate_id,
+        status: 'Pending'
       })
       .select()
       .single();
 
-    if (earningError) {
-      console.error('Error creating earning:', earningError);
-      throw earningError;
+    if (orderError) {
+      console.error('Error creating affiliate order:', orderError);
+      throw orderError;
     }
 
-    console.log('Affiliate earning processed:', earning);
+    console.log('Affiliate order tracked:', affiliateOrder);
 
     return new Response(
-      JSON.stringify({ success: true, earning }),
+      JSON.stringify({
+        success: true,
+        affiliateOrder
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
   } catch (error) {
