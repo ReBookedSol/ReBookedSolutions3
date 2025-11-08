@@ -191,6 +191,20 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
 
       console.log("✅ Order created successfully:", createdOrder.id);
 
+      // Step 3.5: Process affiliate earning if seller was referred
+      supabase.functions.invoke('process-affiliate-earning', {
+        body: {
+          book_id: orderSummary.book.id,
+          order_id: createdOrder.id,
+          seller_id: orderSummary.book.seller_id,
+        },
+      }).then(() => {
+        console.log('✅ Affiliate earning processed successfully');
+      }).catch((affiliateErr) => {
+        console.warn('Warning: Failed to process affiliate earning:', affiliateErr);
+        // Non-blocking error - affiliate processing is secondary
+      });
+
       // Step 4: Initialize BobPay payment with the order_id
       const paymentRequest = {
         order_id: createdOrder.id,
