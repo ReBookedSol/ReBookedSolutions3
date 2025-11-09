@@ -28,6 +28,10 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
   const [feedback, setFeedback] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittedFeedback, setSubmittedFeedback] = useState<{
+    buyer_status: string;
+    buyer_feedback: string;
+  } | null>(null);
 
   const handleSubmitFeedback = async () => {
     if (!receivedStatus) {
@@ -51,10 +55,10 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
         return;
       }
 
-      // Fetch order details
+      // Fetch ALL order details from orders table
       const { data: order, error: orderFetchError } = await supabase
         .from("orders")
-        .select("id, seller_id, book_id")
+        .select("*")
         .eq("id", orderId)
         .single();
 
@@ -77,17 +81,36 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
         return;
       }
 
+      // Prepare feedback data - copy all relevant fields from orders table
+      const feedbackData: any = {
+        order_id: orderId,
+        buyer_id: userId,
+        seller_id: order.seller_id,
+        book_id: order.book_id,
+        buyer_status: receivedStatus,
+        buyer_feedback: feedback.trim(),
+        updated_at: new Date().toISOString(),
+        // Copy additional fields from orders table
+        amount: order.amount || null,
+        total_amount: order.total_amount || null,
+        delivery_fee: order.delivery_fee || null,
+        platform_fee: order.platform_fee || null,
+        status: order.status || null,
+        payment_status: order.payment_status || null,
+        delivery_status: order.delivery_status || null,
+        tracking_number: order.tracking_number || null,
+        buyer_email: order.buyer_email || null,
+        buyer_phone: order.buyer_phone || null,
+        payment_reference: order.payment_reference || null,
+        commit_deadline: order.commit_deadline || null,
+        committed_at: order.committed_at || null,
+        refund_status: order.refund_status || null,
+        refunded_at: order.refunded_at || null,
+      };
+
       // Update or insert buyer feedback
       const { error } = await supabase.from("buyer_feedback_orders").upsert(
-        {
-          order_id: orderId,
-          buyer_id: userId,
-          seller_id: order.seller_id,
-          book_id: order.book_id,
-          buyer_status: receivedStatus,
-          buyer_feedback: feedback.trim(),
-          updated_at: new Date().toISOString(),
-        },
+        feedbackData,
         {
           onConflict: "order_id",
         }
@@ -116,6 +139,10 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
         return;
       }
 
+      setSubmittedFeedback({
+        buyer_status: receivedStatus,
+        buyer_feedback: feedback.trim(),
+      });
       setIsSubmitted(true);
       toast.success("Feedback submitted successfully!");
 
@@ -150,7 +177,7 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
     }
   };
 
-  if (isSubmitted) {
+  if (isSubmitted && submittedFeedback) {
     return (
       <Card className="border-green-200 bg-green-50">
         <CardHeader className="pb-3">
@@ -164,7 +191,7 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
             <p className="font-semibold mb-1">Thank you for confirming delivery!</p>
             <p>Your feedback helps us maintain quality service on ReBooked Solutions.</p>
           </div>
-          {receivedStatus === "received" && (
+          {submittedFeedback.buyer_status === "received" && (
             <Alert className="border-green-200 bg-white">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-700">
@@ -172,14 +199,28 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
               </AlertDescription>
             </Alert>
           )}
-          {receivedStatus === "not_received" && feedback && (
+          {submittedFeedback.buyer_status === "not_received" && submittedFeedback.buyer_feedback && (
             <Alert className="border-amber-200 bg-white">
               <AlertCircle className="h-4 w-4 text-amber-600" />
               <AlertDescription className="text-amber-700">
-                We've received your report. Our team will investigate: "{feedback}"
+                We've received your report. Our team will investigate: "{submittedFeedback.buyer_feedback}"
               </AlertDescription>
             </Alert>
           )}
+          <div className="bg-white p-3 rounded-lg border border-green-100 text-xs text-gray-600 space-y-1">
+            <p>
+              <strong>Book:</strong> {bookTitle}
+            </p>
+            <p>
+              <strong>From:</strong> {sellerName}
+            </p>
+            <p>
+              <strong>Order ID:</strong> {orderId.slice(-8)}
+            </p>
+            <p>
+              <strong>Status:</strong> {submittedFeedback.buyer_status === "received" ? "✅ Received" : "⚠️ Not Received"}
+            </p>
+          </div>
         </CardContent>
       </Card>
     );
