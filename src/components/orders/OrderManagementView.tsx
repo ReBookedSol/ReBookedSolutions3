@@ -359,7 +359,9 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
 
   const OrderCard: React.FC<{ order: Order; isCollapsible?: boolean }> = ({ order, isCollapsible = false }) => {
     const userRole = getUserRole(order);
-    const isExpanded = expandedOrders[order.id] ?? true;
+    // For collapsible orders (completed/cancelled), default to collapsed (false)
+    // For active orders, default to expanded (true)
+    const isExpanded = isCollapsible ? (expandedOrders[order.id] ?? false) : (expandedOrders[order.id] ?? true);
 
     const handleToggle = () => {
       if (isCollapsible) {
@@ -376,12 +378,22 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
             </div>
             {isCollapsible && (
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={handleToggle}
                 className="ml-2"
               >
-                {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                {isExpanded ? (
+                  <>
+                    <ChevronUp className="h-4 w-4 mr-1" />
+                    Hide Details
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4 mr-1" />
+                    View More
+                  </>
+                )}
               </Button>
             )}
           </div>
