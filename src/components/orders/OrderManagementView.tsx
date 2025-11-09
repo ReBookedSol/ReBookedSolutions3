@@ -424,7 +424,7 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
 
             <OrderActionsPanel order={order} userRole={userRole} onOrderUpdate={fetchOrders} />
 
-            {userRole === "buyer" && ["delivered", "completed"].includes(order.status) && (
+            {userRole === "buyer" && (["delivered", "completed"].includes(order.status) || order.delivery_status === "delivered") && (
               <>
                 <Separator />
                 <OrderCompletionCard
