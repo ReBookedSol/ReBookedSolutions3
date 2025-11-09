@@ -81,8 +81,25 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
       );
 
       if (error) {
-        console.error("Error submitting feedback:", error);
-        toast.error("Failed to submit feedback");
+        console.error("Error submitting feedback:", {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint,
+          fullError: JSON.stringify(error, null, 2)
+        });
+
+        // Provide specific error messages
+        let errorMessage = "Failed to submit feedback";
+        if (error.code === "23503") {
+          errorMessage = "Order data incomplete. Please refresh and try again.";
+        } else if (error.code === "42501") {
+          errorMessage = "Permission denied. Please check your account.";
+        } else if (error.message?.includes("permission")) {
+          errorMessage = "You don't have permission to submit feedback for this order.";
+        }
+
+        toast.error(errorMessage);
         return;
       }
 
@@ -108,9 +125,13 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
           buyer_feedback: feedback.trim(),
         });
       }
-    } catch (err) {
-      console.error("Error submitting feedback:", err);
-      toast.error("Failed to submit feedback");
+    } catch (err: any) {
+      console.error("Error submitting feedback:", {
+        message: err?.message,
+        stack: err?.stack,
+        fullError: JSON.stringify(err, null, 2)
+      });
+      toast.error(err?.message || "Failed to submit feedback");
     } finally {
       setIsSubmitting(false);
     }
