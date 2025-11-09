@@ -54,13 +54,26 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
       // Fetch order details
       const { data: order, error: orderFetchError } = await supabase
         .from("orders")
-        .select("*")
+        .select("id, seller_id, book_id")
         .eq("id", orderId)
         .single();
 
       if (orderFetchError || !order) {
-        console.error("Error fetching order:", orderFetchError);
+        console.error("Error fetching order:", {
+          error: orderFetchError,
+          orderId
+        });
         toast.error("Could not find order details");
+        return;
+      }
+
+      if (!order.seller_id || !order.book_id) {
+        console.error("Order missing required data:", {
+          seller_id: order.seller_id,
+          book_id: order.book_id,
+          orderId
+        });
+        toast.error("Order data incomplete. Please contact support.");
         return;
       }
 
