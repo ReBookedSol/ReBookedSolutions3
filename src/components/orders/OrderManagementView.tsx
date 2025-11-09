@@ -113,7 +113,7 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
       }
 
       // Filter out obvious test/demo orders by missing real book data
-      const realOrders = (data || []).map((o: any) => ({
+      const mappedOrders = (data || []).map((o: any) => ({
         ...o,
         // Map buyer/seller fields to match the Order type
         buyer: o.buyer_id ? {
@@ -129,6 +129,17 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
           email: o.seller_email,
         } : null,
       })).filter((o: any) => !!(o.book?.title));
+
+      // Deduplicate by order id to prevent duplicates
+      const seenIds = new Set<string>();
+      const realOrders = mappedOrders.filter((o: any) => {
+        if (seenIds.has(o.id)) {
+          console.warn("Duplicate order detected and filtered:", o.id);
+          return false;
+        }
+        seenIds.add(o.id);
+        return true;
+      });
 
       setOrders(realOrders as Order[]);
     } catch (err: any) {
