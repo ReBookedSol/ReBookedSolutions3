@@ -316,6 +316,15 @@ function App() {
                         }
                       />
 
+                      <Route
+                        path="/emailtest"
+                        element={
+                          <AdminProtectedRoute>
+                            <EmailTest />
+                          </AdminProtectedRoute>
+                        }
+                      />
+
                       
                       {/* Support Routes */}
                       <Route path="/contact" element={<ContactUs />} />
