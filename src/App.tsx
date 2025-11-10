@@ -16,7 +16,6 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
 import AuthErrorHandler from "./components/AuthErrorHandler";
 import ProtectedRoute from "./components/ProtectedRoute";
-import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import ScrollToTop from "./components/ScrollToTop";
 
 // Main Pages
@@ -47,9 +46,6 @@ import Verify from "./pages/Verify";
 import AuthCallback from "./pages/AuthCallback";
 import EnvironmentConfigHelper from "./components/EnvironmentConfigHelper";
 
-// Admin Pages
-import Admin from "./pages/Admin";
-import AdminReports from "./pages/AdminReports";
 
 // Support Pages
 import ContactUs from "./pages/ContactUs";
@@ -297,23 +293,6 @@ function App() {
                         element={<LockerSearchPage />}
                       /> */}
 
-                                            {/* Admin Routes */}
-                      <Route
-                        path="/admin"
-                        element={
-                          <AdminProtectedRoute>
-                            <Admin />
-                          </AdminProtectedRoute>
-                        }
-                      />
-                                            <Route
-                        path="/admin/reports"
-                        element={
-                          <AdminProtectedRoute>
-                            <AdminReports />
-                          </AdminProtectedRoute>
-                        }
-                      />
 
                       
                       {/* Support Routes */}

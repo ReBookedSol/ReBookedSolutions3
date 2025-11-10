@@ -14,7 +14,6 @@ import {
   GraduationCap,
   MapPin,
 } from "lucide-react";
-import AdminAccess from "./AdminAccess";
 import CartButton from "./CartButton";
 import NotificationBadge from "./NotificationBadge";
 import { toast } from "sonner";
@@ -235,7 +234,6 @@ const Navbar = () => {
                     </Button>
                   </Link>
 
-                  <AdminAccess />
 
                   <Button
                     variant="ghost"
