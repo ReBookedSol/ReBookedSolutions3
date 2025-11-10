@@ -50,6 +50,7 @@ import EnvironmentConfigHelper from "./components/EnvironmentConfigHelper";
 // Admin Pages
 import Admin from "./pages/Admin";
 import AdminReports from "./pages/AdminReports";
+import EmailTest from "./pages/EmailTest";
 
 // Support Pages
 import ContactUs from "./pages/ContactUs";
