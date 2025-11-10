@@ -5,8 +5,6 @@ import { corsHeaders } from "../_shared/cors.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-type Json = Record<string, any> | any[] | string | number | boolean | null;
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -148,7 +146,6 @@ serve(async (req) => {
     const sellerPhone = order.seller_phone_number || "0000000000";
     const buyerPhone = order.buyer_phone_number || "0000000000";
 
-    // Prepare Bob Go rates request (match current bobgo-get-rates API shape)
     // Verify buyer selected a courier during checkout
     if (!order.selected_courier_slug || !order.selected_service_code) {
       throw new Error("No courier selected during checkout");
@@ -184,7 +181,7 @@ serve(async (req) => {
     const providerName = order.selected_courier_name || "bobgo";
     const serviceName = order.selected_service_name || "Standard";
 
-    // Create shipment with Bob Go (match current bobgo-create-shipment API shape)
+    // Create shipment with Bob Go
     const shipmentPayload = {
       order_id,
       provider_slug: order.selected_courier_slug,
@@ -227,15 +224,16 @@ serve(async (req) => {
     }
 
     const shipmentData = shipmentResponse.data || {};
-    console.log(`[commit-to-sale] Shipment created:`, shipmentData as Json);
+    console.log(`[commit-to-sale] Shipment created successfully`);
 
     // Update order with commitment and shipment details
+    // Use 'scheduled' instead of 'pickup_scheduled' as per database constraint
     const { error: updateError } = await supabase
       .from("orders")
       .update({
         status: "committed",
         committed_at: new Date().toISOString(),
-        delivery_status: "pickup_scheduled",
+        delivery_status: "scheduled",
         tracking_number: shipmentData.tracking_number || order.tracking_number || null,
         delivery_data: {
           ...(order.delivery_data || {}),
@@ -285,6 +283,7 @@ serve(async (req) => {
       <p><strong>Book(s):</strong> ${(items || []).map((item: any) => item.title || "Book").join(", ")}</p>
       <p><strong>Seller:</strong> ${sellerName}</p>
       <p><strong>Estimated Delivery:</strong> 2-3 business days</p>
+      ${shipmentData.tracking_number ? `<p><strong>Tracking Number:</strong> ${shipmentData.tracking_number}</p>` : ""}
     </div>
     <p>Happy reading! 📖</p>
     <div class="footer">
@@ -325,6 +324,7 @@ serve(async (req) => {
       <p><strong>Order ID:</strong> ${order_id}</p>
       <p><strong>Book(s):</strong> ${(items || []).map((item: any) => item.title || "Book").join(", ")}</p>
       <p><strong>Buyer:</strong> ${buyerName}</p>
+      ${shipmentData.tracking_number ? `<p><strong>Tracking Number:</strong> ${shipmentData.tracking_number}</p>` : ""}
     </div>
     <p>A courier will contact you within 24 hours to arrange pickup.</p>
     <p>Thank you for selling with ReBooked Solutions! 📚</p>
@@ -340,25 +340,32 @@ serve(async (req) => {
 </html>`;
 
     // Send emails
-    console.log(`[commit-to-sale] Sending buyer notification email`);
-    await supabase.functions.invoke("send-email", {
-      body: {
-        to: buyerEmail,
-        subject: "Order Confirmed - Pickup Scheduled",
-        html: buyerHtml,
-      },
-    });
+    console.log(`[commit-to-sale] Sending notifications via email`);
+    try {
+      await supabase.functions.invoke("send-email", {
+        body: {
+          to: buyerEmail,
+          subject: "Order Confirmed - Pickup Scheduled",
+          html: buyerHtml,
+        },
+      });
+    } catch (e) {
+      console.warn("[commit-to-sale] Failed to send buyer email:", e);
+    }
 
-    console.log(`[commit-to-sale] Sending seller notification email`);
-    await supabase.functions.invoke("send-email", {
-      body: {
-        to: sellerEmail,
-        subject: "Order Commitment Confirmed - Prepare for Pickup",
-        html: sellerHtml,
-      },
-    });
+    try {
+      await supabase.functions.invoke("send-email", {
+        body: {
+          to: sellerEmail,
+          subject: "Order Commitment Confirmed - Prepare for Pickup",
+          html: sellerHtml,
+        },
+      });
+    } catch (e) {
+      console.warn("[commit-to-sale] Failed to send seller email:", e);
+    }
 
-    // Create notifications for both parties (use existing notifications table)
+    // Create notifications for both parties
     const notifications: any[] = [];
     if (order.buyer_id) {
       notifications.push({
@@ -366,8 +373,6 @@ serve(async (req) => {
         type: "success",
         title: "Order Confirmed",
         message: `Your order has been confirmed and a shipment has been created. Tracking: ${shipmentData.tracking_number || "TBA"}`,
-        order_id,
-        action_required: false,
       });
     }
     if (order.seller_id) {
@@ -376,8 +381,6 @@ serve(async (req) => {
         type: "success",
         title: "Order Committed",
         message: `You have successfully committed to the order. Tracking: ${shipmentData.tracking_number || "TBA"}`,
-        order_id,
-        action_required: false,
       });
     }
     if (notifications.length > 0) {
