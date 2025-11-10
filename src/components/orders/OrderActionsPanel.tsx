@@ -319,13 +319,6 @@ const OrderActionsPanel: React.FC<OrderActionsPanelProps> = ({
           <span>We also email the waybill to you for records.</span>
         </div>
 
-        {userRole === "seller" && (order.tracking_number || order.tracking_data?.tracking_number) && (
-          <Button onClick={handleGetWaybill} className="w-full">
-            <Download className="w-4 h-4 mr-2" />
-            Get Waybill
-          </Button>
-        )}
-
         {/* Unified Cancel for Buyer and Seller when not collected/in transit */}
         {canCancelShipment && (
           <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
