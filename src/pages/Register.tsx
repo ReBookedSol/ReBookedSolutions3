@@ -142,19 +142,19 @@ const Register = () => {
           });
 
           toast.info(
-            "📧 Your account exists but needs email verification. Please check your inbox (including spam folder) for the verification link.",
+            "Please check your email for the verification link. Check spam/junk folder if you don't see it.",
             {
               duration: 8000,
             },
           );
         } else {
           // New account created
-          toast.success("🎉 Account created successfully!", {
+          toast.success("Account created successfully! Welcome to ReBooked Solutions.", {
             duration: 4000,
           });
 
           toast.info(
-            "📧 Please check your email (including spam folder) for the verification link. If you don't receive it, try the 'Resend Email' option on the login page.",
+            "Please check your email for the verification link. Check spam/junk folder if you don't see it.",
             {
               duration: 8000,
             },

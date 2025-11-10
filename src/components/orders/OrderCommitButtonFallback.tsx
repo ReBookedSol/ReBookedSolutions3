@@ -73,27 +73,20 @@ const OrderCommitButtonFallback: React.FC<OrderCommitButtonFallbackProps> = ({
       }
 
       console.log(
-        "✅ Commit successful via",
-        response.source,
-        ":",
+        "Commit successful:",
         response.data,
       );
 
-      // Show success messages with service source info
-      toast.success("✅ Order committed successfully!", {
-        description: `Processed via ${response.source.toUpperCase()}${response.retryCount ? ` (retry ${response.retryCount})` : ""}`,
+      // Show success messages
+      toast.success("Order committed! Check your email for pickup details.", {
         duration: 5000,
-      });
-
-      toast.info("📧 Check your email for pickup details and shipping label.", {
-        duration: 7000,
       });
 
       // Call success callback with full response
       onCommitSuccess?.(response);
     } catch (error: unknown) {
       const errorObj = error as Error;
-      console.error("💥 Commit error:", error);
+      console.error("Commit error:", error);
 
       let errorMessage = "Failed to commit to sale";
 

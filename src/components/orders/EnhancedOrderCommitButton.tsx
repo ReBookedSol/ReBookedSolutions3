@@ -138,7 +138,7 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
           data = fallbackResult.data;
           error = null;
 
-          toast.info("🔄 Using offline commit mode - some features may be limited", {
+          toast.info("Using backup commit mode - your order is being processed.", {
             duration: 5000,
           });
         } else {
@@ -167,16 +167,15 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
         throw new Error(data?.error || "Failed to commit to sale");
       }
 
-      console.log("✅ Commit successful:", data);
+      console.log("Commit successful:", data);
 
       // Show success message for home delivery
-      toast.success("✅ Order committed with Home Pick-Up!", {
-        description: "🚚 Courier pickup will be scheduled automatically.",
+      toast.success("Order committed! Courier pickup will be scheduled automatically.", {
         duration: 5000,
       });
 
       toast.info(
-        "📧 Courier pickup details sent to your email.",
+        "Pickup details sent to your email.",
         {
           duration: 7000,
         },
@@ -185,7 +184,7 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
       // Call success callback
       onCommitSuccess?.();
     } catch (error: unknown) {
-      console.error("💥 Commit error:", error);
+      console.error("Commit error:", error);
 
       let errorMessage = "Failed to commit to sale";
       const errorObj = error as Error;
