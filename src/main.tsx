@@ -274,7 +274,7 @@ try {
             color: #9ca3af;
           ">
             ReBooked Solutions<br>
-            If this problem persists, contact: support@rebookedsolutions.co.za
+            If this problem persists, contact: support@rebookedsolutions.co.za | <a href="tel:+27686076209" style="color: #9ca3af; text-decoration: underline;">+27 68 607 6209</a>
           </div>
         </div>
       </div>
