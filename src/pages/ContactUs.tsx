@@ -188,7 +188,7 @@ const ContactUs = () => {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800">Working Hours</h3>
-                  <p className="text-gray-600 mt-1">Monday–Friday: 08:00–17:00</p>
+                  <p className="text-gray-600 mt-1">Monday–Friday: 09:00–17:00</p>
                   <p className="text-gray-600">Saturday–Sunday: Closed</p>
                 </div>
               </div>
