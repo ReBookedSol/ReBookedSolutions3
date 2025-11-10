@@ -31,7 +31,8 @@ serve(async (req) => {
       buyer_id: requestData.buyer_id,
       seller_id: requestData.seller_id,
       book_id: requestData.book_id,
-      delivery_option: requestData.delivery_option
+      delivery_option: requestData.delivery_option,
+      payment_reference: requestData.payment_reference ?? 'none'
     });
 
     // Validate required fields
@@ -47,6 +48,69 @@ serve(async (req) => {
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+    // If a payment_reference was provided, check for existing order to make this operation idempotent
+    if (requestData.payment_reference) {
+      console.log("🔎 Checking for existing order with payment_reference:", requestData.payment_reference);
+      const { data: existingByRef, error: existingRefError } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('payment_reference', requestData.payment_reference)
+        .maybeSingle();
+
+      if (existingRefError) {
+        console.warn('⚠️ Failed to query existing order by payment_reference:', existingRefError);
+      }
+
+      if (existingByRef) {
+        console.log('ℹ️ Existing order found by payment_reference. Ensuring book is marked sold and returning existing order.');
+        // Ensure book is marked as sold if not already
+        if (!existingByRef.sold) {
+          try {
+            await supabase.from('books').update({ sold: true, updated_at: new Date().toISOString() }).eq('id', requestData.book_id);
+          } catch (e) {
+            console.warn('⚠️ Failed to mark book as sold during idempotent flow:', e);
+          }
+        }
+
+        return new Response(
+          JSON.stringify({ success: true, message: 'Order already exists', order: existingByRef }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Additionally check for an existing order for this buyer/seller/book combination in active states
+    console.log('🔎 Checking for existing active order for buyer/seller/book');
+    const { data: existingCombo, error: existingComboError } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('buyer_id', requestData.buyer_id)
+      .eq('seller_id', requestData.seller_id)
+      .eq('book_id', requestData.book_id)
+      .in('status', ['pending', 'pending_commit', 'paid', 'committed'])
+      .maybeSingle();
+
+    if (existingComboError) {
+      console.warn('⚠️ Failed to query existing order by combo:', existingComboError);
+    }
+
+    if (existingCombo) {
+      console.log('ℹ️ Existing active order found for combo. Returning existing order.');
+      // Ensure book marked sold if needed
+      if (!existingCombo.sold) {
+        try {
+          await supabase.from('books').update({ sold: true, updated_at: new Date().toISOString() }).eq('id', requestData.book_id);
+        } catch (e) {
+          console.warn('⚠️ Failed to mark book as sold during combo idempotent flow:', e);
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, message: 'Order already exists', order: existingCombo }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Fetch buyer info from profiles
     console.log("🔍 Fetching buyer profile:", requestData.buyer_id);
@@ -64,13 +128,7 @@ serve(async (req) => {
       );
     }
 
-    console.log("✅ Buyer found:", {
-      id: buyer?.id,
-      full_name: buyer?.full_name,
-      name: buyer?.name,
-      email: buyer?.email,
-      phone: buyer?.phone_number
-    });
+    console.log("✅ Buyer found:", { id: buyer?.id, full_name: buyer?.full_name, email: buyer?.email });
 
     // Fetch seller info from profiles (including pickup_address_encrypted)
     console.log("🔍 Fetching seller profile:", requestData.seller_id);
@@ -88,14 +146,7 @@ serve(async (req) => {
       );
     }
 
-    console.log("✅ Seller found:", {
-      id: seller?.id,
-      full_name: seller?.full_name,
-      name: seller?.name,
-      email: seller?.email,
-      phone: seller?.phone_number,
-      has_pickup_address: !!seller?.pickup_address_encrypted
-    });
+    console.log("✅ Seller found:", { id: seller?.id, full_name: seller?.full_name, has_pickup_address: !!seller?.pickup_address_encrypted });
 
     // Fetch book info
     console.log("🔍 Fetching book:", requestData.book_id);
@@ -113,13 +164,7 @@ serve(async (req) => {
       );
     }
 
-    console.log("✅ Book found:", {
-      id: book?.id,
-      title: book?.title,
-      sold: book?.sold,
-      available_quantity: book?.available_quantity,
-      price: book?.price
-    });
+    console.log("✅ Book found:", { id: book?.id, title: book?.title, sold: book?.sold, available_quantity: book?.available_quantity });
 
     // Step 2: Check if book is available (BEFORE marking sold)
     if (book.sold || book.available_quantity < 1) {
@@ -151,12 +196,7 @@ serve(async (req) => {
       );
     }
 
-    console.log("✅ Book marked as sold:", {
-      id: book.id,
-      title: book.title,
-      new_available_quantity: book.available_quantity - 1,
-      new_sold_quantity: (book.sold_quantity || 0) + 1
-    });
+    console.log("✅ Book marked as sold:", { id: book.id, title: book.title });
 
     // Generate unique order_id
     const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
@@ -170,15 +210,7 @@ serve(async (req) => {
     const sellerPhone = seller.phone_number || '';
     const pickupAddress = seller.pickup_address_encrypted || '';
 
-    console.log("📝 Preparing order data:", {
-      buyer_full_name: buyerFullName,
-      seller_full_name: sellerFullName,
-      buyer_email: buyerEmail,
-      seller_email: sellerEmail,
-      buyer_phone: buyerPhone ? '***' : 'missing',
-      seller_phone: sellerPhone ? '***' : 'missing',
-      pickup_address: pickupAddress ? 'present' : 'missing'
-    });
+    console.log("📝 Preparing order data:", { buyer_full_name: buyerFullName, seller_full_name: sellerFullName });
 
     // Create order with denormalized data from profiles
     const orderData = {
@@ -215,13 +247,7 @@ serve(async (req) => {
       payment_status: "pending",
       amount: Math.round(book.price * 100),
       total_amount: book.price,
-      items: [{
-        book_id: book.id,
-        title: book.title,
-        author: book.author,
-        price: book.price,
-        condition: book.condition
-      }]
+      items: [{ book_id: book.id, title: book.title, author: book.author, price: book.price, condition: book.condition }]
     };
 
     console.log("💾 Inserting order into database...");
@@ -239,12 +265,7 @@ serve(async (req) => {
       console.log("🔄 Rolling back book marking...");
       const { error: rollbackError } = await supabase
         .from("books")
-        .update({
-          sold: false,
-          available_quantity: book.available_quantity,
-          sold_quantity: book.sold_quantity,
-          updated_at: new Date().toISOString()
-        })
+        .update({ sold: false, available_quantity: book.available_quantity, sold_quantity: book.sold_quantity, updated_at: new Date().toISOString() })
         .eq("id", requestData.book_id);
 
       if (rollbackError) {
@@ -259,39 +280,17 @@ serve(async (req) => {
       );
     }
 
-    console.log("✅ Order created successfully:", {
-      id: order.id,
-      order_id: order.order_id,
-      buyer_email: order.buyer_email,
-      seller_email: order.seller_email,
-      buyer_full_name: order.buyer_full_name,
-      seller_full_name: order.seller_full_name
-    });
+    console.log("✅ Order created successfully:", { id: order.id, order_id: order.order_id });
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        message: "Order created successfully",
-        order: {
-          id: order.id,
-          order_id: order.order_id,
-          status: order.status,
-          payment_status: order.payment_status,
-          total_amount: order.total_amount,
-          buyer_email: order.buyer_email,
-          seller_email: order.seller_email
-        }
-      }),
+      JSON.stringify({ success: true, message: "Order created successfully", order: { id: order.id, order_id: order.order_id, status: order.status, payment_status: order.payment_status, total_amount: order.total_amount, buyer_email: order.buyer_email, seller_email: order.seller_email } }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("❌ Error creating order:", error);
     console.error("Stack trace:", error instanceof Error ? error.stack : 'No stack trace');
     return new Response(
-      JSON.stringify({
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error"
-      }),
+      JSON.stringify({ success: false, error: error instanceof Error ? error.message : "Unknown error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
