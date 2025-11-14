@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
       req.headers.get('x-real-ip') ||
       'unknown';
 
-    console.log('Webhook received from IP:', clientIp);
+    // Webhook received
 
     // Verify IP address (BobPay IPs: sandbox=13.246.115.225, production=13.246.100.25)
     const allowedIPs = ['13.246.115.225', '13.246.100.25'];
