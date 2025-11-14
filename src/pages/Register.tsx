@@ -200,13 +200,12 @@ const Register = () => {
       }
     } catch (error: unknown) {
       // Better error logging
-      console.group("📝 Registration Error Details");
-      console.error("Error:", error);
-      console.error("Message:", error instanceof Error ? error.message : String(error));
-      console.error("Email:", email);
-      console.error("First Name:", firstName);
-      console.error("Last Name:", lastName);
-      console.groupEnd();
+      if (import.meta.env.DEV) {
+        console.group("📝 Registration Error Details");
+        console.error("Error:", error);
+        console.error("Message:", error instanceof Error ? error.message : String(error));
+        console.groupEnd();
+      }
 
       const errorMessage =
         error instanceof Error
