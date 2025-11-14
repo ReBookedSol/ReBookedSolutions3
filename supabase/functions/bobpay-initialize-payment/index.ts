@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
     }
 
     const bobpayData = await bobpayResponse.json();
-    console.log('BobPay payment link created:', bobpayData);
+    // Payment link created - sensitive data not logged
 
     // Store transaction in database if order_id provided
     if (paymentData.order_id) {
