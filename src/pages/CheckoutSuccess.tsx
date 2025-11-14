@@ -208,8 +208,8 @@ const CheckoutSuccess: React.FC = () => {
                 payment_reference: cleanReference,
               },
             })
-            .then(() => console.log("✅ Success page visit logged"))
-            .catch(err => console.error("Failed to log success page visit:", err));
+            .then(() => {})
+            .catch(() => {});
         } catch (logError) {
           console.warn("Activity logging failed (non-critical):", logError);
         }
