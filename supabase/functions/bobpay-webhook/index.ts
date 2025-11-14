@@ -196,7 +196,7 @@ Deno.serve(async (req) => {
       // Mark book as sold (PRIMARY MECHANISM for BobPay)
       const bookId = orders.book_id || (orders.items?.[0]?.book_id);
       if (bookId) {
-        console.log('📚 Attempting to mark book as sold:', bookId);
+        // Attempting to mark book as sold
 
         try {
           // Get current book data FIRST with all required fields
@@ -216,14 +216,7 @@ Deno.serve(async (req) => {
             throw new Error(`Book ${bookId} not found`);
           }
 
-          console.log('📖 Book current state:', {
-            id: bookData.id,
-            title: bookData.title,
-            sold: bookData.sold,
-            availability: bookData.availability,
-            available_quantity: bookData.available_quantity,
-            sold_quantity: bookData.sold_quantity
-          });
+          // Book state retrieved
 
           // Check if already marked as sold (prevents double-selling)
           if (bookData.sold) {
@@ -246,7 +239,7 @@ Deno.serve(async (req) => {
               throw bookUpdateError;
             }
 
-            console.log('✅ Book successfully marked as sold:', bookId);
+            // Book marked as sold
           }
         } catch (bookError) {
           console.error('❌ Critical error in book marking:', bookError);
@@ -276,8 +269,8 @@ Deno.serve(async (req) => {
             payment_reference: webhookData.custom_payment_id,
           },
         })
-        .then(() => console.log('✅ Purchase activity logged for buyer'))
-        .catch(err => console.error('Failed to log purchase activity:', err));
+        .then(() => {})
+        .catch(() => {});
 
       // Log activity for seller's sale
       await supabaseClient
@@ -295,8 +288,8 @@ Deno.serve(async (req) => {
             payment_reference: webhookData.custom_payment_id,
           },
         })
-        .then(() => console.log('✅ Sale activity logged for seller'))
-        .catch(err => console.error('Failed to log sale activity:', err));
+        .then(() => {})
+        .catch(() => {});
 
       // Get buyer and seller info for email notifications
       const { data: buyerProfile } = await supabaseClient
@@ -451,7 +444,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    console.log('Webhook processed successfully');
+    // Webhook processed
     return new Response('OK', { status: 200, headers: corsHeaders });
   } catch (error) {
     console.error('Error processing webhook:', error);
