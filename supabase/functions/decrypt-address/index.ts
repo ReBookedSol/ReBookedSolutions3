@@ -507,7 +507,7 @@ Deno.serve(async (req: Request) => {
     }
 
   } catch (error) {
-    console.error(`[decrypt-address] Error:`, error)
+    // Error occurred during address decryption
     
     const err = error as Error
     switch (err.message) {
