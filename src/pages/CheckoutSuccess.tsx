@@ -188,7 +188,7 @@ const CheckoutSuccess: React.FC = () => {
         return;
       }
 
-      console.log("Order found:", order);
+      // Order found
 
       // Trigger post-payment actions as a fallback (webhook may have already done this)
       await handlePostPaymentActions(order);
