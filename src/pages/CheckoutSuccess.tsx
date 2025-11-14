@@ -34,22 +34,16 @@ const CheckoutSuccess: React.FC = () => {
    */
   const handlePostPaymentActions = async (order: any) => {
     try {
-      console.log("🔄 Processing post-payment actions for order:", order.id);
+      // Processing post-payment actions
 
       const bookItem = order.items?.[0];
       const bookId = bookItem?.book_id || order.book_id;
-
-      console.log("📚 Book ID extracted:", {
-        fromItems: bookItem?.book_id,
-        fromOrder: order.book_id,
-        final: bookId
-      });
 
       // Step 1: Invoke create-order function to mark book as sold
       // This is a fallback mechanism in case the webhook didn't fire
       if (bookId && order.buyer_id && order.seller_id) {
         try {
-          console.log("📞 Invoking create-order function to mark book as sold...");
+          // Invoking create-order function
 
           const { data: createOrderResult, error: createOrderError } = await supabase.functions.invoke(
             'create-order',
@@ -74,7 +68,7 @@ const CheckoutSuccess: React.FC = () => {
             console.warn("⚠️ create-order function returned error (book may already be marked):", createOrderError);
             // Don't throw - this might be expected if already marked
           } else if (createOrderResult?.success) {
-            console.log("✅ create-order function executed successfully - book marked as sold");
+            // Book marked as sold
           } else {
             console.warn("⚠️ create-order function returned non-success response:", createOrderResult);
           }
@@ -110,7 +104,7 @@ const CheckoutSuccess: React.FC = () => {
           orderTotal,
           orderDate: new Date(order.created_at).toLocaleDateString(),
         });
-        console.log("✅ Purchase emails sent successfully");
+        // Purchase emails sent
       } catch (emailError) {
         console.warn("⚠️ Email service error (emails may still be queued):", emailError);
       }
@@ -124,7 +118,7 @@ const CheckoutSuccess: React.FC = () => {
           bookTitle,
           false // isForSeller
         );
-        console.log("✅ Buyer notification created");
+        // Buyer notification created
       } catch (notifError) {
         console.warn("⚠️ Failed to create buyer notification:", notifError);
       }
@@ -137,7 +131,7 @@ const CheckoutSuccess: React.FC = () => {
           bookTitle,
           true // isForSeller
         );
-        console.log("✅ Seller notification created");
+        // Seller notification created
       } catch (notifError) {
         console.warn("⚠️ Failed to create seller notification:", notifError);
       }
@@ -157,14 +151,14 @@ const CheckoutSuccess: React.FC = () => {
           if (updateError) {
             console.warn("⚠️ Failed to update order status:", updateError);
           } else {
-            console.log("✅ Order status updated to pending_commit");
+            // Order status updated
           }
         } catch (updateError) {
           console.warn("⚠️ Order status update error:", updateError);
         }
       }
 
-      console.log("✅ All post-payment actions completed");
+      // All post-payment actions completed
     } catch (error) {
       console.error("❌ Post-payment actions failed:", error);
       // Don't throw - show success page anyway as order was created
