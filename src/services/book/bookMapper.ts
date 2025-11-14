@@ -4,8 +4,9 @@ import { BookQueryResult } from "./bookTypes";
 export const mapBookFromDatabase = (bookData: BookQueryResult): Book => {
   const profile = bookData.profiles;
 
-  console.log("Mapping book data:", bookData);
-  console.log("Profile data:", profile);
+  if (import.meta.env.DEV) {
+    console.log("Mapping book data");
+  }
 
   // Ensure we have required fields
   if (!bookData.id || !bookData.seller_id) {

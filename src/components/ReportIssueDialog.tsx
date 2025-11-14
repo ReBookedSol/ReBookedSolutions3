@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import {
   Dialog,
@@ -64,7 +63,9 @@ const ReportIssueDialog = ({ isOpen, onClose }: ReportIssueDialogProps) => {
     
     try {
       // Simulate API call - replace with actual implementation
-      console.log('Submitting report:', formData);
+      if (import.meta.env.DEV) {
+        console.log('Submitting report');
+      }
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       toast.success('Report submitted successfully! We\'ll get back to you soon.');
