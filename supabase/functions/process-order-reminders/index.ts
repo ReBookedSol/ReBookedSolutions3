@@ -262,9 +262,9 @@ T&Cs apply
           if (isUrgent && order.seller.phone) {
             try {
               // This would integrate with an SMS service like Twilio
-              // For now, we'll just log it
+              // For now, we'll just note that SMS needs to be sent
               console.log(
-                `SMS reminder needed for ${order.seller.phone}: Order ${order.id} expires in ${timeLeft} hours`,
+                `SMS reminder needed for order ${order.id}`,
               );
 
               // You could implement SMS sending here:

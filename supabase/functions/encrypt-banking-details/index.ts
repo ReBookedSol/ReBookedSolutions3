@@ -145,7 +145,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('=== Encrypt Banking Details Request ===');
+    // Processing banking details encryption request
 
     const user = await getUserFromRequest(req);
     if (!user) {
@@ -162,7 +162,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('Authenticated user:', user.id);
+    // User authenticated
 
     let body: any = {};
     try {
@@ -198,7 +198,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('Banking details received for user:', user.id);
+    // Banking details received
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -236,7 +236,7 @@ serve(async (req) => {
     }
 
     try {
-      console.log('Encrypting all banking fields...');
+      // Encrypting banking fields
       
       // Encrypt all fields
       const encrypted_account_number = await encryptGCM(source.account_number, encryptionKey, 1);
@@ -260,7 +260,6 @@ serve(async (req) => {
 
       if (existingRow) {
         // Update existing record
-        console.log('Updating existing banking record:', existingRow.id);
         const { data, error: updateError } = await supabase
           .from('banking_subaccounts')
           .update(encryptedData)
@@ -284,7 +283,6 @@ serve(async (req) => {
         savedRecord = data;
       } else {
         // Create new record
-        console.log('Creating new banking record for user:', user.id);
         const { data, error: insertError } = await supabase
           .from('banking_subaccounts')
           .insert(encryptedData)
@@ -307,7 +305,7 @@ serve(async (req) => {
         savedRecord = data;
       }
 
-      console.log('✅ Successfully encrypted and saved banking details for user:', user.id);
+      // Banking details encrypted and saved successfully
 
       return new Response(
         JSON.stringify({

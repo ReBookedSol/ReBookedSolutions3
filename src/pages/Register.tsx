@@ -88,12 +88,7 @@ const Register = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    console.log("🚀 Starting registration process...");
-    console.log("📧 Email:", email);
-    console.log("👤 First Name:", firstName);
-    console.log("👤 Last Name:", lastName);
-    console.log("🔐 Password length:", password.length);
-    console.log("✅ Terms accepted:", termsAccepted);
+    // Starting registration process - sensitive data not logged
 
     try {
       if (!firstName.trim() || !lastName.trim() || !email.trim() || !password.trim() || !phone.trim()) {
@@ -127,11 +122,8 @@ const Register = () => {
         }
       }
 
-      console.log("🔄 Calling register function...");
       const affiliateCode = getStoredAffiliateCode();
-      console.log("🔖 Using affiliate code:", affiliateCode);
       const result = await register(email, password, firstName, lastName, normalizedPhone, affiliateCode ?? undefined);
-      console.log("✅ Register function returned:", result);
 
       // Handle different registration outcomes
       if (result?.needsVerification) {

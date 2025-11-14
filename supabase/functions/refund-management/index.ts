@@ -82,12 +82,7 @@ serve(async (req) => {
       );
     }
 
-    console.log("Processing refund:", {
-      payment_reference,
-      amount: amount ?? "full refund",
-      reason,
-      order_id,
-    });
+    // Processing refund - sensitive data not logged
 
     if (payment_reference.includes("test_") || payment_reference.includes("mock_")) {
       const mockRefund = {

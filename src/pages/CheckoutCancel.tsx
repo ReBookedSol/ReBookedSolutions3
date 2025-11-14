@@ -25,11 +25,10 @@ const CheckoutCancel: React.FC = () => {
     try {
       setLoading(true);
 
-      console.log("Recording payment cancellation for reference:", reference);
+      // Recording payment cancellation
 
       // Clean the reference - remove any suffixes like ":1" that may be appended by payment providers
       const cleanReference = reference ? reference.split(':')[0] : reference;
-      console.log("Clean reference:", cleanReference);
 
       // Update payment transaction status if it exists
       const { error: updateError } = await supabase

@@ -112,7 +112,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('=== Decrypt Banking Details Request ===');
+    // Processing banking details decryption request
 
     const user = await getUserFromRequest(req);
     if (!user) {
@@ -123,7 +123,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('Authenticated user:', user.id);
+    // User authenticated
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -146,7 +146,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('Found banking details for user:', user.id);
+    // Banking details found for user
 
     // Check if data is encrypted
     const hasEncryptedData = !!(

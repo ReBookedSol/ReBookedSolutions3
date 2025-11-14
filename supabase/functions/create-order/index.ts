@@ -27,13 +27,7 @@ serve(async (req) => {
   try {
     const requestData: CreateOrderRequest = await req.json();
 
-    console.log("📋 Processing order creation:", {
-      buyer_id: requestData.buyer_id,
-      seller_id: requestData.seller_id,
-      book_id: requestData.book_id,
-      delivery_option: requestData.delivery_option,
-      payment_reference: requestData.payment_reference ?? 'none'
-    });
+    // Processing order creation - sensitive data not logged
 
     // Validate required fields
     if (!requestData.buyer_id || !requestData.seller_id || !requestData.book_id || !requestData.delivery_option || !requestData.shipping_address_encrypted) {
@@ -88,7 +82,7 @@ serve(async (req) => {
 
     // If a payment_reference was provided, check for existing order to make this operation idempotent
     if (requestData.payment_reference) {
-      console.log("🔎 Checking for existing order with payment_reference:", requestData.payment_reference);
+      // Checking for existing order by payment reference
       const { data: existingByRef, error: existingRefError } = await supabase
         .from('orders')
         .select('*')
@@ -151,10 +145,10 @@ serve(async (req) => {
       );
     }
 
-    console.log("✅ Buyer found:", { id: buyer?.id, full_name: buyer?.full_name, email: buyer?.email });
+    // Buyer profile retrieved
 
     // Fetch seller info from profiles (including pickup_address_encrypted)
-    console.log("🔍 Fetching seller profile:", requestData.seller_id);
+    // Fetching seller profile
     const { data: seller, error: sellerError } = await supabase
       .from("profiles")
       .select("id, full_name, name, first_name, last_name, email, phone_number, pickup_address_encrypted")
@@ -169,10 +163,10 @@ serve(async (req) => {
       );
     }
 
-    console.log("✅ Seller found:", { id: seller?.id, full_name: seller?.full_name, has_pickup_address: !!seller?.pickup_address_encrypted });
+    // Seller profile retrieved
 
     // Fetch book info
-    console.log("🔍 Fetching book:", requestData.book_id);
+    // Fetching book details
     const { data: book, error: bookError } = await supabase
       .from("books")
       .select("*")
@@ -187,7 +181,7 @@ serve(async (req) => {
       );
     }
 
-    console.log("✅ Book found:", { id: book?.id, title: book?.title, sold: book?.sold, available_quantity: book?.available_quantity });
+    // Book details retrieved
 
     // Step 2: Check if book is available (BEFORE marking sold)
     if (book.sold || book.available_quantity < 1) {
@@ -233,7 +227,7 @@ serve(async (req) => {
     const sellerPhone = seller.phone_number || '';
     const pickupAddress = seller.pickup_address_encrypted || '';
 
-    console.log("📝 Preparing order data:", { buyer_full_name: buyerFullName, seller_full_name: sellerFullName });
+    // Preparing order data
 
     // Create order with denormalized data from profiles
     const orderData = {
@@ -273,7 +267,7 @@ serve(async (req) => {
       items: [{ book_id: book.id, title: book.title, author: book.author, price: book.price, condition: book.condition }]
     };
 
-    console.log("💾 Inserting order into database...");
+    // Inserting order into database
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert(orderData)
@@ -303,7 +297,7 @@ serve(async (req) => {
       );
     }
 
-    console.log("✅ Order created successfully:", { id: order.id, order_id: order.order_id });
+    // Order created successfully
 
     return new Response(
       JSON.stringify({ success: true, message: "Order created successfully", order: { id: order.id, order_id: order.order_id, status: order.status, payment_status: order.payment_status, total_amount: order.total_amount, buyer_email: order.buyer_email, seller_email: order.seller_email } }),

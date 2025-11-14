@@ -32,7 +32,6 @@ serve(async (req) => {
     let requestBody;
     try {
       const rawBody = await req.text();
-      console.log('📥 Raw request body:', rawBody);
       requestBody = JSON.parse(rawBody);
     } catch (error) {
       console.error('❌ Error parsing request body:', error);
@@ -56,15 +55,7 @@ serve(async (req) => {
       shipping_address
     } = requestBody;
 
-    console.log('📊 Request parameters:', {
-      book_id,
-      buyer_id,
-      seller_id,
-      amount,
-      payment_reference,
-      buyer_email: buyer_email ? 'provided' : 'not provided',
-      shipping_address: shipping_address ? 'provided' : 'not provided'
-    });
+    // Request parameters validated
 
     // Validate required fields
     const missingFields = [];
@@ -89,7 +80,7 @@ serve(async (req) => {
 
     // Validate amount format
     if (typeof amount !== "number" || amount <= 0) {
-      console.error('❌ Invalid amount:', amount, typeof amount);
+      // Invalid amount detected
       return jsonResponse({
         success: false,
         error: "INVALID_AMOUNT_FORMAT",
@@ -101,12 +92,11 @@ serve(async (req) => {
       }, { status: 400 });
     }
 
-    console.log('✅ All validations passed, proceeding with database operations...');
+    // All validations passed
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
     // Get book details and verify availability
-    console.log('📚 Fetching book details...');
     const { data: books, error: bookError } = await supabase
       .from("books")
       .select("id,title,author,price,seller_id,sold,condition,category,image_url,created_at,updated_at")
@@ -117,7 +107,7 @@ serve(async (req) => {
     const book = books && books.length > 0 ? books[0] : null;
 
     if (bookError || !book) {
-      console.error('❌ Book not available:', bookError?.message);
+      // Book not available or sold
       return jsonResponse({
         success: false,
         error: "BOOK_NOT_AVAILABLE",
@@ -130,7 +120,7 @@ serve(async (req) => {
       }, { status: 404 });
     }
 
-    console.log('✅ Book found:', book.title, 'by', book.author);
+    // Book details retrieved
 
     // Validate amount matches book price
     if (Math.abs(amount - parseFloat(book.price)) > 0.01) {
@@ -147,14 +137,13 @@ serve(async (req) => {
     }
 
     // Get buyer and seller profiles
-    console.log('👥 Fetching user profiles...');
     const [{ data: buyer, error: buyerError }, { data: seller, error: sellerError }] = await Promise.all([
       supabase.from("profiles").select("id, name, email, phone_number, pickup_address, subaccount_code").eq("id", buyer_id).maybeSingle(),
       supabase.from("profiles").select("id, name, email, phone_number, pickup_address, subaccount_code").eq("id", seller_id).maybeSingle()
     ]);
 
     if (buyerError || !buyer) {
-      console.error('❌ Buyer profile not found:', buyerError?.message);
+      // Buyer profile not found
       return jsonResponse({
         success: false,
         error: "BUYER_NOT_FOUND",
@@ -166,7 +155,7 @@ serve(async (req) => {
     }
 
     if (sellerError || !seller) {
-      console.error('❌ Seller profile not found:', sellerError?.message);
+      // Seller profile not found
       return jsonResponse({
         success: false,
         error: "SELLER_NOT_FOUND",
@@ -177,11 +166,11 @@ serve(async (req) => {
       }, { status: 404 });
     }
 
-    console.log('✅ Profiles found - Buyer:', buyer.name || buyer.email, 'Seller:', seller.name || seller.email);
+    // User profiles retrieved
 
     // Prevent self-purchase
     if (buyer_id === seller_id) {
-      console.error('❌ Self-purchase attempt');
+      // Self-purchase attempt detected
       return jsonResponse({
         success: false,
         error: "SELF_PURCHASE_NOT_ALLOWED",
@@ -192,7 +181,6 @@ serve(async (req) => {
     }
 
     // Mark book as sold (with optimistic locking)
-    console.log('📝 Marking book as sold...');
     const { error: bookUpdateError } = await supabase
       .from("books")
       .update({
@@ -203,7 +191,7 @@ serve(async (req) => {
       .eq("sold", false); // Ensure it's still available
 
     if (bookUpdateError) {
-      console.error('❌ Failed to mark book as sold:', bookUpdateError.message);
+      // Failed to mark book as sold
       return jsonResponse({
         success: false,
         error: "BOOK_UPDATE_FAILED",
@@ -216,7 +204,6 @@ serve(async (req) => {
     }
 
     // Create order
-    console.log('📋 Creating order...');
     const commitDeadline = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48 hours
     const finalPaymentRef = payment_reference || `single_book_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -253,10 +240,9 @@ serve(async (req) => {
       .single();
 
     if (orderError) {
-      console.error(' Order creation failed:', orderError.message);
+      // Order creation failed
       
       // Rollback book sale if order creation fails
-      console.log('🔄 Rolling back book sale...');
       await supabase
         .from("books")
         .update({ sold: false, updated_at: new Date().toISOString() })
@@ -272,10 +258,9 @@ serve(async (req) => {
       }, { status: 500 });
     }
 
-    console.log('✅ Order created successfully:', order.id);
+    // Order created successfully
 
     // Create notifications
-    console.log('📬 Creating notifications...');
     const notificationPromises = [
       supabase.from("notifications").insert({
         user_id: buyer_id,
@@ -286,16 +271,15 @@ serve(async (req) => {
       supabase.from("notifications").insert({
         user_id: seller_id,
         type: "info",
-        title: "📦 New Sale!",
+        title: "���� New Sale!",
         message: `You have a new order for "${book.title}" worth R${amount.toFixed(2)}. Please commit within 48 hours. Order ID: ${order.id}`
       })
     ];
 
     await Promise.all(notificationPromises);
-    console.log('✅ Notifications created');
+    // Notifications created
 
     // Log activity
-    console.log('📊 Logging activity...');
     await supabase.from("order_activity_log").insert({
       order_id: order.id,
       user_id: buyer_id,
@@ -308,7 +292,7 @@ serve(async (req) => {
       }
     });
 
-    console.log('🎉 Book purchase completed successfully!');
+    // Book purchase completed successfully
 
     return jsonResponse({
       success: true,

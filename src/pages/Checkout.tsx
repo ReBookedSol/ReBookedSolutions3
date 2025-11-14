@@ -99,13 +99,7 @@ const Checkout: React.FC = () => {
         return;
       }
 
-      console.log("Cart checkout data loaded:", {
-        sellerId: parsedCartData.sellerId,
-        sellerName: parsedCartData.sellerName,
-        itemCount: parsedCartData.items.length,
-        totalPrice: parsedCartData.totalPrice,
-        cartType: parsedCartData.cartType || 'unknown'
-      });
+      // Cart data loaded
 
       setCartData(parsedCartData);
 
@@ -136,11 +130,7 @@ const Checkout: React.FC = () => {
         },
       };
 
-      console.log('📦 CHECKOUT: Created checkout book:', {
-        ...checkoutBook,
-        hasImage: !!checkoutBook.image_url,
-        imageUrl: checkoutBook.image_url
-      });
+      // Checkout book created
 
       setBook(checkoutBook);
     } catch (err) {
@@ -156,7 +146,7 @@ const Checkout: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      console.log("Loading book data for ID:", id);
+      // Loading book data
 
       if (!id || id.trim() === "") {
         throw new Error("Invalid book ID");
@@ -164,7 +154,6 @@ const Checkout: React.FC = () => {
 
       // Extract UUID part from book ID (remove any timestamp suffixes)
       const uuidPart = id.split('-').slice(0, 5).join('-');
-      console.log("Extracted UUID part:", uuidPart, "from original ID:", id);
 
       // Validate UUID format
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -196,13 +185,7 @@ const Checkout: React.FC = () => {
         throw new Error("Invalid book data - missing required fields");
       }
 
-      console.log("Book data loaded:", {
-        id: bookData.id,
-        title: bookData.title,
-        sold: bookData.sold,
-        availability: bookData.availability,
-        seller_id: bookData.seller_id,
-      });
+      // Book data loaded
 
       // Skip sold check for now to allow testing - books should be available after cleanup
       // if (bookData.sold === true) {
@@ -261,7 +244,7 @@ const Checkout: React.FC = () => {
         },
       };
 
-      console.log("Created checkout book:", checkoutBook);
+      // Checkout book created
 
       setBook(checkoutBook);
     } catch (err) {
