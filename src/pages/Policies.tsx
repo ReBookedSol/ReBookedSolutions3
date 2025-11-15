@@ -3,16 +3,16 @@ import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Scale, Shield, Mail, RefreshCw, Package, Undo2, Gavel, ShoppingCart } from "lucide-react";
+import { Shield, Scale, Mail } from "lucide-react";
 
 const Policies = () => {
-  const [activeTab, setActiveTab] = useState("privacy");
+  const [activeTab, setActiveTab] = useState("marketplace");
 
   return (
     <Layout>
       <SEO
         title="Policies & Terms | ReBooked Solutions"
-        description="Complete policy documentation for ReBooked Solutions - Privacy Policy and Terms and Conditions."
+        description="Complete policy documentation for ReBooked Solutions - Privacy Policy, Terms and Conditions, and Marketplace Rules & Responsibilities."
         keywords="policies, terms, privacy, POPIA, consumer protection, ReBooked Solutions"
       />
 
@@ -27,7 +27,7 @@ const Policies = () => {
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 sm:p-6 mt-6 max-w-5xl mx-auto shadow-sm">
             <div className="text-blue-900 text-xs sm:text-sm leading-snug">
               <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-                <span className="whitespace-nowrap"><strong>Effective Date:</strong> 10 June 2025</span>
+                <span className="whitespace-nowrap"><strong>Effective Date:</strong> 15 November 2025</span>
                 <span className="hidden sm:inline">•</span>
                 <span className="whitespace-nowrap"><strong>Platform:</strong> rebookedsolutions.co.za</span>
               </div>
@@ -44,12 +44,6 @@ const Policies = () => {
                   <strong>Regulatory Compliance:</strong> Consumer Protection Act (Act 68 of 2008) • Electronic Communications and Transactions Act (Act 25 of 2002) • Protection of Personal Information Act (Act 4 of 2013)
                 </span>
               </div>
-            </div>
-          </div>
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 sm:p-6 mt-6 max-w-5xl mx-auto shadow-sm">
-            <div className="text-amber-900 text-sm sm:text-base">
-              <p className="font-medium mb-2">Messaging & Communication Notice:</p>
-              <p>The Platform may offer messaging features in the future. Currently, Users must communicate through other means agreed upon for any transactions or disputes.</p>
             </div>
           </div>
         </div>
@@ -82,67 +76,13 @@ const Policies = () => {
                     <span className="text-left">Terms & Conditions</span>
                   </Button>
                   <Button
-                    onClick={() => setActiveTab("refunds")}
-                    variant={activeTab === "refunds" ? "default" : "outline"}
+                    onClick={() => setActiveTab("marketplace")}
+                    variant={activeTab === "marketplace" ? "default" : "outline"}
                     size="lg"
                     className="w-full justify-start font-medium px-3 py-2 whitespace-normal break-words text-sm leading-tight min-h-[44px]"
                   >
-                    <RefreshCw className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 flex-shrink-0" />
-                    <span className="text-left">Refund Policy</span>
-                  </Button>
-                  <Button
-                    onClick={() => setActiveTab("cancellation")}
-                    variant={activeTab === "cancellation" ? "default" : "outline"}
-                    size="lg"
-                    className="w-full justify-start font-medium px-3 py-2 whitespace-normal break-words text-sm leading-tight min-h-[44px]"
-                  >
-                    <Gavel className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 flex-shrink-0" />
-                    <span className="text-left">Cancellation Policy</span>
-                  </Button>
-                  <Button
-                    onClick={() => setActiveTab("shipping")}
-                    variant={activeTab === "shipping" ? "default" : "outline"}
-                    size="lg"
-                    className="w-full justify-start font-medium px-3 py-2 whitespace-normal break-words text-sm leading-tight min-h-[44px]"
-                  >
-                    <Package className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 flex-shrink-0" />
-                    <span className="text-left">Shipping & Delivery</span>
-                  </Button>
-                  <Button
-                    onClick={() => setActiveTab("returns")}
-                    variant={activeTab === "returns" ? "default" : "outline"}
-                    size="lg"
-                    className="w-full justify-start font-medium px-3 py-2 whitespace-normal break-words text-sm leading-tight min-h-[44px]"
-                  >
-                    <Undo2 className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 flex-shrink-0" />
-                    <span className="text-left">Return Policy</span>
-                  </Button>
-                  <Button
-                    onClick={() => setActiveTab("sellers")}
-                    variant={activeTab === "sellers" ? "default" : "outline"}
-                    size="lg"
-                    className="w-full justify-start font-medium px-3 py-2 whitespace-normal break-words text-sm leading-tight min-h-[44px]"
-                  >
-                    <Gavel className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 flex-shrink-0" />
-                    <span className="text-left">Seller’s Policy</span>
-                  </Button>
-                  <Button
-                    onClick={() => setActiveTab("buyers")}
-                    variant={activeTab === "buyers" ? "default" : "outline"}
-                    size="lg"
-                    className="w-full justify-start font-medium px-3 py-2 whitespace-normal break-words text-sm leading-tight min-h-[44px]"
-                  >
-                    <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 flex-shrink-0" />
-                    <span className="text-left">Buyer’s Policy</span>
-                  </Button>
-                  <Button
-                    onClick={() => setActiveTab("disputes")}
-                    variant={activeTab === "disputes" ? "default" : "outline"}
-                    size="lg"
-                    className="w-full justify-start font-medium px-3 py-2 whitespace-normal break-words text-sm leading-tight min-h-[44px]"
-                  >
-                    <FileText className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 flex-shrink-0" />
-                    <span className="text-left">Dispute Resolution</span>
+                    <Shield className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 flex-shrink-0" />
+                    <span className="text-left">Marketplace Rules</span>
                   </Button>
                 </div>
               </CardContent>
@@ -1078,20 +1018,20 @@ const Policies = () => {
             </div>
           )}
 
-          {/* Seller’s Policy Tab */}
-          {activeTab === "sellers" && (
+          {/* Marketplace Rules & Responsibilities Tab */}
+          {activeTab === "marketplace" && (
             <div className="space-y-4 sm:space-y-6">
               <Card className="shadow-md border-gray-200">
                 <CardHeader className="pb-6 sm:pb-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
                   <CardTitle className="text-2xl sm:text-3xl lg:text-4xl flex items-center gap-3 mb-3 sm:mb-4 text-gray-800">
-                    <Gavel className="h-7 w-7 sm:h-8 sm:w-8 lg:h-9 lg:w-9 flex-shrink-0 text-blue-600" />
-                    <span>Seller’s Policy</span>
+                    <Shield className="h-7 w-7 sm:h-8 sm:w-8 lg:h-9 lg:w-9 flex-shrink-0 text-blue-600" />
+                    <span>Marketplace Rules & Responsibilities</span>
                   </CardTitle>
                   <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 sm:p-6 shadow-sm">
                     <div className="text-blue-800 text-xs sm:text-sm space-y-2">
                       <div className="text-center">
                         <span>
-                          <strong>Effective Date:</strong> 10 June 2025
+                          <strong>Effective Date:</strong> 15 November 2025
                         </span>
                         <span className="mx-2">•</span>
                         <span>
@@ -1101,284 +1041,18 @@ const Policies = () => {
                       </div>
                       <div className="text-center">
                         <span>
-                          <strong>Platform Operator:</strong> ReBooked Solutions (Pty) Ltd
+                          <strong>Support:</strong>{" "}
+                          <span className="break-all">info@rebookedsolutions.co.za</span>
                         </span>
                         <span className="mx-2">•</span>
                         <span>
-                          <strong>Support:</strong>{" "}
+                          <strong>Legal Inquiries:</strong>{" "}
                           <span className="break-all">legal@rebookedsolutions.co.za</span>
                         </span>
                       </div>
                       <div className="text-center">
                         <span>
                           <strong>Jurisdiction:</strong> Republic of South Africa
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <span>
-                          <strong>Regulatory Compliance:</strong> Consumer Protection Act (Act 68 of 2008), Electronic Communications and Transactions Act (Act 25 of 2002), Protection of Personal Information Act (Act 4 of 2013)
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="px-4 sm:px-6">
-                  <div className="prose max-w-none space-y-4 sm:space-y-6">
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">1. Listing Requirements</h3>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>Sellers must provide accurate and complete information about each book, including title, author, edition, condition, and any defects.</li>
-                        <li>Clear photos must be uploaded to verify the book’s condition.</li>
-                        <li>Misleading or false listings are strictly prohibited.</li>
-                      </ul>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">2. Pricing & Fees</h3>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>Sellers set their own prices for books.</li>
-                        <li>ReBooked Solutions charges a 10% service fee on every successful sale.</li>
-                        <li>A delivery/shipping fee is added at checkout and paid by the buyer.</li>
-                      </ul>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">3. Order Process & Payouts</h3>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>Once an order is placed, the seller must package the book securely for collection.</li>
-                        <li>Funds from sales are held for 24–48 hours after successful delivery to allow buyers time to confirm the book matches the listing.</li>
-                        <li>If a buyer raises a complaint, funds are held until the case is resolved.</li>
-                        <li>If the seller is at fault, the buyer receives a full refund, the seller forfeits the payout, and a fine may apply.</li>
-                      </ul>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">4. Fine System (Incorrect or Misleading Books)</h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-2">To protect buyers and maintain trust, a tiered penalty system applies for sellers who provide incorrect or misleading books:</p>
-                      <div className="space-y-2">
-                        <div>
-                          <p className="font-semibold text-gray-900">First Offense</p>
-                          <ul className="list-disc pl-6 space-y-1 text-gray-700 text-sm sm:text-base">
-                            <li>Buyer receives a full refund.</li>
-                            <li>Seller receives no payout for the sale.</li>
-                            <li>Seller is fined the delivery fee from their address to the buyer’s address.</li>
-                          </ul>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">Second Offense</p>
-                          <ul className="list-disc pl-6 space-y-1 text-gray-700 text-sm sm:text-base">
-                            <li>Buyer receives a full refund.</li>
-                            <li>Seller receives no payout for the sale.</li>
-                            <li>Seller is fined the delivery fee plus R100 for misuse of ReBooked Solutions’ services.</li>
-                          </ul>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">Third Offense</p>
-                          <ul className="list-disc pl-6 space-y-1 text-gray-700 text-sm sm:text-base">
-                            <li>Buyer receives a full refund.</li>
-                            <li>Seller receives no payout for the sale.</li>
-                            <li>Seller is fined the delivery fee plus R250.</li>
-                            <li>Seller account may be suspended or permanently banned, pending review.</li>
-                          </ul>
-                        </div>
-                      </div>
-                      <div className="mt-3 space-y-2">
-                        <p className="font-semibold text-gray-900">Zero-Tolerance Clause</p>
-                        <p className="text-gray-700 text-sm sm:text-base">The following are treated as an immediate Level 3 offense:</p>
-                        <ul className="list-disc pl-6 space-y-1 text-gray-700 text-sm sm:text-base">
-                          <li>Fraudulent or counterfeit book listings.</li>
-                          <li>Intentional scams or repeated misrepresentation.</li>
-                          <li>Attempts to bypass or abuse ReBooked Solutions’ systems.</li>
-                        </ul>
-                        <p className="font-semibold text-gray-900">Penalty for Zero-Tolerance Violations:</p>
-                        <ul className="list-disc pl-6 space-y-1 text-gray-700 text-sm sm:text-base">
-                          <li>Buyer receives a full refund.</li>
-                          <li>Seller receives no payout for the sale.</li>
-                          <li>Seller is fined the delivery fee plus R250.</li>
-                          <li>Seller is permanently banned. Any new accounts created by the seller will also be banned.</li>
-                        </ul>
-                      </div>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">5. Book Return & Donation Policy in Disputes</h3>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>If the buyer wants the incorrect book returned to the seller, the buyer must cover the return delivery cost.</li>
-                        <li>If neither party wants the book back, ReBooked Solutions may donate the book to partner charities that support students in need.</li>
-                      </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mt-2">This ensures that even disputes can have a positive impact.</p>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">6. Dispute Resolution</h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base">ReBooked Solutions will act as mediator in disputes and its decision will be final within the platform. Sellers may submit additional evidence if they believe a claim is unfair.</p>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">7. Policy Enforcement</h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base">ReBooked Solutions reserves the right to withhold payouts, apply fines, or suspend seller accounts for any breach of this policy. By selling on ReBooked Solutions, you agree to these rules to help maintain a fair, safe, and socially impactful marketplace.</p>
-                    </section>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Buyer’s Policy Tab */}
-          {activeTab === "buyers" && (
-            <div className="space-y-4 sm:space-y-6">
-              <Card className="shadow-md border-gray-200">
-                <CardHeader className="pb-6 sm:pb-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
-                  <CardTitle className="text-2xl sm:text-3xl lg:text-4xl flex items-center gap-3 mb-3 sm:mb-4 text-gray-800">
-                    <ShoppingCart className="h-7 w-7 sm:h-8 sm:w-8 lg:h-9 lg:w-9 flex-shrink-0 text-blue-600" />
-                    <span>Buyer’s Policy</span>
-                  </CardTitle>
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 sm:p-6 shadow-sm">
-                    <div className="text-blue-800 text-xs sm:text-sm space-y-2">
-                      <div className="text-center">
-                        <span>
-                          <strong>Effective Date:</strong> 10 June 2025
-                        </span>
-                        <span className="mx-2">•</span>
-                        <span>
-                          <strong>Platform:</strong>{" "}
-                          <span className="break-all">www.rebookedsolutions.co.za</span>
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <span>
-                          <strong>Platform Operator:</strong> ReBooked Solutions (Pty) Ltd
-                        </span>
-                        <span className="mx-2">•</span>
-                        <span>
-                          <strong>Support:</strong>{" "}
-                          <span className="break-all">legal@rebookedsolutions.co.za</span>
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <span>
-                          <strong>Jurisdiction:</strong> Republic of South Africa
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <span>
-                          <strong>Regulatory Compliance:</strong> Consumer Protection Act (Act 68 of 2008), Electronic Communications and Transactions Act (Act 25 of 2002), Protection of Personal Information Act (Act 4 of 2013)
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="px-4 sm:px-6">
-                  <div className="prose max-w-none space-y-4 sm:space-y-6">
-                    <p className="text-gray-700 leading-relaxed text-sm sm:text-base">This Buyer’s Policy outlines the responsibilities and rules all buyers agree to when using ReBooked Solutions. By purchasing on our platform, you agree to comply with this policy.</p>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">1. Accuracy of Information</h3>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>Buyers must provide complete and accurate delivery details, including address, phone number, and email.</li>
-                        <li>Any failed deliveries resulting from incorrect or incomplete information are the buyer’s responsibility.</li>
-                      </ul>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">2. Order Process</h3>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>Once an order is placed and marked as “Dispatched” by the seller, it cannot be cancelled.</li>
-                        <li>Buyers must accept delivery within reasonable timeframes or collect from designated courier pickup points where applicable.</li>
-                      </ul>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">3. Refunds & Returns</h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-2">Buyers may request a refund within 3 calendar days of delivery if:</p>
-                      <ul className="list-disc pl-6 space-y-1 text-gray-700 text-sm sm:text-base">
-                        <li>The book received is the wrong edition, title, or author.</li>
-                        <li>The book has undisclosed major defects (e.g., missing pages, water damage).</li>
-                        <li>The book is counterfeit or fraudulent.</li>
-                      </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mt-2">All refund requests must include photographic evidence and a clear description of the issue.</p>
-                      <div className="mt-3">
-                        <p className="font-semibold text-gray-900">Refunds will not be granted for:</p>
-                        <ul className="list-disc pl-6 space-y-1 text-gray-700 text-sm sm:text-base">
-                          <li>Buyer’s remorse (e.g., “changed mind”).</li>
-                          <li>Normal wear and tear of secondhand books.</li>
-                          <li>Courier delays beyond the seller’s control.</li>
-                        </ul>
-                      </div>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">4. Return Responsibilities</h3>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>If a refund is approved and the buyer chooses to return the book, the buyer is responsible for the return delivery cost.</li>
-                        <li>If the buyer does not return the book, ReBooked Solutions may arrange to collect and donate it to charity.</li>
-                      </ul>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">5. Buyer Misconduct</h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base">ReBooked Solutions reserves the right to suspend or permanently ban buyers who:</p>
-                      <ul className="list-disc pl-6 space-y-1 text-gray-700 text-sm sm:text-base">
-                        <li>Submit fraudulent or false refund claims.</li>
-                        <li>Repeatedly fail to accept deliveries.</li>
-                        <li>Attempt to abuse the platform’s refund or dispute system.</li>
-                      </ul>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">6. Dispute Resolution</h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base">In the event of a disagreement, ReBooked Solutions will mediate based on evidence provided by both buyer and seller. Our decision is final within the platform unless escalated externally (e.g., Ombud, NCC).</p>
-                    </section>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Refund Policy Tab */}
-          {activeTab === "refunds" && (
-            <div className="space-y-4 sm:space-y-6">
-              <Card className="shadow-md border-gray-200">
-                <CardHeader className="pb-6 sm:pb-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
-                  <CardTitle className="text-2xl sm:text-3xl lg:text-4xl flex items-center gap-3 mb-3 sm:mb-4 text-gray-800">
-                    <RefreshCw className="h-7 w-7 sm:h-8 sm:w-8 lg:h-9 lg:w-9 flex-shrink-0 text-blue-600" />
-                    <span>Refund Policy</span>
-                  </CardTitle>
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 sm:p-6 shadow-sm">
-                    <div className="text-blue-800 text-xs sm:text-sm space-y-2">
-                      <div className="text-center">
-                        <span>
-                          <strong>Effective Date:</strong> 10 June 2025
-                        </span>
-                        <span className="mx-2">•</span>
-                        <span>
-                          <strong>Platform:</strong>{" "}
-                          <span className="break-all">www.rebookedsolutions.co.za</span>
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <span>
-                          <strong>Platform Operator:</strong> ReBooked Solutions (Pty) Ltd
-                        </span>
-                        <span className="mx-2">•</span>
-                        <span>
-                          <strong>Support:</strong>{" "}
-                          <span className="break-all">
-                            legal@rebookedsolutions.co.za
-                          </span>
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <span>
-                          <strong>Jurisdiction:</strong> Republic of South Africa
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <span>
-                          <strong>Regulatory Compliance:</strong> Consumer Protection
-                          Act (Act 68 of 2008), Electronic Communications and
-                          Transactions Act (Act 25 of 2002), Protection of Personal
-                          Information Act (Act 4 of 2013)
                         </span>
                       </div>
                     </div>
@@ -1388,651 +1062,251 @@ const Policies = () => {
                   <div className="prose max-w-none space-y-4 sm:space-y-6">
                     <section>
                       <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        Scope and Application
+                        Introduction
                       </h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        This Refund Policy applies to all users transacting on www.rebookedsolutions.co.za and governs the circumstances under which refunds may be issued. ReBooked Solutions operates solely as a digital intermediary between independent sellers and buyers and does not own, stock, inspect, or control inventory sold on the platform.
+                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
+                        By using www.rebookedsolutions.co.za (the "Platform"), you agree to these Marketplace Rules & Responsibilities. ReBooked Solutions operates solely as a digital intermediary between independent sellers and buyers. We do not own, inspect, or control the inventory sold on the Platform.
                       </p>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        While Sections 20 and 56 of the Consumer Protection Act (CPA) provide consumers the right to return defective goods within six months of delivery, ReBooked Solutions facilitates the peer-to-peer resale of secondhand textbooks and study materials. Accordingly, a platform-specific refund window applies as outlined below.
-                      </p>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Refunds will be considered only if the request is submitted within three (3) calendar days of delivery or the estimated delivery date, and at least one of the following conditions applies:
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
-                        <li>The item has not been received within fourteen (14) business days of dispatch confirmation.</li>
-                        <li>
-                          The item materially differs from the listing, including but not limited to:
-                          <ul className="list-disc pl-6 mt-2 space-y-1 text-gray-700 text-sm sm:text-base">
-                            <li>Wrong edition, title, or author.</li>
-                            <li>Undisclosed major defects (e.g., missing pages, mold, water damage).</li>
+                    </section>
+
+                    <section>
+                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
+                        1. Account Registration & Eligibility
+                      </h3>
+                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
+                        <li>Users must register with accurate and truthful information.</li>
+                        <li>Only one account per user is permitted. Multiple accounts or attempts to circumvent rules may result in suspension or termination.</li>
+                        <li>Users are responsible for account security. Report suspicious activity immediately to info@rebookedsolutions.co.za.</li>
+                        <li>Buyers and Sellers must have legal capacity to contract under South African law. Users under the age of majority must have parental/guardian consent.</li>
+                      </ul>
+                    </section>
+
+                    <section>
+                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
+                        2. Listing & Pricing Rules (Sellers)
+                      </h3>
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-2">Listing Requirements</h4>
+                          <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
+                            <li>Provide accurate book details, including title, author, edition, condition, and defects.</li>
+                            <li>Upload clear photos; stock or AI-generated images are prohibited.</li>
+                            <li>Misleading or false listings are strictly prohibited.</li>
                           </ul>
-                        </li>
-                        <li>Counterfeit or illegal reproduction.</li>
-                        <li>Fraudulent or deceptive conduct by the seller.</li>
-                      </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                        All refund requests must be supported by clear photographic evidence and a formal complaint lodged to legal@rebookedsolutions.co.za within the specified timeframe. Buyers are required to retain proof of delivery, shipping labels, and original packaging where applicable.
-                      </p>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        2. Refund Request Procedure
-                      </h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        To request a refund, buyers must:
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>Submit a formal complaint within three (3) calendar days of delivery or estimated delivery date.</li>
-                        <li>
-                          Send an email to legal@rebookedsolutions.co.za including:
-                          <ul className="list-disc pl-6 mt-2 space-y-1 text-gray-700 text-sm sm:text-base">
-                            <li>Clear photographs of the item received.</li>
-                            <li>A detailed description of the issue.</li>
-                            <li>Relevant supporting documents (e.g., proof of delivery, shipping labels, original packaging).</li>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-2">Pricing & Fees</h4>
+                          <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
+                            <li>Sellers set their own prices.</li>
+                            <li>ReBooked Solutions charges a 10% service fee on the book's sale price for every successful transaction.</li>
+                            <li>Delivery/shipping fees are added at checkout and paid by the buyer.</li>
                           </ul>
-                        </li>
-                        <li>Retain all original packaging and delivery documentation until the refund process is complete.</li>
-                        <li>Incomplete or late requests may not be considered.</li>
-                      </ul>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        3. Exclusions
-                      </h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Refunds will not be granted for the following:
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>Buyer's remorse or change of mind.</li>
-                        <li>Normal wear and tear consistent with secondhand goods.</li>
-                        <li>Delays caused by third-party couriers.</li>
-                        <li>Items damaged due to misuse, negligence, or improper handling by the buyer.</li>
-                        <li>Items returned with improper packaging that results in damage during transit.</li>
-                        <li>Items not returned in original condition or packaging, or with missing components.</li>
-                        <li>Refund requests submitted after the specified refund period.</li>
-                        <li>Issues arising from incorrect or unintended use of the product.</li>
-                      </ul>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        4. Buyer Responsibility and Verification
-                      </h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Users must ensure that all delivery and payment information provided is accurate and complete. If a refund involves a payment previously processed:
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>ReBooked Solutions will provide proof of transaction details, including recipient account information and timestamps.</li>
-                        <li>Buyers disputing a payment are responsible for verifying that submitted bank details and delivery records are accurate.</li>
-                      </ul>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        5. Dispute Resolution
-                      </h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        If a seller disputes a refund claim:
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>Both parties may be required to submit evidence.</li>
-                        <li>The ReBooked Solutions Resolution Team will review documentation impartially.</li>
-                        <li>Decisions made by the Resolution Team are final and binding.</li>
-                      </ul>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        6. Refund Timeframes
-                      </h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Approved refunds will typically be processed within 7–10 business days, subject to payment processor and banking timelines.
-                      </p>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                        Refunds may be delayed if additional verification is required or if disputes arise.
-                      </p>
-                    </section>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Cancellation Policy Tab */}
-          {activeTab === "cancellation" && (
-            <div className="space-y-4 sm:space-y-6">
-              <Card className="shadow-md border-gray-200">
-                <CardHeader className="pb-6 sm:pb-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
-                  <CardTitle className="text-2xl sm:text-3xl lg:text-4xl flex items-center gap-3 mb-3 sm:mb-4 text-gray-800">
-                    <Gavel className="h-7 w-7 sm:h-8 sm:w-8 lg:h-9 lg:w-9 flex-shrink-0 text-blue-600" />
-                    <span>Cancellation Policy</span>
-                  </CardTitle>
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 sm:p-6 shadow-sm">
-                    <div className="text-blue-800 text-xs sm:text-sm space-y-2">
-                      <div className="text-center">
-                        <span>
-                          <strong>Effective Date:</strong> 10 June 2025
-                        </span>
-                        <span className="mx-2">•</span>
-                        <span>
-                          <strong>Platform:</strong>{" "}
-                          <span className="break-all">www.rebookedsolutions.co.za</span>
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <span>
-                          <strong>Platform Operator:</strong> ReBooked Solutions (Pty) Ltd
-                        </span>
-                        <span className="mx-2">•</span>
-                        <span>
-                          <strong>Support:</strong>{" "}
-                          <span className="break-all">
-                            legal@rebookedsolutions.co.za
-                          </span>
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <span>
-                          <strong>Jurisdiction:</strong> Republic of South Africa
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <span>
-                          <strong>Regulatory Compliance:</strong> Consumer Protection
-                          Act (Act 68 of 2008), Electronic Communications and
-                          Transactions Act (Act 25 of 2002), Protection of Personal
-                          Information Act (Act 4 of 2013)
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="px-4 sm:px-6 py-6">
-                  <div className="prose max-w-none space-y-4 sm:space-y-6">
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        2.1 Buyer Cancellations
-                      </h3>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
-                        <li>Buyers may cancel an order only if the item has not yet been marked as "Dispatched" by the seller on the platform.</li>
-                        <li>Once an item is marked as dispatched, the transaction is binding, and buyers must follow the Refund Policy (Section 1) for returns or disputes.</li>
-                        <li>Valid cancellations made prior to dispatch will be refunded in full to the original payment method within 5–10 business days, subject to delays from third-party payment processors. Buyers are responsible for ensuring payment information is accurate.</li>
-                      </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        <strong>Important:</strong> Under the Electronic Communications and Transactions Act (ECTA), Section 44, ReBooked Solutions is an intermediary and not the direct seller of goods. The standard 7-day cooling-off period does not apply to peer-to-peer transactions unless the seller is a registered business that explicitly offers this option.
-                      </p>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                        ReBooked Solutions reserves the right to review or deny repeated or abusive cancellation patterns. Excessive cancellations may result in account review, restriction, or suspension.
-                      </p>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        2.2 Seller Cancellations
-                      </h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Sellers may cancel an order only under exceptional and justifiable circumstances, such as:
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
-                        <li>Stock unavailability due to prior offline sale or external factors.</li>
-                        <li>Material listing errors (e.g., wrong edition, title, or pricing mistake).</li>
-                        <li>Account or listing flagged for fraud, duplicate posting, or breach of platform terms.</li>
-                      </ul>
-
-                      <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
-                        Requirements for Seller Cancellations:
-                      </h4>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
-                        <li>Must be completed within 48 hours of receiving the order.</li>
-                        <li>Seller must notify the buyer via in-platform messaging.</li>
-                        <li>Seller must also notify ReBooked Solutions at legal@rebookedsolutions.co.za for tracking and transparency purposes.</li>
-                      </ul>
-
-                      <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
-                        Consequences of Unwarranted or Frequent Seller Cancellations:
-                      </h4>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
-                        <li>Temporary suspension of selling privileges.</li>
-                        <li>Administrative penalties or listing restrictions.</li>
-                        <li>Permanent account termination in cases of repeated violations or misconduct.</li>
-                      </ul>
-
-                      <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
-                        Platform Discretion:
-                      </h4>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        ReBooked Solutions reserves the right to cancel any order at its discretion, particularly in cases of:
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
-                        <li>Suspected fraudulent activity.</li>
-                        <li>Misuse or manipulation of the platform.</li>
-                        <li>Breaches of platform terms or this cancellation policy.</li>
-                      </ul>
-
-                      <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
-                        Tracking and Privacy:
-                      </h4>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>All cancellations — whether buyer- or seller-initiated — must be traceable through the Order ID and Transaction Number.</li>
-                        <li>For privacy and data protection, users will not be granted direct access to each other's contact details unless legally required.</li>
-                      </ul>
-                    </section>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Shipping & Delivery Policy Tab */}
-          {activeTab === "shipping" && (
-            <div className="space-y-4 sm:space-y-6">
-              <Card className="shadow-md border-gray-200">
-                <CardHeader className="pb-6 sm:pb-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
-                  <CardTitle className="text-2xl sm:text-3xl lg:text-4xl flex items-center gap-3 mb-3 sm:mb-4 text-gray-800">
-                    <Package className="h-7 w-7 sm:h-8 sm:w-8 lg:h-9 lg:w-9 flex-shrink-0 text-blue-600" />
-                    <span>Shipping & Delivery Policy</span>
-                  </CardTitle>
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 sm:p-6 shadow-sm">
-                    <div className="text-blue-800 text-xs sm:text-sm space-y-2">
-                      <div className="text-center">
-                        <span>
-                          <strong>Effective Date:</strong> 10 June 2025
-                        </span>
-                        <span className="mx-2">•</span>
-                        <span>
-                          <strong>Platform:</strong>{" "}
-                          <span className="break-all">www.rebookedsolutions.co.za</span>
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <span>
-                          <strong>Platform Operator:</strong> ReBooked Solutions (Pty) Ltd
-                        </span>
-                        <span className="mx-2">���</span>
-                        <span>
-                          <strong>Support:</strong>{" "}
-                          <span className="break-all">
-                            legal@rebookedsolutions.co.za
-                          </span>
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <span>
-                          <strong>Jurisdiction:</strong> Republic of South Africa
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <span>
-                          <strong>Regulatory Compliance:</strong> Consumer Protection
-                          Act (Act 68 of 2008), Electronic Communications and
-                          Transactions Act (Act 25 of 2002), Protection of Personal
-                          Information Act (Act 4 of 2013)
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="px-4 sm:px-6">
-                  <div className="prose max-w-none space-y-4 sm:space-y-6">
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        3.1 Seller Shipping Responsibilities
-                      </h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        ReBooked Solutions facilitates deliveries using third-party couriers, primarily Bobgo, on behalf of sellers. Sellers remain fully responsible for preparing, packaging, and making the parcel available for collection.
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
-                        <li>Parcels must be ready for handover within three (3) business days of payment confirmation.</li>
-                      </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Sellers must ensure:
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
-                        <li>Packaging is secure, tamper-resistant, and appropriate for the item.</li>
-                        <li>Items match the listed condition accurately.</li>
-                        <li>Prompt response to courier collection requests.</li>
-                      </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Failed collection attempts:
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>If the parcel is not ready for Bobgo's first collection attempt, ReBooked Solutions will cover the first rescheduling fee.</li>
-                        <li>
-                          Subsequent failed collections due to seller negligence may result in:
-                          <ul className="list-disc pl-6 mt-2 space-y-1 text-gray-700 text-sm sm:text-base">
-                            <li>Charges billed to the seller,</li>
-                            <li>A forced refund to the buyer, and</li>
-                            <li>Temporary suspension of the seller's account pending review.</li>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-2">Order Process & Payouts</h4>
+                          <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
+                            <li>Once an order is placed, the seller must securely package the book for collection via Bobgo.</li>
+                            <li>Funds are held until delivery confirmation or resolution of disputes.</li>
+                            <li>If a buyer files a valid complaint, funds remain on hold until the case is resolved.</li>
+                            <li>Sellers at fault for misrepresentation forfeit payouts and may incur fines (see Fine System).</li>
                           </ul>
-                        </li>
-                      </ul>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        3.2 Delivery Timeframes
-                      </h3>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
-                        <li>Standard delivery: 2–7 business days from courier collection, depending on regional distance and Bobgo's capacity.</li>
-                        <li>ReBooked Solutions provides tracking updates via email or user dashboard.</li>
-                        <li>Delivery dates cannot be guaranteed, but sellers and buyers are encouraged to monitor status and act promptly.</li>
-                        <li>Buyers should collect from designated pickup points on time to avoid failed delivery issues.</li>
-                      </ul>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        3.3 Delays and Consumer Protection
-                      </h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        In line with the Consumer Protection Act (Section 19(4)), if delivery is not completed:
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
-                        <li>Within the agreed timeframe, or</li>
-                        <li>Within 14 business days from collection (and the delay is not the buyer's fault),</li>
-                      </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        buyers may:
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
-                        <li>Cancel the transaction and request a full refund, or</li>
-                        <li>Agree to an extended delivery window at their discretion.</li>
-                      </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                        Courier-related issues (delays, damage, or misdelivery) will first be investigated by ReBooked Solutions in collaboration with Bobgo.
-                      </p>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        3.4 Failed Deliveries & Redelivery
-                      </h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Delivery failure due to:
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
-                        <li>Incorrect or incomplete delivery address,</li>
-                        <li>Buyer's unavailability, or</li>
-                        <li>Failure to collect from designated pickup points,</li>
-                      </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        will generally result in:
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>Buyers bearing any redelivery costs,</li>
-                        <li>Refunds issued only if the seller is at fault (e.g., wrong item sent or incorrect packaging),</li>
-                        <li>Unclaimed parcels after 7 calendar days may be cancelled without refund.</li>
-                      </ul>
-                    </section>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Return Policy Tab */}
-          {activeTab === "returns" && (
-            <div className="space-y-4 sm:space-y-6">
-              <Card className="shadow-md border-gray-200">
-                <CardHeader className="pb-6 sm:pb-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
-                  <CardTitle className="text-2xl sm:text-3xl lg:text-4xl flex items-center gap-3 mb-3 sm:mb-4 text-gray-800">
-                    <Undo2 className="h-7 w-7 sm:h-8 sm:w-8 lg:h-9 lg:w-9 flex-shrink-0 text-blue-600" />
-                    <span>Return Policy</span>
-                  </CardTitle>
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 sm:p-6 shadow-sm">
-                    <div className="text-blue-800 text-xs sm:text-sm space-y-2">
-                      <div className="text-center">
-                        <span>
-                          <strong>Effective Date:</strong> 10 June 2025
-                        </span>
-                        <span className="mx-2">•</span>
-                        <span>
-                          <strong>Platform:</strong>{" "}
-                          <span className="break-all">www.rebookedsolutions.co.za</span>
-                        </span>
+                        </div>
                       </div>
-                      <div className="text-center">
-                        <span>
-                          <strong>Platform Operator:</strong> ReBooked Solutions (Pty) Ltd
-                        </span>
-                        <span className="mx-2">•</span>
-                        <span>
-                          <strong>Support:</strong>{" "}
-                          <span className="break-all">
-                            legal@rebookedsolutions.co.za
-                          </span>
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <span>
-                          <strong>Jurisdiction:</strong> Republic of South Africa
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <span>
-                          <strong>Regulatory Compliance:</strong> Consumer Protection
-                          Act (Act 68 of 2008), Electronic Communications and
-                          Transactions Act (Act 25 of 2002), Protection of Personal
-                          Information Act (Act 4 of 2013)
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="px-4 sm:px-6">
-                  <div className="prose max-w-none space-y-4 sm:space-y-6">
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        4.1 Return Eligibility
-                      </h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Returns are accepted only under the following conditions:
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
-                        <li>The wrong item was delivered (e.g., different title, author, or edition).</li>
-                        <li>The item has undisclosed major defects or severe damage (e.g., missing pages, water damage, mold).</li>
-                        <li>The item is confirmed counterfeit, illegal, or an unauthorized reproduction.</li>
-                      </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Return requests must be submitted within three (3) calendar days of delivery by emailing legal@rebookedsolutions.co.za for written authorization. Returns sent without prior approval will be rejected.
-                      </p>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Buyer responsibilities:
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>Retain all original packaging and materials.</li>
-                        <li>Ship the item back using a trackable and insured courier service (preferably Bobgo).</li>
-                        <li>Provide tracking information to ReBooked Solutions once shipped.</li>
-                        <li>Cover return shipping costs and any associated courier fees, except when the issue is due to major seller misconduct, such as confirmed fraud, counterfeit goods, or undisclosed serious defects.</li>
-                      </ul>
                     </section>
 
                     <section>
                       <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        4.2 Return Exclusions
+                        Fine System (Incorrect or Misleading Books)
                       </h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Returns will not be accepted for:
+                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-4">
+                        ReBooked Solutions operates a tiered fine system to protect buyers and maintain marketplace integrity. Fines will be deducted from seller wallets or withheld from payouts.
                       </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
-                        <li>Minor wear and tear consistent with secondhand goods.</li>
-                        <li>Buyer's remorse, change of mind, or dissatisfaction after receipt.</li>
-                        <li>Damage caused after delivery due to buyer negligence, improper handling, or poor storage.</li>
-                      </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                        ReBooked Solutions will not cover return shipping, packaging, or handling fees for any of the above exclusions.
-                      </p>
-                    </section>
-
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        4.3 Inspection & Refund Processing
-                      </h3>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
-                        <li>All returned items are subject to inspection upon receipt.</li>
-                        <li>
-                          Refunds are issued only if:
-                          <ul className="list-disc pl-6 mt-2 space-y-1 text-gray-700 text-sm sm:text-base">
-                            <li>The return is verified and approved by ReBooked Solutions, and</li>
-                            <li>The item is returned in its original condition with all components and packaging.</li>
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-semibold text-red-700 mb-2">First Offense</h4>
+                          <ul className="list-disc pl-6 space-y-1 text-gray-700 text-sm sm:text-base">
+                            <li>Buyer receives full refund</li>
+                            <li>Seller receives no payout</li>
+                            <li>Seller pays delivery fee</li>
                           </ul>
-                        </li>
-                      </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Approved refunds are typically processed within 7–10 business days, covering the item's purchase price only.
-                      </p>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Shipping costs (original and return) are refunded only in cases of major seller misconduct verified by the platform.
-                      </p>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                        ReBooked Solutions acts as a neutral mediator in return disputes but reserves final decision-making authority on all return or refund cases.
-                      </p>
-                    </section>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Dispute Resolution Policy Tab */}
-          {activeTab === "disputes" && (
-            <div className="space-y-4 sm:space-y-6">
-              <Card className="shadow-md border-gray-200">
-                <CardHeader className="pb-6 sm:pb-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
-                  <CardTitle className="text-2xl sm:text-3xl lg:text-4xl flex items-center gap-3 mb-3 sm:mb-4 text-gray-800">
-                    <FileText className="h-7 w-7 sm:h-8 sm:w-8 lg:h-9 lg:w-9 flex-shrink-0 text-blue-600" />
-                    <span>Dispute Resolution Policy</span>
-                  </CardTitle>
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 sm:p-6 shadow-sm">
-                    <div className="text-blue-800 text-xs sm:text-sm space-y-2">
-                      <div className="text-center">
-                        <span>
-                          <strong>Effective Date:</strong> 10 June 2025
-                        </span>
-                        <span className="mx-2">•</span>
-                        <span>
-                          <strong>Platform:</strong>{" "}
-                          <span className="break-all">www.rebookedsolutions.co.za</span>
-                        </span>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-red-700 mb-2">Second Offense</h4>
+                          <ul className="list-disc pl-6 space-y-1 text-gray-700 text-sm sm:text-base">
+                            <li>Buyer receives full refund</li>
+                            <li>Seller receives no payout</li>
+                            <li>Seller pays delivery fee plus R100</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-red-700 mb-2">Third Offense</h4>
+                          <ul className="list-disc pl-6 space-y-1 text-gray-700 text-sm sm:text-base">
+                            <li>Buyer receives full refund</li>
+                            <li>Seller receives no payout</li>
+                            <li>Seller pays delivery fee plus R250</li>
+                            <li>Account may be suspended or reviewed</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-red-900 mb-2">Zero-Tolerance Violations</h4>
+                          <p className="text-gray-700 text-sm sm:text-base mb-2">Includes fraudulent or counterfeit books, intentional scams, repeated misrepresentation, or attempts to bypass platform systems.</p>
+                          <ul className="list-disc pl-6 space-y-1 text-gray-700 text-sm sm:text-base">
+                            <li>Buyer receives full refund</li>
+                            <li>Seller receives no payout</li>
+                            <li>Seller pays delivery fee plus R250</li>
+                            <li>Permanently banned</li>
+                          </ul>
+                        </div>
                       </div>
-                      <div className="text-center">
-                        <span>
-                          <strong>Platform Operator:</strong> ReBooked Solutions (Pty) Ltd
-                        </span>
-                        <span className="mx-2">•</span>
-                        <span>
-                          <strong>Support:</strong>{" "}
-                          <span className="break-all">
-                            legal@rebookedsolutions.co.za
-                          </span>
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <span>
-                          <strong>Jurisdiction:</strong> Republic of South Africa
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <span>
-                          <strong>Regulatory Compliance:</strong> Consumer Protection
-                          Act (Act 68 of 2008), Electronic Communications and
-                          Transactions Act (Act 25 of 2002), Protection of Personal
-                          Information Act (Act 4 of 2013)
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="px-4 sm:px-6">
-                  <div className="prose max-w-none space-y-4 sm:space-y-6">
-                    <section>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        5.1 Initiating a Dispute
-                      </h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        If a buyer or seller believes that a transaction has resulted in unfair treatment, fraud, or a breach of ReBooked Solutions' policies, a formal dispute must be submitted within seven (7) calendar days of the event by emailing legal@rebookedsolutions.co.za.
-                      </p>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        The email must include:
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>Transaction reference number</li>
-                        <li>Order ID</li>
-                        <li>A detailed description of the dispute</li>
-                        <li>All supporting evidence (e.g., photographs, courier tracking, communication history)</li>
-                      </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mt-3">
-                        Incomplete or unsupported disputes may be closed without investigation.
-                      </p>
                     </section>
 
                     <section>
                       <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        5.2 Dispute Review Process
+                        3. Shipping & Delivery (Bobgo)
                       </h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Once a valid dispute is received, ReBooked Solutions will:
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>Acknowledge receipt within 2 business days</li>
-                        <li>Investigate the matter within 7–10 business days</li>
-                        <li>Request additional evidence if required</li>
-                      </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4 mt-3">
-                        Disputes will be assessed based on:
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>Principles of fairness under the Consumer Protection Act (CPA)</li>
-                        <li>Objective review of all submitted documentation</li>
-                        <li>Verified transaction history and user conduct</li>
-                      </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mt-3">
-                        ReBooked Solutions will deliver a written decision outlining the resolution. This decision will be final and binding within the platform, unless escalated externally (see 5.4).
-                      </p>
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-2">Seller Responsibility</h4>
+                          <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
+                            <li>Sellers prepare, package, and make items available for Bobgo collection within 3 business days of payment confirmation.</li>
+                            <li>Packaging must be secure and tamper-resistant.</li>
+                            <li>Sellers respond promptly to Bobgo collection requests.</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-2">Delivery Timeframes</h4>
+                          <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
+                            <li>Standard delivery: 2–7 business days from collection.</li>
+                            <li>Tracking updates provided via Bobgo; buyers should monitor delivery status.</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-2">Delays & Failed Deliveries</h4>
+                          <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
+                            <li>Refunds apply if delivery fails due to seller error.</li>
+                            <li>Buyer-caused delays, such as incorrect address or unavailability, transfer redelivery costs to the buyer.</li>
+                            <li>Unclaimed parcels after 7 calendar days may be cancelled without refund.</li>
+                          </ul>
+                        </div>
+                      </div>
                     </section>
 
                     <section>
                       <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        5.3 Platform Liability and Limitation
+                        4. Refund & Return Policy
                       </h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        ReBooked Solutions acts solely as a digital intermediary and is not a contracting party to transactions between users. In accordance with Section 56 of the CPA, sellers are responsible for the goods they list.
-                      </p>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        ReBooked Solutions accepts no liability for:
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>Product condition, accuracy, or authenticity</li>
-                        <li>Courier errors or delays</li>
-                        <li>Buyer or seller misconduct</li>
-                        <li>Indirect, special, or consequential damages</li>
-                      </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mt-3 mb-3 sm:mb-4">
-                        The platform's maximum liability is limited to the commission earned on the disputed transaction.
-                      </p>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                        By using the platform, users agree to these limitations and waive any additional claims against ReBooked Solutions.
-                      </p>
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-2">Refund Grounds</h4>
+                          <p className="text-gray-700 text-sm sm:text-base mb-2">Refunds are approved within 3 calendar days of delivery or estimated delivery for:</p>
+                          <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
+                            <li>Incorrect item (wrong edition, title, author)</li>
+                            <li>Undisclosed major defects (e.g., missing pages, water damage, mold)</li>
+                            <li>Counterfeit or illegal reproduction</li>
+                            <li>Fraudulent or deceptive seller conduct</li>
+                          </ul>
+                          <p className="text-gray-700 text-sm sm:text-base mt-2"><strong>Requirements:</strong></p>
+                          <ul className="list-disc pl-6 space-y-1 text-gray-700 text-sm sm:text-base">
+                            <li>Submit a complaint to legal@rebookedsolutions.co.za</li>
+                            <li>Include photographic evidence, proof of delivery, and a detailed description</li>
+                            <li>Retain original packaging</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-2">Return Responsibilities</h4>
+                          <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
+                            <li>Buyers pay return shipping via Bobgo, unless the seller is at fault (fraud, counterfeit, undisclosed serious defects)</li>
+                            <li>Items must be returned securely packaged and in original condition</li>
+                            <li>If the buyer does not return the book, ReBooked Solutions may donate it to partner charities</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-2">Return Exclusions</h4>
+                          <p className="text-gray-700 text-sm sm:text-base">Refunds will not be granted for:</p>
+                          <ul className="list-disc pl-6 space-y-1 text-gray-700 text-sm sm:text-base">
+                            <li>Buyer's remorse or dissatisfaction</li>
+                            <li>Normal wear and tear</li>
+                            <li>Courier delays beyond seller control</li>
+                            <li>Damage due to buyer negligence</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-2">Refund Timeframes</h4>
+                          <ul className="list-disc pl-6 space-y-1 text-gray-700 text-sm sm:text-base">
+                            <li>Approved refunds processed within 7–10 business days, subject to banking/payment processor timelines</li>
+                          </ul>
+                        </div>
+                      </div>
                     </section>
 
                     <section>
                       <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        5.4 External Escalation
+                        5. Buyer Responsibilities
                       </h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        If either party is dissatisfied with the internal outcome, they may escalate to:
-                      </p>
                       <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>The National Consumer Commission (NCC)</li>
-                        <li>The Consumer Goods and Services Ombud (CGSO)</li>
-                        <li>Formal legal proceedings under South African law</li>
+                        <li>Provide complete and accurate delivery information</li>
+                        <li>Cannot cancel orders after the seller marks them "Dispatched"</li>
+                        <li>Accept deliveries promptly or collect from Bobgo pickup points</li>
+                        <li>Report discrepancies within 3 calendar days</li>
+                        <li>Repeated fraud, abuse, or delivery non-compliance may result in suspension or permanent ban</li>
                       </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mt-3">
-                        ReBooked Solutions will comply with all lawful investigations but will not cover any legal costs incurred by either party.
-                      </p>
+                    </section>
+
+                    <section>
+                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
+                        6. Cancellation Policy
+                      </h3>
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-2">Buyer Cancellations</h4>
+                          <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
+                            <li>Only permitted before seller marks item as "Dispatched"</li>
+                            <li>Refunds issued to the original payment method within 5–10 business days</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-2">Seller Cancellations</h4>
+                          <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
+                            <li>Allowed only for justifiable reasons (stock errors, listing mistakes, fraud concerns)</li>
+                            <li>Seller must notify buyer via platform messages and legal@rebookedsolutions.co.za</li>
+                            <li>Frequent or unjustified cancellations may result in suspension, penalties, or permanent termination</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </section>
+
+                    <section>
+                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
+                        7. Dispute Resolution
+                      </h3>
+                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
+                        <li>Users should first attempt direct resolution via platform messages</li>
+                        <li>ReBooked Solutions mediates disputes impartially; its decisions are final within the platform</li>
+                        <li>External escalation may include the Consumer Commission, Ombud, or South African courts if unresolved</li>
+                      </ul>
+                    </section>
+
+                    <section>
+                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
+                        8. Prohibited Conduct & Items
+                      </h3>
+                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
+                        <li>Only textbooks and study materials are allowed</li>
+                        <li>Prohibited items: counterfeit, illegal, adult content, weapons, drugs, digital copies, or any item violating law</li>
+                        <li>Misrepresentation, harassment, fraud, or platform abuse is strictly prohibited</li>
+                        <li>Violations may result in account suspension, permanent ban, or reporting to authorities</li>
+                      </ul>
+                    </section>
+
+                    <section>
+                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
+                        9. Liability & Compliance
+                      </h3>
+                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
+                        <li>ReBooked Solutions is a platform intermediary. We do not own, inspect, or guarantee items</li>
+                        <li>Users are responsible for legal compliance, tax obligations, and accurate information</li>
+                        <li>Statutory rights under the Consumer Protection Act (CPA), ECTA, and POPIA remain protected</li>
+                      </ul>
                     </section>
                   </div>
                 </CardContent>
@@ -2040,49 +1314,6 @@ const Policies = () => {
             </div>
           )}
         </div>
-
-        {/* Contact Section */}
-        <Card className="mt-8 sm:mt-12 shadow-lg border-gray-200">
-          <CardHeader className="pb-6 sm:pb-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
-            <CardTitle className="text-xl sm:text-2xl lg:text-3xl flex items-center gap-3 text-gray-800">
-              <Mail className="h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0 text-blue-600" />
-              <span>Contact Information</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 sm:px-8 py-6 sm:py-8">
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-200 rounded-xl p-6 sm:p-8 shadow-sm">
-              <p className="text-blue-800 mb-4 sm:mb-6 text-base sm:text-lg font-medium">
-                All queries, complaints, and policy-related matters must be
-                directed to:
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                <div className="space-y-2">
-                  <p className="text-blue-700 text-sm sm:text-base">
-                    <strong>Email:</strong>{" "}
-                    <span className="break-all">
-                      legal@rebookedsolutions.co.za
-                    </span>
-                  </p>
-                  <p className="text-blue-700 text-sm sm:text-base">
-                    <strong>Business Hours:</strong> Monday–Friday, 09:00–17:00
-                    (SAST)
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-blue-700 text-sm sm:text-base">
-                    <strong>Website:</strong>{" "}
-                    <span className="break-all">
-                      www.rebookedsolutions.co.za
-                    </span>
-                  </p>
-                  <p className="text-blue-700 text-sm sm:text-base">
-                    <strong>Company:</strong> ReBooked Solutions (Pty) Ltd
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </Layout>
   );
