@@ -1544,23 +1544,22 @@ const Policies = () => {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="px-4 sm:px-6">
+                <CardContent className="px-4 sm:px-6 py-6">
                   <div className="prose max-w-none space-y-4 sm:space-y-6">
                     <section>
                       <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
                         2.1 Buyer Cancellations
                       </h3>
+                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
+                        <li>Buyers may cancel an order only if the item has not yet been marked as "Dispatched" by the seller on the platform.</li>
+                        <li>Once an item is marked as dispatched, the transaction is binding, and buyers must follow the Refund Policy (Section 1) for returns or disputes.</li>
+                        <li>Valid cancellations made prior to dispatch will be refunded in full to the original payment method within 5–10 business days, subject to delays from third-party payment processors. Buyers are responsible for ensuring payment information is accurate.</li>
+                      </ul>
                       <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Buyers may only cancel an order if it has not yet been marked as "Dispatched" by the seller on the platform. Once an item is marked as dispatched, the transaction is considered binding, and the buyer must follow the formal return and refund procedures as outlined in Section 4.
-                      </p>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        All valid cancellations made prior to dispatch will be refunded in full to the original payment method within 5–10 business days, excluding any delays from third-party payment processors. Buyers are solely responsible for ensuring the accuracy of their payment information.
-                      </p>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        <strong>Important:</strong> In terms of the Electronic Communications and Transactions Act (ECTA), Section 44, ReBooked Solutions is an intermediary and not the direct seller of goods. As such, the 7-day cooling-off period does not apply to transactions on this platform unless the specific seller is a registered business and explicitly states otherwise.
+                        <strong>Important:</strong> Under the Electronic Communications and Transactions Act (ECTA), Section 44, ReBooked Solutions is an intermediary and not the direct seller of goods. The standard 7-day cooling-off period does not apply to peer-to-peer transactions unless the seller is a registered business that explicitly offers this option.
                       </p>
                       <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                        ReBooked Solutions reserves the right to deny abuse-driven cancellation patterns, and repeated cancellations may lead to account review or restriction.
+                        ReBooked Solutions reserves the right to review or deny repeated or abusive cancellation patterns. Excessive cancellations may result in account review, restriction, or suspension.
                       </p>
                     </section>
 
@@ -1569,35 +1568,51 @@ const Policies = () => {
                         2.2 Seller Cancellations
                       </h3>
                       <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Sellers may cancel an order only under exceptional and justifiable circumstances, including but not limited to:
+                        Sellers may cancel an order only under exceptional and justifiable circumstances, such as:
                       </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>Stock unavailability due to a prior offline sale</li>
-                        <li>Material listing errors (e.g. wrong edition or pricing mistake)</li>
-                        <li>Account or listing flagged for fraud, duplicate posting, or breach of terms</li>
+                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
+                        <li>Stock unavailability due to prior offline sale or external factors.</li>
+                        <li>Material listing errors (e.g., wrong edition, title, or pricing mistake).</li>
+                        <li>Account or listing flagged for fraud, duplicate posting, or breach of platform terms.</li>
                       </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4 mt-3">
-                        Such cancellations must occur within 48 hours of receiving the order and require notification to the buyer via in-platform messaging and to legal@rebookedsolutions.co.za for tracking and transparency purposes.
-                      </p>
+
+                      <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
+                        Requirements for Seller Cancellations:
+                      </h4>
+                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
+                        <li>Must be completed within 48 hours of receiving the order.</li>
+                        <li>Seller must notify the buyer via in-platform messaging.</li>
+                        <li>Seller must also notify ReBooked Solutions at legal@rebookedsolutions.co.za for tracking and transparency purposes.</li>
+                      </ul>
+
+                      <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
+                        Consequences of Unwarranted or Frequent Seller Cancellations:
+                      </h4>
+                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
+                        <li>Temporary suspension of selling privileges.</li>
+                        <li>Administrative penalties or listing restrictions.</li>
+                        <li>Permanent account termination in cases of repeated violations or misconduct.</li>
+                      </ul>
+
+                      <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
+                        Platform Discretion:
+                      </h4>
                       <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Unwarranted or frequent cancellations by sellers may result in the following actions:
+                        ReBooked Solutions reserves the right to cancel any order at its discretion, particularly in cases of:
                       </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>Temporary suspension of selling privileges</li>
-                        <li>Administrative penalties or listing limitations</li>
-                        <li>Permanent account termination in cases of repeated violation or misconduct</li>
+                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
+                        <li>Suspected fraudulent activity.</li>
+                        <li>Misuse or manipulation of the platform.</li>
+                        <li>Breaches of platform terms or this cancellation policy.</li>
                       </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4 mt-3">
-                        ReBooked Solutions reserves the right to cancel any order at its discretion, particularly in instances involving:
-                      </p>
+
+                      <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
+                        Tracking and Privacy:
+                      </h4>
                       <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>Suspected fraudulent activity</li>
-                        <li>Misuse or manipulation of the platform</li>
-                        <li>Breaches of this policy or the platform's Terms of Use</li>
+                        <li>All cancellations — whether buyer- or seller-initiated — must be traceable through the Order ID and Transaction Number.</li>
+                        <li>For privacy and data protection, users will not be granted direct access to each other's contact details unless legally required.</li>
                       </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mt-3">
-                        All cancellations — whether buyer- or seller-initiated — must be traceable through an Order ID and Transaction Number. For privacy and data protection, parties will not be granted access to each other's contact details unless legally required.
-                      </p>
                     </section>
                   </div>
                 </CardContent>
