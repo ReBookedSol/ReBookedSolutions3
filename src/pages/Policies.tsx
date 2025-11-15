@@ -1679,29 +1679,33 @@ const Policies = () => {
                   <div className="prose max-w-none space-y-4 sm:space-y-6">
                     <section>
                       <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        3.1 Shipping Responsibility
+                        3.1 Seller Shipping Responsibilities
                       </h3>
                       <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        ReBooked Solutions arranges all deliveries through third-party couriers, primarily Courier Guy, acting on behalf of the seller. However, sellers are fully responsible for preparing, packaging, and making the parcel available for collection when the courier arrives.
+                        ReBooked Solutions facilitates deliveries using third-party couriers, primarily Bobgo, on behalf of sellers. Sellers remain fully responsible for preparing, packaging, and making the parcel available for collection.
                       </p>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Sellers must ensure parcels are ready for handover within three (3) business days of payment confirmation.
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>Packaging must be secure and tamper-resistant. Items must match the listed condition.</li>
-                        <li>Sellers must respond to courier collection requests in a timely manner.</li>
+                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
+                        <li>Parcels must be ready for handover within three (3) business days of payment confirmation.</li>
                       </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4 mt-3">
-                        If the parcel is not ready at the time of the courier's first collection attempt:
+                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
+                        Sellers must ensure:
+                      </p>
+                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
+                        <li>Packaging is secure, tamper-resistant, and appropriate for the item.</li>
+                        <li>Items match the listed condition accurately.</li>
+                        <li>Prompt response to courier collection requests.</li>
+                      </ul>
+                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
+                        Failed collection attempts:
                       </p>
                       <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>ReBooked Solutions will cover the first rescheduling fee.</li>
+                        <li>If the parcel is not ready for Bobgo's first collection attempt, ReBooked Solutions will cover the first rescheduling fee.</li>
                         <li>
-                          Any further failed collection attempts due to seller negligence will:
-                          <ul className="list-disc pl-6 mt-2 space-y-1">
-                            <li>Be charged to the seller,</li>
-                            <li>Trigger a forced refund to the buyer, and</li>
-                            <li>Result in a temporary suspension of the seller's account pending review.</li>
+                          Subsequent failed collections due to seller negligence may result in:
+                          <ul className="list-disc pl-6 mt-2 space-y-1 text-gray-700 text-sm sm:text-base">
+                            <li>Charges billed to the seller,</li>
+                            <li>A forced refund to the buyer, and</li>
+                            <li>Temporary suspension of the seller's account pending review.</li>
                           </ul>
                         </li>
                       </ul>
@@ -1711,50 +1715,56 @@ const Policies = () => {
                       <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
                         3.2 Delivery Timeframes
                       </h3>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        Standard delivery timeframes are 2–7 business days from the date of successful collection. Delivery times depend on regional distance and courier capacity.
-                      </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>ReBooked Solutions cannot guarantee delivery dates but will provide tracking updates via email or dashboard.</li>
-                        <li>Buyers are encouraged to monitor delivery status and collect from designated pickup points promptly.</li>
+                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
+                        <li>Standard delivery: 2–7 business days from courier collection, depending on regional distance and Bobgo's capacity.</li>
+                        <li>ReBooked Solutions provides tracking updates via email or user dashboard.</li>
+                        <li>Delivery dates cannot be guaranteed, but sellers and buyers are encouraged to monitor status and act promptly.</li>
+                        <li>Buyers should collect from designated pickup points on time to avoid failed delivery issues.</li>
                       </ul>
                     </section>
 
                     <section>
                       <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        3.3 Delays and CPA Compliance
+                        3.3 Delays and Consumer Protection
                       </h3>
                       <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        As per the Consumer Protection Act (Section 19(4)), if a parcel is not delivered within the agreed timeframe or within 14 business days, and the delay is not due to the buyer, the buyer may:
+                        In line with the Consumer Protection Act (Section 19(4)), if delivery is not completed:
                       </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>Cancel the transaction and receive a full refund, or</li>
-                        <li>Allow an extended delivery window at their discretion.</li>
+                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
+                        <li>Within the agreed timeframe, or</li>
+                        <li>Within 14 business days from collection (and the delay is not the buyer's fault),</li>
                       </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mt-3">
-                        All courier-related issues (e.g. delays, damage, or misdelivery) will first be investigated by ReBooked Solutions in collaboration with Courier Guy.
+                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
+                        buyers may:
+                      </p>
+                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
+                        <li>Cancel the transaction and request a full refund, or</li>
+                        <li>Agree to an extended delivery window at their discretion.</li>
+                      </ul>
+                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
+                        Courier-related issues (delays, damage, or misdelivery) will first be investigated by ReBooked Solutions in collaboration with Bobgo.
                       </p>
                     </section>
 
                     <section>
                       <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
-                        3.4 Failed Deliveries & Redelivery Charges
+                        3.4 Failed Deliveries & Redelivery
                       </h3>
                       <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
-                        If delivery fails due to:
+                        Delivery failure due to:
                       </p>
-                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
+                      <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base mb-3 sm:mb-4">
                         <li>Incorrect or incomplete delivery address,</li>
-                        <li>Buyer's unavailability during delivery,</li>
-                        <li>Failure to collect from pickup points,</li>
+                        <li>Buyer's unavailability, or</li>
+                        <li>Failure to collect from designated pickup points,</li>
                       </ul>
-                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4 mt-3">
-                        Then:
+                      <p className="text-gray-700 leading-relaxed text-sm sm:text-base mb-3 sm:mb-4">
+                        will generally result in:
                       </p>
                       <ul className="list-disc pl-6 space-y-2 text-gray-700 text-sm sm:text-base">
-                        <li>The buyer will bear any redelivery costs,</li>
-                        <li>Refunds will only be issued if the seller is found at fault (e.g. wrong item sent, incorrect packaging),</li>
-                        <li>Returned parcels not claimed within 7 calendar days may be subject to cancellation without refund.</li>
+                        <li>Buyers bearing any redelivery costs,</li>
+                        <li>Refunds issued only if the seller is at fault (e.g., wrong item sent or incorrect packaging),</li>
+                        <li>Unclaimed parcels after 7 calendar days may be cancelled without refund.</li>
                       </ul>
                     </section>
                   </div>
