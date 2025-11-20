@@ -167,7 +167,7 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
             metadata: {
               buyer_id: userId,
               platform_fee: 2000,
-              seller_amount: Math.round(orderSummary.book_price * 100),
+              seller_amount: Math.round(orderSummary.book_price * 100) - 2000,
               original_total: orderSummary.total_price,
               original_book_price: orderSummary.book_price,
               original_delivery_price: orderSummary.delivery_price,
@@ -463,7 +463,7 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
               fallback_creation: true,
               edge_function_error: error.message,
               platform_fee: 2000,
-              seller_amount: Math.round(orderSummary.book_price * 100),
+              seller_amount: Math.round(orderSummary.book_price * 100) - 2000,
             },
           };
 
@@ -1094,7 +1094,7 @@ Time: ${new Date().toISOString()}
             return;
           }
 
-          console.log("✅ Paystack payment successful:", result);
+          console.log("��� Paystack payment successful:", result);
 
           // Extract book item data for processing
           const bookItem = createdOrder.items[0]; // Get the book item
