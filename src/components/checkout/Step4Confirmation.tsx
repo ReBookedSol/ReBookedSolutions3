@@ -277,11 +277,21 @@ const Step4Confirmation: React.FC<Step4ConfirmationProps> = ({
         <div className="flex gap-4">
           <Button
             onClick={downloadReceipt}
+            disabled={isDownloading}
             variant="outline"
             className="flex-1"
           >
-            <Download className="w-4 h-4 mr-2" />
-            Download Receipt
+            {isDownloading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4 mr-2" />
+                Download Receipt (PNG)
+              </>
+            )}
           </Button>
           <Button onClick={onViewOrders} variant="outline" className="flex-1">
             <Eye className="w-4 h-4 mr-2" />
