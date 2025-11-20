@@ -57,6 +57,7 @@ import Shipping from "./pages/Shipping";
 import Report from "./pages/Report";
 import SellerProfile from "./pages/SellerProfile";
 import GettingStarted from "./pages/GettingStarted";
+import TestReceipt from "./pages/TestReceipt";
 
 // Other Pages
 import NotificationsNew from "./pages/NotificationsNew";
