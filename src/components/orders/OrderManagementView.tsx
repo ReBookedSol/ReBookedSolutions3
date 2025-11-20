@@ -487,6 +487,33 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
 
   const stats = getOrderStats();
 
+  const renderImageGalleryModal = () => {
+    if (!selectedOrderForGallery) return null;
+
+    const bookImages = getBookImages(selectedOrderForGallery);
+
+    return (
+      <Dialog open={!!selectedOrderForGallery} onOpenChange={(open) => {
+        if (!open) setSelectedOrderForGallery(null);
+      }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{selectedOrderForGallery.book?.title || "Book Photos"}</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            {bookImages.length > 0 ? (
+              <BookImageCarousel images={bookImages} />
+            ) : (
+              <div className="aspect-[3/4] bg-gray-200 rounded-lg flex items-center justify-center">
+                <p className="text-gray-500">No images available</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
