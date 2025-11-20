@@ -45,6 +45,7 @@ const ModernAddressTab = ({
   const [shippingAddress, setShippingAddress] = useState<Address | null>(null);
   const [sameAsPickup, setSameAsPickup] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<"pickup" | "shipping" | null>(null);
 
   useEffect(() => {
     if (addressData) {
