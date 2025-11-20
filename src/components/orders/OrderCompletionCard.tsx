@@ -554,8 +554,98 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
 
             // Seller: Notify issue finalising order
             if (sellerEmail) {
-              const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Issue finalising order</title></head><body style="font-family: Arial, sans-serif; line-height:1.6; color:#333; max-width:600px;margin:0 auto;padding:20px;"><div style="background:linear-gradient(135deg,#fdcb6e 0%,#e17055 100%);padding:25px;text-align:center;border-radius:8px;color:#fff;"><h1 style="margin:0;font-size:22px;">Issue finalising order</h1></div><div style="background:#f9f9f9;padding:20px;border-radius:0 0 8px 8px;border:1px solid #ddd;"><p>Hello ${sellerFullName},</p><p>We encountered an issue while finalising Order ID: ${orderId.slice(-8)} for <strong>${bookTitle}</strong>. The buyer reported: "${feedback.trim()}". Our team is investigating and may contact you for more information.</p><p><a href="https://rebookedsolutions.co.za/seller/orders/${orderId}" style="display:inline-block;padding:12px 18px;background:#e17055;color:#fff;border-radius:6px;text-decoration:none;">View Order</a></p></div></body></html>`;
-              const text = `Issue finalising order\n\nHello ${sellerFullName},\n\nWe encountered an issue while finalising Order ID: ${orderId.slice(-8)} for ${bookTitle}. The buyer reported: "${feedback.trim()}". Our team is investigating and may contact you for more information.\n\nView order: https://rebookedsolutions.co.za/seller/orders/${orderId}`;
+              const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Issue Finalising Order</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3fef7;
+      padding: 20px;
+      color: #1f4e3d;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    .header {
+      background-color: #3ab26f;
+      padding: 25px;
+      text-align: center;
+      border-radius: 10px 10px 0 0;
+      color: white;
+    }
+    .btn {
+      display: inline-block;
+      padding: 12px 20px;
+      background-color: #3ab26f;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    .footer-text {
+      font-size: 13px;
+      color: #4e7a63;
+      margin-top: 20px;
+    }
+    .social-links a {
+      color: #3ab26f;
+      text-decoration: none;
+      display: inline-block;
+      margin-right: 10px;
+      font-size: 14px;
+    }
+    .slogan {
+      font-size: 14px;
+      font-style: italic;
+      color: #1f4e3d;
+      margin-top: 25px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 style="margin:0;font-size:22px;">Issue Finalising Order</h1>
+    </div>
+    <div style="padding:20px;">
+      <p>Hello \${sellerFullName},</p>
+      <p>
+        We encountered an issue while finalising Order ID: <strong>\${orderId.slice(-8)}</strong> for <strong>\${bookTitle}</strong>.
+        Our team is investigating and may contact you for more information.
+      </p>
+      <a href="https://rebookedsolutions.co.za/seller/orders/\${orderId}" class="btn">
+        View Order
+      </a>
+      <p class="footer-text">
+        Follow us for updates:
+      </p>
+      <div class="social-links">
+        <a href="https://www.instagram.com/rebooked.solutions?igsh=M2ZsNjd2aTNmZmRh">Instagram</a>
+        <a href="https://www.facebook.com/people/Rebooked-Solutions/61577195802238/?mibextid=wwXIfr&rdid=zzSy70C45G7ABaBF&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F16ngKMps6U%2F%3Fmibextid%3DwwXIfr">Facebook</a>
+        <a href="https://www.tiktok.com/@rebooked.solution">TikTok</a>
+        <a href="https://x.com/RebookedSol">X (Twitter)</a>
+      </div>
+      <p class="footer-text">
+        If you need any help, email us at
+        <a href="mailto:support@rebookedsolutions.co.za" style="color:#3ab26f;">support@rebookedsolutions.co.za</a>.
+      </p>
+      <p class="slogan">"Pre-Loved Pages, New Adventure"</p>
+      <p class="footer-text">— ReBooked Solutions</p>
+    </div>
+  </div>
+</body>
+</html>`;
+              const text = `Issue finalising order\n\nHello ${sellerFullName},\n\nWe encountered an issue while finalising Order ID: ${orderId.slice(-8)} for ${bookTitle}. Our team is investigating and may contact you for more information.\n\nView order: https://rebookedsolutions.co.za/seller/orders/${orderId}`;
 
               try {
                 await emailService.sendEmail({ to: sellerEmail, subject: "Issue finalising order — ReBooked Solutions", html, text });
