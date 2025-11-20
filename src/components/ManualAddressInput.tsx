@@ -172,15 +172,26 @@ export const ManualAddressInput = ({
       {/* Address Search Input */}
       <div className="relative" ref={dropdownRef}>
         <Label htmlFor="address-search">Search Address</Label>
-        <Input
-          id="address-search"
-          type="text"
-          value={searchInput}
-          onChange={(e) => handleSearch(e.target.value)}
-          placeholder="Start typing an address..."
-          className="mt-2"
-          disabled={isLoading}
-        />
+        <div className="relative mt-2">
+          <Input
+            id="address-search"
+            type="text"
+            value={searchInput}
+            onChange={(e) => handleSearch(e.target.value)}
+            placeholder="Start typing an address..."
+            className="pr-10"
+          />
+          {/* Mini Loading Indicator */}
+          {isLoading && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              <div className="flex gap-1">
+                <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Suggestions Dropdown */}
         {showDropdown && suggestions.length > 0 && (
