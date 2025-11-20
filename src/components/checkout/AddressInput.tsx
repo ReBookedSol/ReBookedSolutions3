@@ -205,6 +205,49 @@ const AddressInput: React.FC<AddressInputProps> = ({
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Address Search/Autocomplete */}
+          <div className="relative" ref={dropdownRef}>
+            <Label htmlFor="address-search">Search Address (Optional)</Label>
+            <div className="relative mt-2">
+              <Input
+                id="address-search"
+                type="text"
+                value={searchInput}
+                onChange={(e) => handleSearch(e.target.value)}
+                placeholder="Start typing your address..."
+                className="pr-10 min-h-[44px] text-sm sm:text-base"
+              />
+              {/* Mini Loading Indicator */}
+              {isSearching && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                  <div className="flex gap-1">
+                    <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                    <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                    <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Suggestions Dropdown */}
+            {showDropdown && suggestions.length > 0 && (
+              <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                {suggestions.map((suggestion) => (
+                  <button
+                    key={suggestion.place_id}
+                    onClick={() =>
+                      handleSelectSuggestion(suggestion.place_id, suggestion.description)
+                    }
+                    className="w-full px-4 py-3 text-left hover:bg-orange-50 transition-colors border-b last:border-b-0 text-sm sm:text-base"
+                    type="button"
+                  >
+                    {suggestion.description}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Street Address */}
           <div>
             <Label htmlFor="street">Street Address *</Label>
