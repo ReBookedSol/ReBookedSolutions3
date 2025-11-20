@@ -166,8 +166,8 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
 
             metadata: {
               buyer_id: userId,
-              platform_fee: Math.round(orderSummary.book_price * 0.1 * 100),
-              seller_amount: Math.round(orderSummary.book_price * 0.9 * 100),
+              platform_fee: 2000,
+              seller_amount: Math.round(orderSummary.book_price * 100) - 2000,
               original_total: orderSummary.total_price,
               original_book_price: orderSummary.book_price,
               original_delivery_price: orderSummary.delivery_price,
@@ -462,8 +462,8 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
               buyer_id: userId,
               fallback_creation: true,
               edge_function_error: error.message,
-              platform_fee: Math.round(orderSummary.book_price * 0.1 * 100),
-              seller_amount: Math.round(orderSummary.book_price * 0.9 * 100),
+              platform_fee: 2000,
+              seller_amount: Math.round(orderSummary.book_price * 100) - 2000,
             },
           };
 
@@ -1094,7 +1094,7 @@ Time: ${new Date().toISOString()}
             return;
           }
 
-          console.log("✅ Paystack payment successful:", result);
+          console.log("��� Paystack payment successful:", result);
 
           // Extract book item data for processing
           const bookItem = createdOrder.items[0]; // Get the book item
@@ -1128,6 +1128,7 @@ Time: ${new Date().toISOString()}
             book_price: bookItem.price / 100, // Convert back from kobo to rands
             delivery_method: createdOrder.delivery_data.delivery_method,
             delivery_price: createdOrder.delivery_data.delivery_price / 100, // Convert back from kobo
+            platform_fee: 20,
             total_paid: createdOrder.amount / 100, // Convert back from kobo
             created_at: createdOrder.created_at,
             status: "paid",

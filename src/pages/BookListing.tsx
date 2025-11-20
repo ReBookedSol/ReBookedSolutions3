@@ -20,7 +20,9 @@ const BookListing = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Pagination states
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(
+    parseInt(searchParams.get("page") || "1", 10)
+  );
   const [totalBooks, setTotalBooks] = useState(0);
   const booksPerPage = 12;
   const pageTopRef = useRef<HTMLDivElement>(null);
@@ -168,7 +170,8 @@ const BookListing = () => {
       newSearchParams.set("province", selectedProvince);
     }
 
-    setCurrentPage(1); // Reset to first page when filters change
+    newSearchParams.set("page", "1"); // Reset to first page when filters change
+    setCurrentPage(1);
     setSearchParams(newSearchParams);
   }, [
     searchQuery,
@@ -191,7 +194,9 @@ const BookListing = () => {
     setPriceRange([0, 1000]);
     setBookType("all");
     setCurrentPage(1); // Reset to first page when clearing filters
-    setSearchParams(new URLSearchParams());
+    const newSearchParams = new URLSearchParams();
+    newSearchParams.set("page", "1");
+    setSearchParams(newSearchParams);
   }, [setSearchParams]);
 
   const handleCommitBook = async (bookId: string) => {
@@ -211,6 +216,11 @@ const BookListing = () => {
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
 
+    // Update URL params with new page number
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set("page", page.toString());
+    setSearchParams(newSearchParams);
+
     // Quick scroll to top without smooth behavior for better performance
     requestAnimationFrame(() => {
       if (pageTopRef.current) {
@@ -225,7 +235,7 @@ const BookListing = () => {
         });
       }
     });
-  }, []);
+  }, [searchParams, setSearchParams]);
 
 
 
