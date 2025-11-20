@@ -110,29 +110,30 @@ export const ManualAddressInput = ({
 
     try {
       setIsLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
+      const details = await fetchAddressDetails(placeId);
 
-      const response = await fetch(
-        `${SUPABASE_URL}/functions/v1/address-place-details?place_id=${encodeURIComponent(placeId)}`,
-        {
-          headers: {
-            "Authorization": `Bearer ${session?.access_token || ANON_KEY}`,
-            "apikey": ANON_KEY,
-            "Content-Type": "application/json",
-          },
+      if (details) {
+        // Parse the formatted address
+        // Format: "Street Number Street Name, Suburb, City, Postal Code, Country"
+        const parts = details.address.split(',').map(p => p.trim());
+
+        let streetAddr = parts[0] || '';
+        if (parts[1] && !parts[1].match(/^\d+$/)) {
+          streetAddr = `${parts[0]}, ${parts[1]}`;
         }
-      );
 
-      const addressData = await response.json();
+        const city = parts[2] || parts[1] || '';
+        const postalCode = parts[3] || '';
 
-      // Auto-fill the form fields
-      setFormData({
-        street_address: addressData.street_address || "",
-        city: addressData.city || "",
-        province: addressData.province || "",
-        postal_code: addressData.postal_code || "",
-        country: addressData.country || "South Africa",
-      });
+        // Auto-fill the form fields
+        setFormData({
+          street_address: streetAddr,
+          city: city,
+          province: "",
+          postal_code: postalCode,
+          country: "South Africa",
+        });
+      }
     } catch (error) {
       console.error("Error fetching address details:", error);
     } finally {
