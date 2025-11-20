@@ -307,6 +307,34 @@ const BobGoLocationsSection: React.FC = () => {
           )}
         </div>
       </CardContent>
+
+      {/* Image Modal */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-96 overflow-auto">
+            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Location Image</h3>
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="text-gray-500 hover:text-gray-700 text-2xl font-light"
+              >
+                ×
+              </button>
+            </div>
+            <div className="p-4 flex items-center justify-center">
+              <img
+                src={selectedImage}
+                alt="Location"
+                className="w-full h-auto rounded"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   );
 };
