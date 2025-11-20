@@ -16,6 +16,24 @@ export interface ParsedAddress {
 }
 
 /**
+ * Get the Edge Function URL base
+ */
+function getEdgeFunctionUrl(functionName: string): string {
+  const supabaseUrl = supabase.supabaseUrl;
+  return `${supabaseUrl}/functions/v1/${functionName}`;
+}
+
+/**
+ * Get authorization headers for Edge Function calls
+ */
+function getHeaders(): Record<string, string> {
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${supabase.supabaseKey}`,
+  };
+}
+
+/**
  * Get address autocomplete suggestions from the address-autocomplete Edge Function
  */
 export async function getAddressSuggestions(input: string): Promise<AddressSuggestion[]> {
@@ -24,18 +42,20 @@ export async function getAddressSuggestions(input: string): Promise<AddressSugge
       return [];
     }
 
-    const { data, error } = await supabase.functions.invoke('address-autocomplete', {
+    const url = new URL(getEdgeFunctionUrl('address-autocomplete'));
+    url.searchParams.set('input', input.trim());
+
+    const response = await fetch(url.toString(), {
       method: 'GET',
-    }, {
-      query: {
-        input: input.trim(),
-      },
+      headers: getHeaders(),
     });
 
-    if (error) {
-      console.error('Error fetching address suggestions:', error);
+    if (!response.ok) {
+      console.error('Error fetching address suggestions:', response.statusText);
       return [];
     }
+
+    const data = await response.json();
 
     if (!data || !data.suggestions) {
       return [];
@@ -58,18 +78,20 @@ export async function getAddressDetails(placeId: string): Promise<{
   lng: number;
 } | null> {
   try {
-    const { data, error } = await supabase.functions.invoke('address-place-details', {
+    const url = new URL(getEdgeFunctionUrl('address-place-details'));
+    url.searchParams.set('place_id', placeId);
+
+    const response = await fetch(url.toString(), {
       method: 'GET',
-    }, {
-      query: {
-        place_id: placeId,
-      },
+      headers: getHeaders(),
     });
 
-    if (error) {
-      console.error('Error fetching address details:', error);
+    if (!response.ok) {
+      console.error('Error fetching address details:', response.statusText);
       return null;
     }
+
+    const data = await response.json();
 
     return data;
   } catch (err) {
