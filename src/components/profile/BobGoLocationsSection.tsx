@@ -173,10 +173,6 @@ const BobGoLocationsSection: React.FC = () => {
               </h3>
               <div className="max-h-96 overflow-y-auto space-y-2 border border-gray-200 rounded-lg p-3 bg-gray-50">
                 {locations.map((location, index) => {
-                  // Handle different possible field names for address
-                  const addressText = location.address || location.name || location.street_address || `${location.latitude?.toFixed(4)}, ${location.longitude?.toFixed(4)}`;
-                  const nameText = location.name || location.location_name || `Location ${index + 1}`;
-
                   return (
                     <div
                       key={location.id || index}
@@ -185,41 +181,124 @@ const BobGoLocationsSection: React.FC = () => {
                       }}
                       className="p-4 bg-white border border-purple-200 rounded-lg hover:bg-purple-50 hover:border-purple-400 cursor-pointer transition-all"
                     >
-                      <div className="flex items-start gap-3">
-                        <MapPin className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-gray-900 truncate">
-                            {nameText}
-                          </h4>
-                          <p className="text-sm text-gray-700 mt-1 line-clamp-2">
-                            {addressText}
-                          </p>
-
-                          {/* Additional Info */}
-                          <div className="flex flex-wrap gap-2 mt-3">
-                            {(location.distance || location.distance_km) && (
-                              <Badge variant="outline" className="text-xs">
-                                {typeof location.distance === "number"
-                                  ? `${location.distance.toFixed(1)} km`
-                                  : typeof location.distance_km === "number"
-                                  ? `${location.distance_km.toFixed(1)} km`
-                                  : location.distance || location.distance_km}
-                              </Badge>
-                            )}
-                            {(location.hours || location.operating_hours) && (
-                              <Badge variant="outline" className="text-xs flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {location.hours || location.operating_hours}
-                              </Badge>
-                            )}
-                            {(location.phone || location.contact_phone) && (
-                              <Badge variant="outline" className="text-xs flex items-center gap-1">
-                                <Phone className="h-3 w-3" />
-                                {location.phone || location.contact_phone}
-                              </Badge>
-                            )}
+                      {/* Header with name and icon */}
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="flex items-start gap-3 flex-1">
+                          <MapPin className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-gray-900">
+                              {location.name || location.location_name || location.title || `Location ${index + 1}`}
+                            </h4>
                           </div>
                         </div>
+                      </div>
+
+                      {/* Content grid */}
+                      <div className="space-y-2 text-sm">
+                        {/* Address */}
+                        {(location.address || location.street_address) && (
+                          <div className="pb-2 border-b border-gray-100">
+                            <p className="text-xs font-medium text-gray-500 uppercase">Address</p>
+                            <p className="text-gray-800 mt-1">
+                              {location.address || location.street_address}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Coordinates */}
+                        {(location.latitude || location.longitude) && (
+                          <div className="pb-2 border-b border-gray-100">
+                            <p className="text-xs font-medium text-gray-500 uppercase">Coordinates</p>
+                            <p className="text-gray-800 mt-1">
+                              {location.latitude?.toFixed(4)}, {location.longitude?.toFixed(4)}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Distance */}
+                        {(location.distance || location.distance_km) && (
+                          <div className="pb-2 border-b border-gray-100">
+                            <p className="text-xs font-medium text-gray-500 uppercase">Distance</p>
+                            <p className="text-gray-800 mt-1">
+                              {typeof location.distance === "number"
+                                ? `${location.distance.toFixed(1)} km`
+                                : typeof location.distance_km === "number"
+                                ? `${location.distance_km.toFixed(1)} km`
+                                : location.distance || location.distance_km}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Phone */}
+                        {(location.phone || location.contact_phone || location.telephone) && (
+                          <div className="pb-2 border-b border-gray-100">
+                            <p className="text-xs font-medium text-gray-500 uppercase">Phone</p>
+                            <p className="text-gray-800 mt-1 flex items-center gap-2">
+                              <Phone className="h-4 w-4 text-purple-600" />
+                              {location.phone || location.contact_phone || location.telephone}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Hours */}
+                        {(location.hours || location.operating_hours || location.working_hours) && (
+                          <div className="pb-2 border-b border-gray-100">
+                            <p className="text-xs font-medium text-gray-500 uppercase">Operating Hours</p>
+                            <p className="text-gray-800 mt-1 flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-purple-600" />
+                              {location.hours || location.operating_hours || location.working_hours}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Email */}
+                        {(location.email || location.contact_email) && (
+                          <div className="pb-2 border-b border-gray-100">
+                            <p className="text-xs font-medium text-gray-500 uppercase">Email</p>
+                            <p className="text-gray-800 mt-1 break-all">
+                              {location.email || location.contact_email}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Status */}
+                        {(location.status || location.is_active !== undefined) && (
+                          <div className="pb-2 border-b border-gray-100">
+                            <p className="text-xs font-medium text-gray-500 uppercase">Status</p>
+                            <Badge className={`mt-1 ${location.is_active || location.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                              {location.status || (location.is_active ? 'Active' : 'Inactive')}
+                            </Badge>
+                          </div>
+                        )}
+
+                        {/* All other fields */}
+                        {Object.entries(location).map(([key, value]) => {
+                          // Skip already displayed fields
+                          const skippedFields = [
+                            'id', 'name', 'address', 'street_address', 'latitude', 'longitude',
+                            'distance', 'distance_km', 'phone', 'contact_phone', 'telephone',
+                            'hours', 'operating_hours', 'working_hours', 'email', 'contact_email',
+                            'status', 'is_active', 'location_name', 'title'
+                          ];
+
+                          if (skippedFields.includes(key.toLowerCase()) || !value) {
+                            return null;
+                          }
+
+                          // Format the value
+                          const displayValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
+
+                          return (
+                            <div key={key} className="pb-2 border-b border-gray-100">
+                              <p className="text-xs font-medium text-gray-500 uppercase">
+                                {key.replace(/_/g, ' ')}
+                              </p>
+                              <p className="text-gray-800 mt-1 break-words">
+                                {displayValue}
+                              </p>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   );
