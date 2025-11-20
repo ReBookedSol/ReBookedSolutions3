@@ -197,10 +197,15 @@ const ModernAddressTab = ({
     };
     setPickupAddress(formattedAddress);
 
-    if (sameAsPickup) {
-      setShippingAddress(formattedAddress);
-    }
-  }, [sameAsPickup]);
+    // If "use pickup for shipping" is checked, also update shipping address
+    // This handles updates to the pickup address when the checkbox is already checked
+    setSameAsPickup((currentSameAsPickup) => {
+      if (currentSameAsPickup) {
+        setShippingAddress(formattedAddress);
+      }
+      return currentSameAsPickup;
+    });
+  }, []);
 
   const handleShippingAddressChange = useCallback((address: GoogleAddressData) => {
     const formattedAddress: Address = {
