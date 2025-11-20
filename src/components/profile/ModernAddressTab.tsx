@@ -16,6 +16,7 @@ import {
   Package,
   Loader2,
   Info,
+  Trash2,
 } from "lucide-react";
 import ManualAddressInput from "@/components/ManualAddressInput";
 import type { AddressData as GoogleAddressData } from "@/components/ManualAddressInput";
