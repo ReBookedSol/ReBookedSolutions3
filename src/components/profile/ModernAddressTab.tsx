@@ -577,6 +577,9 @@ const ModernAddressTab = ({
         </Card>
       </div>
 
+      {/* BobGo Locations Section */}
+      <BobGoLocationsSection />
+
       {/* Action Buttons for Edit Mode */}
       {editMode !== "none" && (
         <Card className="border-2 border-purple-100">
