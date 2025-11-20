@@ -193,6 +193,34 @@ const BobGoLocationsSection: React.FC = () => {
                         </div>
                       </div>
 
+                      {/* Provider Logo/Image */}
+                      <div className="flex gap-3 mb-3">
+                        {(location.provider_logo || location.logo) && (
+                          <div className="flex-shrink-0">
+                            <img
+                              src={location.provider_logo || location.logo}
+                              alt="Provider logo"
+                              className="h-12 w-12 object-contain rounded border border-gray-200"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        )}
+                        {(location.image_url || location.provider_image) && (
+                          <div className="flex-shrink-0">
+                            <img
+                              src={location.image_url || location.provider_image}
+                              alt="Location image"
+                              className="h-12 w-12 object-cover rounded border border-gray-200"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
+
                       {/* Content grid */}
                       <div className="space-y-2 text-sm">
                         {/* Address */}
@@ -201,16 +229,6 @@ const BobGoLocationsSection: React.FC = () => {
                             <p className="text-xs font-medium text-gray-500 uppercase">Address</p>
                             <p className="text-gray-800 mt-1">
                               {location.address || location.street_address}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Coordinates */}
-                        {(location.latitude || location.longitude) && (
-                          <div className="pb-2 border-b border-gray-100">
-                            <p className="text-xs font-medium text-gray-500 uppercase">Coordinates</p>
-                            <p className="text-gray-800 mt-1">
-                              {location.latitude?.toFixed(4)}, {location.longitude?.toFixed(4)}
                             </p>
                           </div>
                         )}
@@ -273,12 +291,15 @@ const BobGoLocationsSection: React.FC = () => {
 
                         {/* All other fields */}
                         {Object.entries(location).map(([key, value]) => {
-                          // Skip already displayed fields
+                          // Skip already displayed fields and internal/unnecessary fields
                           const skippedFields = [
                             'id', 'name', 'address', 'street_address', 'latitude', 'longitude',
                             'distance', 'distance_km', 'phone', 'contact_phone', 'telephone',
                             'hours', 'operating_hours', 'working_hours', 'email', 'contact_email',
-                            'status', 'is_active', 'location_name', 'title'
+                            'status', 'is_active', 'location_name', 'title',
+                            'provider_logo', 'logo', 'image_url', 'provider_image',
+                            'type', 'provider_id', 'provider_data', 'provider_sludge',
+                            'compartment_errors', 'compartment_error', 'human_name'
                           ];
 
                           if (skippedFields.includes(key.toLowerCase()) || !value) {
