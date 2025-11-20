@@ -107,25 +107,13 @@ export const ManualAddressInput = ({
       const details = await fetchAddressDetails(placeId);
 
       if (details) {
-        // Parse the formatted address
-        // Format: "Street Number Street Name, Suburb, City, Postal Code, Country"
-        const parts = details.address.split(',').map(p => p.trim());
-
-        let streetAddr = parts[0] || '';
-        if (parts[1] && !parts[1].match(/^\d+$/)) {
-          streetAddr = `${parts[0]}, ${parts[1]}`;
-        }
-
-        const city = parts[2] || parts[1] || '';
-        const postalCode = parts[3] || '';
-
-        // Auto-fill the form fields
+        // Use the parsed components directly from the API response
         setFormData({
-          street_address: streetAddr,
-          city: city,
-          province: "",
-          postal_code: postalCode,
-          country: "South Africa",
+          street_address: details.street_address || '',
+          city: details.city || '',
+          province: details.province || '',
+          postal_code: details.postal_code || '',
+          country: details.country || 'South Africa',
         });
       }
     } catch (error) {
