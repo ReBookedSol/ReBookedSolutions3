@@ -306,6 +306,160 @@ const Step4Confirmation: React.FC<Step4ConfirmationProps> = ({
           </p>
         </CardContent>
       </Card>
+
+      {/* Hidden Receipt for PNG Generation */}
+      <div
+        ref={receiptRef}
+        className="hidden"
+        style={{
+          width: "800px",
+          padding: "40px",
+          fontFamily: "'Arial', sans-serif",
+          color: "#1f4e3d",
+        }}
+      >
+        <div style={{ backgroundColor: "#ffffff", padding: "40px" }}>
+          {/* Header */}
+          <div
+            style={{
+              borderBottom: "3px solid #3ab26f",
+              paddingBottom: "20px",
+              marginBottom: "30px",
+              textAlign: "center",
+            }}
+          >
+            <h1 style={{ fontSize: "32px", margin: "0 0 5px 0", color: "#1f4e3d" }}>
+              ReBooked Solutions
+            </h1>
+            <p style={{ fontSize: "14px", margin: "0", color: "#4e7a63" }}>
+              Purchase Receipt
+            </p>
+          </div>
+
+          {/* Order Info */}
+          <div style={{ marginBottom: "30px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", fontSize: "14px" }}>
+              <div>
+                <p style={{ margin: "0 0 5px 0", color: "#4e7a63", fontWeight: "bold" }}>
+                  Order ID
+                </p>
+                <p style={{ margin: "0", fontSize: "16px", fontWeight: "bold", fontFamily: "monospace" }}>
+                  {orderData.order_id}
+                </p>
+              </div>
+              <div>
+                <p style={{ margin: "0 0 5px 0", color: "#4e7a63", fontWeight: "bold" }}>
+                  Payment Reference
+                </p>
+                <p style={{ margin: "0", fontSize: "14px", fontFamily: "monospace" }}>
+                  {orderData.payment_reference}
+                </p>
+              </div>
+              <div>
+                <p style={{ margin: "0 0 5px 0", color: "#4e7a63", fontWeight: "bold" }}>
+                  Date
+                </p>
+                <p style={{ margin: "0" }}>
+                  {new Date(orderData.created_at).toLocaleDateString()}
+                </p>
+              </div>
+              <div>
+                <p style={{ margin: "0 0 5px 0", color: "#4e7a63", fontWeight: "bold" }}>
+                  Time
+                </p>
+                <p style={{ margin: "0" }}>
+                  {new Date(orderData.created_at).toLocaleTimeString()}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <hr style={{ border: "none", borderTop: "1px solid #e0e0e0", margin: "30px 0" }} />
+
+          {/* Book Details */}
+          <div style={{ marginBottom: "30px" }}>
+            <h2 style={{ fontSize: "16px", fontWeight: "bold", marginBottom: "15px", color: "#1f4e3d" }}>
+              📚 Book Details
+            </h2>
+            <div style={{ backgroundColor: "#f3fef7", padding: "15px", borderRadius: "8px" }}>
+              <p style={{ margin: "0 0 10px 0", fontSize: "15px", fontWeight: "bold" }}>
+                {orderData.book_title}
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px", fontSize: "13px" }}>
+                <p style={{ margin: "0", color: "#4e7a63" }}>
+                  Book ID: {orderData.book_id}
+                </p>
+                <p style={{ margin: "0", textAlign: "right", fontWeight: "bold" }}>
+                  R{orderData.book_price.toFixed(2)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Delivery Information */}
+          <div style={{ marginBottom: "30px" }}>
+            <h2 style={{ fontSize: "16px", fontWeight: "bold", marginBottom: "15px", color: "#1f4e3d" }}>
+              🚚 Delivery Information
+            </h2>
+            <div style={{ backgroundColor: "#f3fef7", padding: "15px", borderRadius: "8px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px", fontSize: "13px" }}>
+                <p style={{ margin: "0", color: "#4e7a63" }}>
+                  Method: {orderData.delivery_method}
+                </p>
+                <p style={{ margin: "0", textAlign: "right", fontWeight: "bold" }}>
+                  R{orderData.delivery_price.toFixed(2)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <hr style={{ border: "none", borderTop: "1px solid #e0e0e0", margin: "30px 0" }} />
+
+          {/* Price Breakdown */}
+          <div style={{ marginBottom: "30px" }}>
+            <h2 style={{ fontSize: "16px", fontWeight: "bold", marginBottom: "15px", color: "#1f4e3d" }}>
+              💰 Price Breakdown
+            </h2>
+            <div style={{ backgroundColor: "#f3fef7", padding: "15px", borderRadius: "8px", fontSize: "13px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                <span>Book Price</span>
+                <span>R{orderData.book_price.toFixed(2)}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                <span>Delivery Fee</span>
+                <span>R{orderData.delivery_price.toFixed(2)}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
+                <span>Platform Fee</span>
+                <span>R{(orderData.platform_fee || 20).toFixed(2)}</span>
+              </div>
+              <hr style={{ border: "none", borderTop: "1px solid #d0d0d0", margin: "12px 0" }} />
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "16px", fontWeight: "bold", color: "#3ab26f" }}>
+                <span>Total Paid</span>
+                <span>R{orderData.total_paid.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Status */}
+          <div style={{ marginBottom: "30px" }}>
+            <h2 style={{ fontSize: "16px", fontWeight: "bold", marginBottom: "15px", color: "#1f4e3d" }}>
+              ✅ Status
+            </h2>
+            <div style={{ backgroundColor: "#d4f4e8", padding: "15px", borderRadius: "8px", color: "#1f4e3d", fontWeight: "bold" }}>
+              PAID - Payment completed successfully
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div style={{ textAlign: "center", marginTop: "40px", paddingTop: "20px", borderTop: "1px solid #e0e0e0", fontSize: "12px", color: "#4e7a63" }}>
+            <p style={{ margin: "10px 0" }}>Thank you for your purchase!</p>
+            <p style={{ margin: "10px 0" }}>Track your order: https://rebookedsolutions.co.za/orders/{orderData.order_id}</p>
+            <p style={{ margin: "10px 0", fontStyle: "italic" }}>"Pre-Loved Pages, New Adventure"</p>
+            <p style={{ margin: "10px 0" }}>© ReBooked Solutions</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
