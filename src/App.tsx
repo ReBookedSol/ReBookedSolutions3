@@ -57,7 +57,6 @@ import Shipping from "./pages/Shipping";
 import Report from "./pages/Report";
 import SellerProfile from "./pages/SellerProfile";
 import GettingStarted from "./pages/GettingStarted";
-import TestReceipt from "./pages/TestReceipt";
 
 // Other Pages
 import NotificationsNew from "./pages/NotificationsNew";
@@ -298,7 +297,6 @@ function App() {
                       
                       {/* Support Routes */}
                       <Route path="/contact" element={<ContactUs />} />
-                      <Route path="/test" element={<TestReceipt />} />
                       <Route path="/faq" element={<FAQ />} />
                       <Route path="/privacy" element={<Privacy />} />
                       <Route path="/terms" element={<Terms />} />
