@@ -320,8 +320,10 @@ const Step4Confirmation: React.FC<Step4ConfirmationProps> = ({
       {/* Hidden Receipt for PNG Generation */}
       <div
         ref={receiptRef}
-        className="hidden"
         style={{
+          position: "fixed",
+          left: "-9999px",
+          top: "-9999px",
           width: "800px",
           padding: "40px",
           fontFamily: "'Arial', sans-serif",
