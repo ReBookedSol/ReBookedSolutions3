@@ -229,7 +229,7 @@ const BobGoLocationsSection: React.FC = () => {
           )}
 
           {/* No Locations Found */}
-          {showLocations && locations.length === 0 && !isLoadingLocations && (
+          {selectedAddress && locations.length === 0 && !isLoadingLocations && (
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
@@ -239,8 +239,8 @@ const BobGoLocationsSection: React.FC = () => {
             </Alert>
           )}
 
-          {/* Info Alert */}
-          {!showLocations && (
+          {/* Info Alert - Show when no search has been done yet */}
+          {!selectedAddress && locations.length === 0 && !isLoadingLocations && (
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
