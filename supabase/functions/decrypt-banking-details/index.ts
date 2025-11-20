@@ -13,6 +13,37 @@ interface EncryptedBundle {
   version?: number
 }
 
+function parseEncryptedBundle(data: unknown): EncryptedBundle {
+  // If it's a string, parse it as JSON
+  if (typeof data === 'string') {
+    try {
+      const parsed = JSON.parse(data)
+      return parsed as EncryptedBundle
+    } catch {
+      throw new Error('INVALID_ENCRYPTED_DATA_FORMAT')
+    }
+  }
+
+  // If it's already an object (from JSONB), validate and return it
+  if (typeof data === 'object' && data !== null) {
+    const bundle = data as Record<string, unknown>
+    if (
+      typeof bundle.ciphertext === 'string' &&
+      typeof bundle.iv === 'string' &&
+      typeof bundle.authTag === 'string'
+    ) {
+      return {
+        ciphertext: bundle.ciphertext,
+        iv: bundle.iv,
+        authTag: bundle.authTag,
+        version: typeof bundle.version === 'number' ? bundle.version : undefined
+      }
+    }
+  }
+
+  throw new Error('INVALID_ENCRYPTED_DATA_FORMAT')
+}
+
 function base64ToBytes(b64: string): Uint8Array {
   try {
     const bin = atob(b64)
@@ -112,7 +143,7 @@ serve(async (req) => {
   }
 
   try {
-    // Processing banking details decryption request
+    console.log('=== Decrypt Banking Details Request ===');
 
     const user = await getUserFromRequest(req);
     if (!user) {
@@ -123,7 +154,7 @@ serve(async (req) => {
       );
     }
 
-    // User authenticated
+    console.log('Authenticated user:', user.id);
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -146,7 +177,7 @@ serve(async (req) => {
       );
     }
 
-    // Banking details found for user
+    console.log('Found banking details for user:', user.id);
 
     // Check if data is encrypted
     const hasEncryptedData = !!(
@@ -167,6 +198,7 @@ serve(async (req) => {
     // Get encryption key for decryption
     const encryptionKey = getEncryptionKey()
     if (!encryptionKey) {
+      console.error('Encryption key not configured');
       return new Response(
         JSON.stringify({ error: 'Encryption key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -175,32 +207,27 @@ serve(async (req) => {
 
     // Decrypt the encrypted data
     try {
-      const decryptedAccountNumber = await decryptGCM(
-        bankingDetails.encrypted_account_number as unknown as EncryptedBundle,
-        encryptionKey
-      );
-      const decryptedBankCode = await decryptGCM(
-        bankingDetails.encrypted_bank_code as unknown as EncryptedBundle,
-        encryptionKey
-      );
-      const decryptedBankName = await decryptGCM(
-        bankingDetails.encrypted_bank_name as unknown as EncryptedBundle,
-        encryptionKey
-      );
-      const decryptedBusinessName = await decryptGCM(
-        bankingDetails.encrypted_business_name as unknown as EncryptedBundle,
-        encryptionKey
-      );
+      // Parse and validate encrypted bundles (handles both string and JSONB objects)
+      const accountBundle = parseEncryptedBundle(bankingDetails.encrypted_account_number)
+      const bankCodeBundle = parseEncryptedBundle(bankingDetails.encrypted_bank_code)
+      const bankNameBundle = parseEncryptedBundle(bankingDetails.encrypted_bank_name)
+      const businessNameBundle = parseEncryptedBundle(bankingDetails.encrypted_business_name)
+
+      console.log('Parsed encrypted bundles successfully');
+
+      // Decrypt all fields
+      const decryptedAccountNumber = await decryptGCM(accountBundle, encryptionKey);
+      const decryptedBankCode = await decryptGCM(bankCodeBundle, encryptionKey);
+      const decryptedBankName = await decryptGCM(bankNameBundle, encryptionKey);
+      const decryptedBusinessName = await decryptGCM(businessNameBundle, encryptionKey);
 
       let decryptedEmail: string | null = null;
       if (bankingDetails.encrypted_email) {
         try {
-          decryptedEmail = await decryptGCM(
-            bankingDetails.encrypted_email as unknown as EncryptedBundle,
-            encryptionKey
-          );
-        } catch (_) {
-          console.warn('Failed to decrypt email');
+          const emailBundle = parseEncryptedBundle(bankingDetails.encrypted_email)
+          decryptedEmail = await decryptGCM(emailBundle, encryptionKey);
+        } catch (emailError) {
+          console.warn('Failed to decrypt email:', emailError);
           decryptedEmail = null;
         }
       }
@@ -224,8 +251,14 @@ serve(async (req) => {
 
     } catch (decryptError) {
       console.error('Failed to decrypt banking details:', decryptError);
+      const errorMessage = decryptError instanceof Error ? decryptError.message : 'Unknown decryption error'
+      console.error('Decryption error details:', errorMessage);
+
       return new Response(
-        JSON.stringify({ error: 'Failed to decrypt banking details' }),
+        JSON.stringify({
+          error: 'Failed to decrypt banking details',
+          details: errorMessage
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
