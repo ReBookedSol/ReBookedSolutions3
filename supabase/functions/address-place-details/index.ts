@@ -37,8 +37,8 @@ serve(async (req) => {
       );
     }
 
-    // Call Google Place Details API
-    const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(placeId)}&fields=formatted_address,geometry&key=${apiKey}`;
+    // Call Google Place Details API with address_components
+    const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(placeId)}&fields=formatted_address,geometry,address_components&key=${apiKey}`;
     
     console.log('Calling Google Place Details API');
     const response = await fetch(detailsUrl);
@@ -56,16 +56,56 @@ serve(async (req) => {
     }
 
     const result = data.result;
-    const locationData = {
-      address: result.formatted_address,
+    
+    // Parse address components
+    const components = result.address_components || [];
+    const addressData: any = {
+      formatted_address: result.formatted_address,
       lat: result.geometry.location.lat,
       lng: result.geometry.location.lng,
+      street_number: '',
+      route: '',
+      street_address: '',
+      city: '',
+      province: '',
+      postal_code: '',
+      country: ''
     };
 
-    console.log('Place details retrieved:', locationData);
+    // Extract components
+    components.forEach((component: any) => {
+      const types = component.types;
+      
+      if (types.includes('street_number')) {
+        addressData.street_number = component.long_name;
+      }
+      if (types.includes('route')) {
+        addressData.route = component.long_name;
+      }
+      if (types.includes('locality')) {
+        addressData.city = component.long_name;
+      }
+      if (types.includes('sublocality') && !addressData.city) {
+        addressData.city = component.long_name;
+      }
+      if (types.includes('administrative_area_level_1')) {
+        addressData.province = component.long_name;
+      }
+      if (types.includes('postal_code')) {
+        addressData.postal_code = component.long_name;
+      }
+      if (types.includes('country')) {
+        addressData.country = component.long_name;
+      }
+    });
+
+    // Combine street number and route for full street address
+    addressData.street_address = `${addressData.street_number} ${addressData.route}`.trim();
+
+    console.log('Place details retrieved:', addressData);
 
     return new Response(
-      JSON.stringify(locationData),
+      JSON.stringify(addressData),
       { 
         status: 200, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
