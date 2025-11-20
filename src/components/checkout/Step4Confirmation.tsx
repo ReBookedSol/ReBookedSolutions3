@@ -28,6 +28,9 @@ const Step4Confirmation: React.FC<Step4ConfirmationProps> = ({
   onViewOrders,
   onContinueShopping,
 }) => {
+  const receiptRef = useRef<HTMLDivElement>(null);
+  const [isDownloading, setIsDownloading] = React.useState(false);
+
   useEffect(() => {
     // Send confirmation email
     sendConfirmationEmail();
