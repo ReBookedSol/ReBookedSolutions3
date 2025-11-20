@@ -172,6 +172,23 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
     }));
   };
 
+  const getBookImages = (order: Order): string[] => {
+    const images: string[] = [];
+
+    // Add primary image
+    if (order.book?.image_url) {
+      images.push(order.book.image_url);
+    }
+
+    // Add additional images
+    if (order.book?.additional_images && Array.isArray(order.book.additional_images)) {
+      images.push(...order.book.additional_images.filter(Boolean));
+    }
+
+    // Return unique images and filter out empty strings
+    return [...new Set(images)].filter(Boolean);
+  };
+
   const handleFeedbackSubmitted = useCallback(() => {
     fetchOrders();
   }, []);
