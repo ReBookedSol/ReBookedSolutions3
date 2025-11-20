@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { ENV } from '@/config/environment';
 
 export interface AddressSuggestion {
   description: string;
@@ -19,8 +19,7 @@ export interface ParsedAddress {
  * Get the Edge Function URL base
  */
 function getEdgeFunctionUrl(functionName: string): string {
-  const supabaseUrl = supabase.supabaseUrl;
-  return `${supabaseUrl}/functions/v1/${functionName}`;
+  return `${ENV.VITE_SUPABASE_URL}/functions/v1/${functionName}`;
 }
 
 /**
@@ -29,7 +28,7 @@ function getEdgeFunctionUrl(functionName: string): string {
 function getHeaders(): Record<string, string> {
   return {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${supabase.supabaseKey}`,
+    'Authorization': `Bearer ${ENV.VITE_SUPABASE_ANON_KEY}`,
   };
 }
 
