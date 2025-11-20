@@ -6,13 +6,13 @@ export interface AddressSuggestion {
 }
 
 export interface ParsedAddress {
-  street: string;
+  street_address: string;
   city: string;
-  postalCode: string;
+  province: string;
+  postal_code: string;
   country: string;
-  province?: string;
-  lat?: number;
-  lng?: number;
+  lat: number;
+  lng: number;
 }
 
 /**
@@ -69,13 +69,9 @@ export async function getAddressSuggestions(input: string): Promise<AddressSugge
 
 /**
  * Get full address details from place_id
- * Returns the formatted address which needs to be parsed
+ * Returns structured address components ready for form auto-fill
  */
-export async function getAddressDetails(placeId: string): Promise<{
-  address: string;
-  lat: number;
-  lng: number;
-} | null> {
+export async function getAddressDetails(placeId: string): Promise<ParsedAddress | null> {
   try {
     const url = new URL(getEdgeFunctionUrl('address-place-details'));
     url.searchParams.set('place_id', placeId);
@@ -92,7 +88,23 @@ export async function getAddressDetails(placeId: string): Promise<{
 
     const data = await response.json();
 
-    return data;
+    if (data.error) {
+      console.error('Address details error:', data.error);
+      return null;
+    }
+
+    // Parse the response and ensure all required fields are present
+    const parsed: ParsedAddress = {
+      street_address: data.street_address || '',
+      city: data.city || '',
+      province: data.province || '',
+      postal_code: data.postal_code || '',
+      country: data.country || 'South Africa',
+      lat: data.lat || 0,
+      lng: data.lng || 0,
+    };
+
+    return parsed;
   } catch (err) {
     console.error('Error in getAddressDetails:', err);
     return null;
@@ -100,82 +112,11 @@ export async function getAddressDetails(placeId: string): Promise<{
 }
 
 /**
- * Parse a formatted address into its components
- * Expected format: "85 Flamingo Rd, Kikuyu Estate, Midrand, 2090, South Africa"
- * 
- * Mapping:
- * - Street Address: first two parts combined (85 Flamingo Rd, Kikuyu Estate)
- * - City: third part (Midrand)
- * - Postal Code: fourth part (2090)
- * - Country: fifth part (South Africa)
+ * Complete flow: select an address and get its parsed details
  */
-export function parseFormattedAddress(formattedAddress: string): Partial<ParsedAddress> {
+export async function selectAddressSuggestion(placeId: string): Promise<ParsedAddress | null> {
   try {
-    const parts = formattedAddress.split(',').map(part => part.trim());
-    
-    if (parts.length < 2) {
-      console.warn('Address does not have expected format:', formattedAddress);
-      return { country: 'South Africa' };
-    }
-
-    const parsed: Partial<ParsedAddress> = {
-      country: 'South Africa',
-    };
-
-    // Combine first two parts as street address
-    if (parts.length >= 2) {
-      parsed.street = `${parts[0]}, ${parts[1]}`;
-    } else if (parts.length === 1) {
-      parsed.street = parts[0];
-    }
-
-    // Third part is city
-    if (parts.length >= 3) {
-      parsed.city = parts[2];
-    }
-
-    // Fourth part is postal code
-    if (parts.length >= 4) {
-      parsed.postalCode = parts[3];
-    }
-
-    // Fifth part is country (or use default)
-    if (parts.length >= 5) {
-      parsed.country = parts[4];
-    }
-
-    return parsed;
-  } catch (err) {
-    console.error('Error parsing address:', err);
-    return { country: 'South Africa' };
-  }
-}
-
-/**
- * Complete flow: get autocomplete suggestions and parse the selected address
- */
-export async function selectAddressSuggestion(
-  placeId: string,
-  lat?: number,
-  lng?: number
-): Promise<ParsedAddress | null> {
-  try {
-    const details = await getAddressDetails(placeId);
-    
-    if (!details) {
-      return null;
-    }
-
-    const parsed = parseFormattedAddress(details.address);
-
-    return {
-      street: parsed.street || '',
-      city: parsed.city || '',
-      postalCode: parsed.postalCode || '',
-      country: parsed.country || 'South Africa',
-      lat: lat || details.lat,
-      lng: lng || details.lng,
-    };
+    return await getAddressDetails(placeId);
   } catch (err) {
     console.error('Error selecting address suggestion:', err);
     return null;
