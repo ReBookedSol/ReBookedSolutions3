@@ -430,7 +430,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
         toast.info("Please add your delivery address to continue with checkout");
       }
     } catch (error) {
-      console.error("�� Checkout initialization error:", error);
+      console.error(" Checkout initialization error:", error);
       const errorMessage =
         error instanceof Error
           ? error.message
