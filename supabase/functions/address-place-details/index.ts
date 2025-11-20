@@ -18,9 +18,9 @@ serve(async (req) => {
     if (!placeId) {
       return new Response(
         JSON.stringify({ error: 'Missing place_id parameter' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
@@ -30,16 +30,16 @@ serve(async (req) => {
       console.error('GOOGLE_MAPS_API_KEY not configured');
       return new Response(
         JSON.stringify({ error: 'API key not configured' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
 
     // Call Google Place Details API with address_components
     const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(placeId)}&fields=formatted_address,geometry,address_components&key=${apiKey}`;
-    
+
     console.log('Calling Google Place Details API');
     const response = await fetch(detailsUrl);
     const data = await response.json();
@@ -48,15 +48,15 @@ serve(async (req) => {
       console.error('Google API error:', data);
       return new Response(
         JSON.stringify({ error: `Google API error: ${data.status}` }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
 
     const result = data.result;
-    
+
     // Parse address components
     const components = result.address_components || [];
     const addressData: any = {
@@ -75,7 +75,7 @@ serve(async (req) => {
     // Extract components
     components.forEach((component: any) => {
       const types = component.types;
-      
+
       if (types.includes('street_number')) {
         addressData.street_number = component.long_name;
       }
@@ -106,20 +106,20 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify(addressData),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
 
   } catch (error) {
-    console.error('Error in place-details function:', error);
+    console.error('Error in autocomplete-details function:', error);
     const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return new Response(
       JSON.stringify({ error: errorMessage }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }
