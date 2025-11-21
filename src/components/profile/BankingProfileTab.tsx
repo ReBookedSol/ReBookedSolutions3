@@ -184,7 +184,7 @@ const BankingProfileTab = () => {
 
   return (
     <div className="space-y-6">
-      {hasBankingSetup && (
+      {!hasBankingSetup && (
         <WalletTab />
       )}
       <Card>
