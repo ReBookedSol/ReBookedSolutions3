@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { getAllDeliveryQuotes, UnifiedQuote } from "@/services/unifiedDeliveryService";
 import { MapPin, Truck, Timer, Zap, DollarSign, RefreshCw } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const provinces = [
   "Eastern Cape",
