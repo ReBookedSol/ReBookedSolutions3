@@ -130,6 +130,7 @@ serve(async (req) => {
 
     // No banking details - credit wallet as fallback payment method
     const bookPrice = order.books?.price || 0;
+    const creditAmount = (bookPrice * 90) / 100; // 90% of book price
 
     const { data: creditResult, error: creditError } = await supabase
       .rpc('credit_wallet_on_collection', {
@@ -149,6 +150,62 @@ serve(async (req) => {
         },
         { status: 500 }
       );
+    }
+
+    // Get seller details for email notification
+    try {
+      const { data: { users }, error: userError } = await supabase.auth.admin.listUsers();
+
+      if (userError) {
+        console.error("Error fetching seller details:", userError);
+      } else {
+        const seller = users?.find(u => u.id === seller_id);
+        const sellerEmail = seller?.email;
+        const sellerName = seller?.user_metadata?.first_name || seller?.user_metadata?.name || "Seller";
+
+        if (sellerEmail) {
+          // Get updated wallet balance
+          const { data: walletData } = await supabase
+            .from("user_wallets")
+            .select("available_balance")
+            .eq("user_id", seller_id)
+            .single();
+
+          const newBalance = walletData?.available_balance || creditAmount;
+
+          // Send email notification
+          try {
+            await supabase.functions.invoke('send-email', {
+              body: {
+                to: sellerEmail,
+                subject: '💰 Payment Received - Credit Added to Your Account - ReBooked Solutions',
+                html: generateSellerCreditEmailHTML({
+                  sellerName,
+                  bookTitle: order.books?.title || 'Unknown Book',
+                  bookPrice,
+                  creditAmount,
+                  orderId: order_id,
+                  newBalance: newBalance / 100, // Convert from cents to rands
+                }),
+                text: generateSellerCreditEmailText({
+                  sellerName,
+                  bookTitle: order.books?.title || 'Unknown Book',
+                  bookPrice: bookPrice / 100, // Convert from cents to rands
+                  creditAmount: creditAmount / 100, // Convert from cents to rands
+                  orderId: order_id,
+                  newBalance: newBalance / 100, // Convert from cents to rands
+                }),
+              },
+            });
+          } catch (emailError) {
+            console.error("Error sending credit notification email:", emailError);
+            // Don't fail the whole operation if email fails
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error in email notification process:", error);
+      // Don't fail the whole operation if email notification fails
     }
 
     return jsonResponse(
