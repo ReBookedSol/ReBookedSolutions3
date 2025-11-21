@@ -37,8 +37,8 @@ const PayoutRequestForm: React.FC<PayoutRequestFormProps> = ({
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const amountValue = parseFloat(amount) || 0;
-  const isValid = amountValue > 0 && amountValue <= availableBalance;
+  const amountValue = amount ? parseFloat(amount) : 0;
+  const isValid = amountValue > 0 && amountValue <= (availableBalance || 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

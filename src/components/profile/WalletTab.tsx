@@ -17,7 +17,11 @@ import { toast } from "sonner";
 import PayoutRequestForm from "./PayoutRequestForm";
 
 const WalletTab: React.FC = () => {
-  const [balance, setBalance] = useState<WalletBalance | null>(null);
+  const [balance, setBalance] = useState<WalletBalance>({
+    available_balance: 0,
+    pending_balance: 0,
+    total_earned: 0,
+  });
   const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [showPayoutForm, setShowPayoutForm] = useState(false);
@@ -79,7 +83,7 @@ const WalletTab: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-green-600">
-              {WalletService.formatZAR(balance?.available_balance || 0)}
+              {WalletService.formatZAR(balance.available_balance)}
             </div>
             <p className="text-xs text-gray-500 mt-2">Ready to withdraw</p>
           </CardContent>
@@ -95,7 +99,7 @@ const WalletTab: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-amber-600">
-              {WalletService.formatZAR(balance?.pending_balance || 0)}
+              {WalletService.formatZAR(balance.pending_balance)}
             </div>
             <p className="text-xs text-gray-500 mt-2">Being processed</p>
           </CardContent>
@@ -111,7 +115,7 @@ const WalletTab: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-blue-600">
-              {WalletService.formatZAR(balance?.total_earned || 0)}
+              {WalletService.formatZAR(balance.total_earned)}
             </div>
             <p className="text-xs text-gray-500 mt-2">All time</p>
           </CardContent>
@@ -123,7 +127,7 @@ const WalletTab: React.FC = () => {
         <Button
           onClick={() => setShowPayoutForm(true)}
           className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-          disabled={!balance || balance.available_balance === 0}
+          disabled={balance.available_balance === 0}
         >
           <TrendingDown className="h-4 w-4 mr-2" />
           Request Payout
