@@ -13,9 +13,12 @@ import {
   Navigation,
   Info,
   CheckCircle,
+  Save,
 } from "lucide-react";
 import { fetchSuggestions, fetchAddressDetails, type Suggestion } from "@/services/addressAutocompleteService";
 import { getBobGoLocations, type BobGoLocation } from "@/services/bobgoLocationsService";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface BobGoLockerSelectorProps {
   onLockerSelect: (locker: BobGoLocation) => void;
