@@ -29,6 +29,7 @@ interface Step2DeliveryOptionsProps {
   onCancel?: () => void;
   onEditAddress?: () => void;
   selectedDelivery?: DeliveryOption;
+  preSelectedLocker?: BobGoLocation | null;
 }
 
 const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
@@ -348,7 +349,7 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                           <span className="font-medium text-gray-900 truncate">{q.service_name}</span>
-                          <span className="text-gray-700">— R{(q.cost + 15).toFixed(2)}</span>
+                          <span className="text-gray-700">��� R{(q.cost + 15).toFixed(2)}</span>
                         </div>
                         <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-gray-500">
                           <span className="inline-flex items-center gap-1">
