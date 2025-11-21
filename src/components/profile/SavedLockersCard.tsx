@@ -273,7 +273,7 @@ const SavedLockersCard: React.FC<SavedLockersCardProps> = ({
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              No saved locker location yet. Save a locker during checkout or search to see it here.
+              No saved locker yet. Search and save a locker location to see it here.
             </AlertDescription>
           </Alert>
         </CardContent>
