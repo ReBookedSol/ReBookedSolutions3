@@ -422,7 +422,7 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
                         ? "bg-purple-50 border-purple-500"
                         : "bg-gray-50 border-gray-200 hover:border-purple-300"
                     }`}
-                    onClick={() => setDeliveryMethod("locker")}
+                    onClick={() => handleSelectLockerMethod(savedLocker)}
                   >
                     <RadioGroupItem value="locker" className="mt-1 flex-shrink-0" />
                     <div className="flex-1">
