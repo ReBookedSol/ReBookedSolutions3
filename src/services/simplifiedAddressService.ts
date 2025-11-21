@@ -140,22 +140,30 @@ const decryptAddress = async (params: { table: string; target_id: string; addres
       }
     };
 
-    const { data, error } = await (isMobile ? retryWithBackoff(makeRequest, 3, 1000) : makeRequest());
+    try {
+      const { data, error } = await (isMobile ? retryWithBackoff(makeRequest, 3, 1000) : makeRequest());
 
-    console.log("🔐 Edge function response:", {
-      data: data ? { success: data.success, hasData: !!data.data } : null,
-      error: error ? { message: (error as any).message, status: (error as any).status } : null
-    });
+      console.log("🔐 Edge function response:", {
+        data: data ? { success: data.success, hasData: !!data.data } : null,
+        error: error ? { message: (error as any).message, status: (error as any).status } : null
+      });
 
-    if (error) {
-      return null;
-    }
+      if (error) {
+        const errorMsg = error instanceof Error ? error.message : JSON.stringify(error);
+        console.warn("❌ Decryption error:", errorMsg);
+        return null;
+      }
 
-    if (data?.success && data?.data) {
-      console.log("✅ Decryption successful");
-      return data.data;
-    } else {
-      console.warn("❌ Decryption failed:", data?.error?.message || "Unknown error");
+      if (data?.success && data?.data) {
+        console.log("✅ Decryption successful");
+        return data.data;
+      } else {
+        console.warn("❌ Decryption failed:", data?.error?.message || "Unknown error");
+        return null;
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.warn(`🔐 Decryption service error on ${isMobile ? 'mobile' : 'desktop'}:`, errorMsg);
       return null;
     }
   } catch (error) {
