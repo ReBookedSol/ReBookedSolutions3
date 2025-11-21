@@ -31,58 +31,16 @@ const SavedLockersCard = forwardRef<
   const [isLoadingLockers, setIsLoadingLockers] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const subscriptionRef = React.useRef<any>(null);
 
+  // Expose loadSavedLockers function to parent component
+  useImperativeHandle(ref, () => ({
+    loadSavedLockers,
+  }), []);
+
+  // Load saved locker on mount
   useEffect(() => {
     loadSavedLockers();
-    setupRealtimeListener();
-
-    return () => {
-      if (subscriptionRef.current) {
-        subscriptionRef.current.unsubscribe().catch((err: any) => {
-          console.debug("Error unsubscribing from channel:", err instanceof Error ? err.message : String(err));
-        });
-      }
-    };
   }, []);
-
-  const setupRealtimeListener = async () => {
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) return;
-
-      // Unsubscribe from previous subscription if it exists
-      if (subscriptionRef.current) {
-        await subscriptionRef.current.unsubscribe();
-      }
-
-      // Create stable channel name (no timestamp)
-      const channelName = `profiles-${user.id}`;
-
-      subscriptionRef.current = supabase
-        .channel(channelName)
-        .on(
-          "postgres_changes",
-          {
-            event: "UPDATE",
-            schema: "public",
-            table: "profiles",
-            filter: `id=eq.${user.id}`,
-          },
-          (payload: any) => {
-            setSavedLocker(payload.new.preferred_delivery_locker_data || null);
-          }
-        )
-        .subscribe((status) => {
-          console.log("Realtime subscription status:", status);
-        });
-    } catch (error) {
-      console.error("Error setting up realtime listener:", error instanceof Error ? error.message : String(error));
-    }
-  };
 
   const loadSavedLockers = async () => {
     try {
@@ -146,7 +104,6 @@ const SavedLockersCard = forwardRef<
     }
   };
 
-
   const LockerCard = ({
     locker,
     isDeleting,
@@ -181,7 +138,7 @@ const SavedLockersCard = forwardRef<
     const excludeFields = [
       "image_url",
       "pickup_point_provider_logo_url",
-      "address",  // Use full_address instead
+      "address",
       "compartment_errors",
       "human_name",
       "provider_slug",
@@ -358,10 +315,6 @@ const SavedLockersCard = forwardRef<
       </Card>
     );
   }
-
-  useImperativeHandle(ref, () => ({
-    loadSavedLockers,
-  }), []);
 
   return (
     <>
