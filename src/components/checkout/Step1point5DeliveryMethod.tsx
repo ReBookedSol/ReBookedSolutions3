@@ -423,7 +423,7 @@ const Step1point5DeliveryMethod: React.FC<Step1point5DeliveryMethodProps> = ({
 
         <Button
           onClick={handleProceed}
-          disabled={loading || (deliveryMethod === "locker" && !selectedLocker)}
+          disabled={loading || (deliveryMethod === "locker" && !selectedLocker && !(savedLocker && !wantToChangeLocker))}
         >
           Next: Select Address
           <ArrowRight className="w-4 h-4 ml-2" />
