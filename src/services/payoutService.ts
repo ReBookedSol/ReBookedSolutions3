@@ -63,7 +63,7 @@ export class PayoutService {
 
       // Call the database function to create payout request
       const { data: payoutId, error: payoutError } = await supabase
-        .rpc("create_wallet_payout_request", {
+        .rpc("create_payout_request", {
           p_user_id: user.id,
           p_amount: amountInCents,
         });
@@ -78,7 +78,7 @@ export class PayoutService {
       // Update payout request with notes if provided
       if (data.notes) {
         await supabase
-          .from("wallet_payout_requests")
+          .from("payout_requests")
           .update({ notes: data.notes })
           .eq("id", payoutId);
       }
@@ -105,7 +105,7 @@ export class PayoutService {
       if (!user) return [];
 
       const { data, error } = await supabase
-        .from("wallet_payout_requests")
+        .from("payout_requests")
         .select("*")
         .eq("user_id", user.id)
         .order("requested_at", { ascending: false });
@@ -138,7 +138,7 @@ export class PayoutService {
   static async getPayoutRequest(payoutId: string): Promise<PayoutRequest | null> {
     try {
       const { data, error } = await supabase
-        .from("wallet_payout_requests")
+        .from("payout_requests")
         .select("*")
         .eq("id", payoutId)
         .single();
@@ -171,7 +171,7 @@ export class PayoutService {
   static async cancelPayoutRequest(payoutId: string): Promise<PayoutResult> {
     try {
       const { data: cancelResult, error: cancelError } = await supabase
-        .rpc("cancel_wallet_payout_request", {
+        .rpc("cancel_payout_request", {
           p_payout_id: payoutId,
         });
 
