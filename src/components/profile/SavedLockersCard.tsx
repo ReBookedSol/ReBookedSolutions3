@@ -12,7 +12,6 @@ import {
   Loader2,
   Info,
   CheckCircle,
-  Download,
   X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
