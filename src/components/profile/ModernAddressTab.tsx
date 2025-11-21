@@ -580,7 +580,7 @@ const ModernAddressTab = ({
       </div>
 
       {/* Saved Lockers Section */}
-      <SavedLockersCard ref={savedLockersCardRef} isLoading={isLoading} />
+      <SavedLockersCard ref={savedLockersCardRef} isLoading={isLoading || false} />
 
       {/* BobGo Locations Section */}
       <BobGoLocationsSection onLockerSaved={() => savedLockersCardRef.current?.loadSavedLockers()} />
