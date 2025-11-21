@@ -20,6 +20,7 @@ import { getAllDeliveryQuotes, type UnifiedQuote } from "@/services/unifiedDeliv
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import BobGoLockerSelector from "@/components/checkout/BobGoLockerSelector";
 import { BobGoLocation } from "@/services/bobgoLocationsService";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Step2DeliveryOptionsProps {
   buyerAddress: CheckoutAddress;
