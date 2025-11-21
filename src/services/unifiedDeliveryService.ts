@@ -178,6 +178,11 @@ export const getAllDeliveryQuotes = async (
       console.log("🚀 Calculating rates to address:", request.to.city);
     }
 
+    // Pass user_id for preference lookup
+    if (request.user_id) {
+      body.user_id = request.user_id;
+    }
+
     const { data, error } = await supabase.functions.invoke("bobgo-get-rates", { body });
     if (error) throw new Error(error.message);
 
