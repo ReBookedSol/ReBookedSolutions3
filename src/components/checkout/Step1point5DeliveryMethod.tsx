@@ -217,20 +217,19 @@ const Step1point5DeliveryMethod: React.FC<Step1point5DeliveryMethodProps> = ({
             </div>
 
             {/* Locker Drop-Off Option */}
-            <label
-              onClick={() => {
-                setDeliveryMethod("locker");
-              }}
+            <div
               className={`flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
                 deliveryMethod === "locker"
                   ? "bg-purple-50 border-purple-500"
                   : "bg-gray-50 border-gray-200 hover:border-purple-300"
               }`}
+              onClick={() => {
+                setDeliveryMethod("locker");
+              }}
             >
               <RadioGroupItem
                 value="locker"
                 className="mt-1 flex-shrink-0 cursor-pointer"
-                onClick={(e) => e.stopPropagation()}
               />
               <div className="flex-1">
                 <div className="flex items-center gap-2 font-medium text-base">
@@ -249,7 +248,7 @@ const Step1point5DeliveryMethod: React.FC<Step1point5DeliveryMethodProps> = ({
                   </Badge>
                 )}
               </div>
-            </label>
+            </div>
           </RadioGroup>
         </CardContent>
       </Card>
