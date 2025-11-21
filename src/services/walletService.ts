@@ -231,103 +231,44 @@ export class WalletService {
   }
 
   /**
-   * Credit wallet when book is received (called from OrderCompletionCard)
+   * Credit wallet when book is received (calls edge function which handles everything)
    */
   static async creditWalletOnCollection(
     orderId: string,
     sellerId: string,
-    bookPriceInRands: number
+    _bookPriceInRands?: number
   ): Promise<{ success: boolean; error?: string; creditAmount?: number }> {
     try {
-      // Convert RANDS to cents for the database function
-      const bookPriceInCents = Math.round(bookPriceInRands * 100);
-
-      // Call the database function that credits wallet and creates transaction
-      const { data, error } = await supabase.rpc("credit_wallet_on_collection", {
-        p_seller_id: sellerId,
-        p_order_id: orderId,
-        p_book_price: bookPriceInCents,
+      // Call the edge function which handles:
+      // 1. Fetching order and book details
+      // 2. Calculating correct 90% credit amount
+      // 3. Crediting the wallet via RPC
+      // 4. Creating notifications
+      // 5. Sending emails
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/credit-wallet-on-collection`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          order_id: orderId,
+          seller_id: sellerId,
+        }),
       });
 
-      if (error) {
-        console.error("Error crediting wallet:", error);
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        console.error("Error crediting wallet:", result);
         return {
           success: false,
-          error: error.message || "Failed to credit wallet",
+          error: result.message || result.error || "Failed to credit wallet",
         };
       }
 
-      // Calculate the credit amount (90% of book price in RANDS)
-      const creditAmount = (bookPriceInRands * 90) / 100;
-
-      // Get seller details for notification
-      try {
-        const { data: { users }, error: userError } = await supabase.auth.admin.listUsers();
-
-        if (!userError && users) {
-          const seller = users.find(u => u.id === sellerId);
-          const sellerEmail = seller?.email;
-          const sellerName = seller?.user_metadata?.first_name || seller?.user_metadata?.name || "Seller";
-
-          if (seller?.id && sellerEmail) {
-            // Get updated wallet balance
-            const { data: walletData } = await supabase
-              .from("user_wallets")
-              .select("available_balance")
-              .eq("user_id", sellerId)
-              .single();
-
-            const newBalance = walletData?.available_balance ? walletData.available_balance / 100 : creditAmount;
-
-            // Get order and book details for notification
-            const { data: order } = await supabase
-              .from("orders")
-              .select("books(title)")
-              .eq("id", orderId)
-              .single();
-
-            const bookTitle = (order?.books as any)?.title || "Your Book";
-
-            // Create in-app notification for seller
-            try {
-              await supabase.from("notifications").insert({
-                user_id: sellerId,
-                type: "success",
-                title: "💰 Payment Received!",
-                message: `Credit of R${creditAmount.toFixed(2)} has been added to your wallet for "${bookTitle}". New balance: R${newBalance.toFixed(2)}`,
-                order_id: orderId,
-                action_required: false
-              });
-            } catch (notifErr) {
-              console.error("Error creating notification:", notifErr);
-            }
-
-            // Send email notification
-            try {
-              await supabase.functions.invoke("send-email", {
-                body: {
-                  to: sellerEmail,
-                  subject: '💰 Payment Received - Credit Added to Your Account - ReBooked Solutions',
-                  html: generateSellerCreditEmailHTML({
-                    sellerName,
-                    bookTitle,
-                    bookPrice: bookPriceInRands,
-                    creditAmount,
-                    orderId,
-                    newBalance,
-                  }),
-                },
-              });
-              console.log("✅ Credit notification email sent");
-            } catch (emailErr) {
-              console.error("Error sending email:", emailErr);
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Error in notification/email process:", error);
-        // Don't fail the whole operation if notifications fail
-      }
+      // Edge function handles credit_amount calculation (90% of book price)
+      const creditAmount = result.credit_amount ? result.credit_amount / 100 : undefined;
 
       return {
         success: true,
