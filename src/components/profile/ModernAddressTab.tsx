@@ -578,6 +578,9 @@ const ModernAddressTab = ({
         </Card>
       </div>
 
+      {/* Saved Lockers Section */}
+      <SavedLockersCard isLoading={isLoading} />
+
       {/* BobGo Locations Section */}
       <BobGoLocationsSection />
 
