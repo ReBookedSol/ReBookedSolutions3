@@ -714,11 +714,6 @@ const Profile = () => {
             </Tabs>
           </TabsContent>
 
-          {/* Wallet Tab */}
-          <TabsContent value="wallet" className="space-y-6">
-            <WalletTab />
-          </TabsContent>
-
           {/* Settings Tab */}
           <TabsContent value="settings" className="space-y-6">
             <Card>
