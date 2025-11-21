@@ -85,19 +85,19 @@ serve(async (req) => {
       );
     }
 
-    // Check if wallet was already credited for this order
+    // Check if payment has already been processed for this order
     const { data: existingTransaction } = await supabase
       .from("wallet_transactions")
       .select("id")
       .eq("reference_order_id", order_id)
-      .eq("type", "credit")
+      .in("type", ["credit", "scheduled_bank_transfer"])
       .single();
 
     if (existingTransaction) {
       return jsonResponse(
         {
           success: true,
-          message: "Wallet already credited for this order",
+          message: "Payment already processed for this order",
           order_id,
           seller_id,
         },
@@ -105,11 +105,63 @@ serve(async (req) => {
       );
     }
 
+    // Check if seller has banking details set up
+    const { data: bankingDetails, error: bankingError } = await supabase
+      .from("banking_subaccounts")
+      .select("id, status, subaccount_code")
+      .eq("user_id", seller_id)
+      .in("status", ["active", "pending"])
+      .single();
+
+    const hasBankingSetup = !!bankingDetails && bankingDetails.status === "active";
+
     // Get book price (total_amount is in cents, 90% goes to seller)
     const bookPrice = order.total_amount || 0;
-    const amountToCredit = Math.floor((bookPrice * 90) / 100);
+    const sellerAmount = Math.floor((bookPrice * 90) / 100);
 
-    // Credit the wallet using the database function
+    // If seller has active banking details, schedule bank transfer instead of wallet credit
+    if (hasBankingSetup) {
+      // Create a transaction record showing payment is scheduled for bank transfer
+      const { error: txnError } = await supabase
+        .from("wallet_transactions")
+        .insert({
+          user_id: seller_id,
+          type: "scheduled_bank_transfer",
+          amount: sellerAmount,
+          reason: `Payment for book sale (Order: ${order_id})`,
+          reference_order_id: order_id,
+          status: "pending",
+        });
+
+      if (txnError) {
+        console.error("Error creating bank transfer transaction record:", txnError);
+        return errorResponse(
+          "TRANSACTION_RECORD_FAILED",
+          {
+            error_message: txnError.message || "Failed to record bank transfer",
+            order_id,
+            seller_id,
+          },
+          { status: 500 }
+        );
+      }
+
+      return jsonResponse(
+        {
+          success: true,
+          message: "Payment scheduled for direct bank transfer",
+          order_id,
+          seller_id,
+          amount_to_transfer: sellerAmount,
+          payment_method: "bank_transfer",
+          currency: "ZAR",
+          note: "Payment will be sent to seller's registered banking account",
+        },
+        { status: 200 }
+      );
+    }
+
+    // No banking details - credit wallet as fallback
     const { data: creditResult, error: creditError } = await supabase
       .rpc('credit_wallet_on_collection', {
         p_seller_id: seller_id,
@@ -133,11 +185,13 @@ serve(async (req) => {
     return jsonResponse(
       {
         success: true,
-        message: "Wallet credited successfully",
+        message: "Wallet credited (no banking details on file)",
         order_id,
         seller_id,
-        amount_credited: amountToCredit,
+        amount_credited: sellerAmount,
+        payment_method: "wallet",
         currency: "ZAR",
+        note: "Payment added to wallet. Seller can request payout or update banking details for future direct transfers.",
       },
       { status: 200 }
     );
