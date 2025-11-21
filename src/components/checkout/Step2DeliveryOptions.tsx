@@ -134,6 +134,7 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
       toast.warning("Could not update rates for locker");
     } finally {
       setLockerRatesLoading(false);
+      setLoading(false);
     }
   };
 
