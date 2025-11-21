@@ -233,8 +233,8 @@ const SavedLockersCard: React.FC<SavedLockersCardProps> = ({
               {fields.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs mb-3">
                   {fields.map(([key, value]) => {
-                    // Skip certain verbose fields
-                    if (["description", "lat", "lng", "provider_id", "type"].includes(key)) {
+                    // Skip certain verbose and technical fields
+                    if (["description", "lat", "lng", "provider_id", "type", "full_address", "location_id"].includes(key)) {
                       return null;
                     }
 
