@@ -472,16 +472,40 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
   };
 
   const handleDeliverySelection = (delivery: DeliveryOption) => {
-    if (!checkoutState.buyer_address) {
+    // For locker delivery, we need the locker; for home delivery, we need the buyer address
+    const isLockerDelivery = checkoutState.delivery_method === "locker" && checkoutState.selected_locker;
+
+    if (!isLockerDelivery && !checkoutState.buyer_address) {
       toast.error("Please set your delivery address first");
       return;
     }
 
     const PLATFORM_FEE = 20; // R20 platform fee
+
+    // For locker delivery, show locker location as delivery address
+    let deliveryAddress = checkoutState.buyer_address || {
+      street: "",
+      city: "",
+      province: "",
+      postal_code: "",
+      country: "South Africa",
+    };
+    if (checkoutState.delivery_method === "locker" && checkoutState.selected_locker) {
+      const locker = checkoutState.selected_locker;
+      deliveryAddress = {
+        street: (locker as any).full_address || (locker as any).address || "",
+        city: (locker as any).city || (locker as any).suburb || "Locker Location",
+        province: (locker as any).province || "",
+        postal_code: (locker as any).postal_code || (locker as any).postalCode || "",
+        country: "South Africa",
+        additional_info: `Pickup at: ${locker.name}`,
+      };
+    }
+
     const orderSummary: OrderSummary = {
       book: checkoutState.book!,
       delivery,
-      buyer_address: checkoutState.buyer_address,
+      buyer_address: deliveryAddress,
       seller_address: checkoutState.seller_address!,
       book_price: checkoutState.book!.price,
       delivery_price: delivery.price,
@@ -754,33 +778,10 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
           <Step1point5DeliveryMethod
             bookTitle={checkoutState.book?.title || "your book"}
             onSelectDeliveryMethod={(method, locker) => {
-              let updatedAddress = checkoutState.buyer_address;
-
-              // If locker is selected, use locker's address as delivery address
-              if (method === "locker" && locker) {
-                const lockerAddress = (locker as any).full_address || (locker as any).address || "";
-                const lockerCity = (locker as any).city || (locker as any).suburb || "Locker Location";
-
-                updatedAddress = {
-                  street: lockerAddress,
-                  city: lockerCity,
-                  province: (locker as any).province || "",
-                  postal_code: (locker as any).postal_code || (locker as any).postalCode || "",
-                  country: "South Africa",
-                  additional_info: `Drop-off at ${locker.name}`,
-                };
-
-                console.log("🔐 Using locker as delivery address:", {
-                  locker_name: locker.name,
-                  address: updatedAddress,
-                });
-              }
-
               setCheckoutState((prev) => ({
                 ...prev,
                 delivery_method: method,
                 selected_locker: locker || null,
-                buyer_address: updatedAddress,
               }));
               goToStep(3);
             }}
@@ -791,28 +792,47 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
         )}
 
         {checkoutState.step.current === 3 &&
-          checkoutState.buyer_address &&
           checkoutState.seller_address &&
           !isEditingAddress && (
-            <Step2DeliveryOptions
-              buyerAddress={checkoutState.buyer_address}
-              sellerAddress={checkoutState.seller_address}
-              onSelectDelivery={handleDeliverySelection}
-              onBack={() => goToStep(2)}
-              onCancel={handleCancelCheckout}
-              onEditAddress={handleEditAddress}
-              selectedDelivery={checkoutState.selected_delivery}
-            />
+            <>
+              {checkoutState.delivery_method === "locker" && checkoutState.selected_locker ? (
+                <Step2DeliveryOptions
+                  buyerAddress={{
+                    street: "",
+                    city: "",
+                    province: "",
+                    postal_code: "",
+                    country: "South Africa",
+                  }}
+                  sellerAddress={checkoutState.seller_address}
+                  onSelectDelivery={handleDeliverySelection}
+                  onBack={() => goToStep(2)}
+                  onCancel={handleCancelCheckout}
+                  onEditAddress={handleEditAddress}
+                  selectedDelivery={checkoutState.selected_delivery}
+                  preSelectedLocker={checkoutState.selected_locker}
+                />
+              ) : checkoutState.buyer_address ? (
+                <Step2DeliveryOptions
+                  buyerAddress={checkoutState.buyer_address}
+                  sellerAddress={checkoutState.seller_address}
+                  onSelectDelivery={handleDeliverySelection}
+                  onBack={() => goToStep(2)}
+                  onCancel={handleCancelCheckout}
+                  onEditAddress={handleEditAddress}
+                  selectedDelivery={checkoutState.selected_delivery}
+                  preSelectedLocker={checkoutState.delivery_method === "locker" ? checkoutState.selected_locker : null}
+                />
+              ) : (
+                <AddressInput
+                  title="Enter Your Delivery Address"
+                  onAddressSubmit={handleAddressSubmit}
+                  onSaveToProfile={handleSaveAddressToProfile}
+                  loading={checkoutState.loading}
+                />
+              )}
+            </>
           )}
-
-        {checkoutState.step.current === 3 && !checkoutState.buyer_address && (
-          <AddressInput
-            title="Enter Your Delivery Address"
-            onAddressSubmit={handleAddressSubmit}
-            onSaveToProfile={handleSaveAddressToProfile}
-            loading={checkoutState.loading}
-          />
-        )}
 
         {checkoutState.step.current === 3 &&
           checkoutState.buyer_address &&

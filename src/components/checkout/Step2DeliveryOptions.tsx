@@ -29,6 +29,7 @@ interface Step2DeliveryOptionsProps {
   onCancel?: () => void;
   onEditAddress?: () => void;
   selectedDelivery?: DeliveryOption;
+  preSelectedLocker?: BobGoLocation | null;
 }
 
 const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
@@ -39,6 +40,7 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
   onCancel,
   onEditAddress,
   selectedDelivery,
+  preSelectedLocker,
 }) => {
   const [deliveryOptions, setDeliveryOptions] = useState<DeliveryOption[]>([]);
   const [quotes, setQuotes] = useState<UnifiedQuote[]>([]);
@@ -48,8 +50,14 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
   const [lockerRatesLoading, setLockerRatesLoading] = useState(false);
 
   useEffect(() => {
-    fetchDeliveryOptions();
-  }, [buyerAddress, sellerAddress]);
+    // If a locker was pre-selected in Step1.5, automatically calculate locker rates
+    if (preSelectedLocker) {
+      setSelectedLocker(preSelectedLocker);
+      recalculateRatesForLocker(preSelectedLocker);
+    } else {
+      fetchDeliveryOptions();
+    }
+  }, [buyerAddress, sellerAddress, preSelectedLocker]);
 
   useEffect(() => {
     // Recalculate rates when a locker is selected
@@ -66,10 +74,14 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
     setError(null);
 
     try {
-      console.log("📍 Recalculating rates for locker delivery:", {
-        locker: locker.name,
-        locationId: locker.id,
-        providerSlug: locker.provider_slug,
+      if (!locker.id || !locker.provider_slug) {
+        throw new Error("Locker is missing required information (ID or provider slug)");
+      }
+
+      console.log("📍 Calculating rates to locker:", {
+        locker_name: locker.name,
+        location_id: locker.id,
+        provider_slug: locker.provider_slug,
       });
 
       const quotesResp = await getAllDeliveryQuotes({
