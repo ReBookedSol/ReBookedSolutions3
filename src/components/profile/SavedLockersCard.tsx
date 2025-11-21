@@ -12,6 +12,8 @@ import {
   Loader2,
   Info,
   CheckCircle,
+  Download,
+  X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -29,6 +31,8 @@ const SavedLockersCard: React.FC<SavedLockersCardProps> = ({
   const [savedLocker, setSavedLocker] = useState<BobGoLocation | null>(null);
   const [isLoadingLockers, setIsLoadingLockers] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     loadSavedLockers();
