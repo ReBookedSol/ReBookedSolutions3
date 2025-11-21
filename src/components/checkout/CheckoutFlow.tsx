@@ -26,6 +26,7 @@ import {
 } from "@/services/checkoutValidationService";
 import { supabase } from "@/integrations/supabase/client";
 import Step1OrderSummary from "./Step1OrderSummary";
+import Step1point5DeliveryMethod from "./Step1point5DeliveryMethod";
 import Step2DeliveryOptions from "./Step2DeliveryOptions";
 import Step3Payment from "./Step3Payment";
 import Step4Confirmation from "./Step4Confirmation";
