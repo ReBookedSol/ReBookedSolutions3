@@ -758,14 +758,22 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
 
               // If locker is selected, use locker's address as delivery address
               if (method === "locker" && locker) {
+                const lockerAddress = (locker as any).full_address || (locker as any).address || "";
+                const lockerCity = (locker as any).city || (locker as any).suburb || "Locker Location";
+
                 updatedAddress = {
-                  street: locker.full_address || locker.address || "",
-                  city: locker.city || "Locker Location",
-                  province: locker.province || "",
-                  postal_code: locker.postal_code || "",
+                  street: lockerAddress,
+                  city: lockerCity,
+                  province: (locker as any).province || "",
+                  postal_code: (locker as any).postal_code || (locker as any).postalCode || "",
                   country: "South Africa",
                   additional_info: `Drop-off at ${locker.name}`,
                 };
+
+                console.log("🔐 Using locker as delivery address:", {
+                  locker_name: locker.name,
+                  address: updatedAddress,
+                });
               }
 
               setCheckoutState((prev) => ({
