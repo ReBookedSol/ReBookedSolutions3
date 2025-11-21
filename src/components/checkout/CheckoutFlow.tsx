@@ -802,6 +802,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
               onCancel={handleCancelCheckout}
               onEditAddress={handleEditAddress}
               selectedDelivery={checkoutState.selected_delivery}
+              preSelectedLocker={checkoutState.delivery_method === "locker" ? checkoutState.selected_locker : null}
             />
           )}
 
