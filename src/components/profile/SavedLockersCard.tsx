@@ -165,7 +165,18 @@ const SavedLockersCard: React.FC<SavedLockersCardProps> = ({
     };
 
     // Get all locker fields, excluding empty values and certain fields
-    const excludeFields = ["image_url", "pickup_point_provider_logo_url"];
+    const excludeFields = [
+      "image_url",
+      "pickup_point_provider_logo_url",
+      "address",  // Use full_address instead
+      "compartment_errors",
+      "human_name",
+      "provider_slug",
+      "id",
+      "od",
+      "created_at",
+      "updated_at"
+    ];
     const fields = Object.entries(locker)
       .filter(
         ([key, value]) =>
