@@ -163,6 +163,7 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
           postalCode: buyerAddress.postal_code,
         },
         weight: 1,
+        user_id: user?.id,
       });
 
       setQuotes(quotesResp);
