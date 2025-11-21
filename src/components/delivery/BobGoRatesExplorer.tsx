@@ -65,6 +65,7 @@ const NumberInput: React.FC<{
 );
 
 const BobGoRatesExplorer: React.FC = () => {
+  const { user } = useAuth();
   const [fromCity, setFromCity] = useState("");
   const [fromProvince, setFromProvince] = useState("");
   const [fromPostal, setFromPostal] = useState("");
