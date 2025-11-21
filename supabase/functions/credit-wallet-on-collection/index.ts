@@ -262,19 +262,17 @@ serve(async (req) => {
       );
     }
 
-    console.log("📦 Order found:", { order_id, book_id: order.book_id, delivery_status: order.delivery_status });
+    console.log("📦 Order found:", { order_id, book_id: order.book_id, delivery_status: order.delivery_status, status: order.status });
 
-    // Only process if order is marked as delivered/collected or if buyer feedback confirms receipt
-    // Valid statuses: collected, delivered, shipped (in case it's been shipped but not yet marked collected)
-    const validDeliveryStatuses = ["collected", "delivered", "shipped"];
-    if (!validDeliveryStatuses.includes(order.delivery_status)) {
+    // Check if book_id exists
+    if (!order.book_id) {
+      console.error("❌ Order has no book_id");
       return new Response(
         JSON.stringify({
           success: false,
-          error: "INVALID_DELIVERY_STATUS",
-          message: "Order must be delivered, collected, or shipped",
-          current_status: order.delivery_status,
-          expected_status: "collected, delivered, or shipped"
+          error: "NO_BOOK_ID",
+          message: "Order does not have a book_id",
+          order_id
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
