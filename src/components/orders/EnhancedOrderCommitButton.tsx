@@ -4,13 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { 
-  Loader2, 
-  CheckCircle, 
-  AlertCircle, 
-  Home, 
-  Package, 
-  Clock, 
+import {
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  Home,
+  Package,
+  Clock,
   DollarSign,
   Info,
   QrCode,
@@ -32,7 +32,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import FallbackCommitService from "@/services/fallbackCommitService";
-// import { lockerService, LockerLocation } from "@/services/lockerService"; // DISABLED - Locker functionality removed
+import BobGoLockerSelector from "@/components/checkout/BobGoLockerSelector";
+import { BobGoLocation } from "@/services/bobgoLocationsService";
 
 interface EnhancedOrderCommitButtonProps {
   orderId: string;
@@ -44,8 +45,6 @@ interface EnhancedOrderCommitButtonProps {
   disabled?: boolean;
   className?: string;
 }
-
-// DISABLED - Locker interfaces removed
 
 const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
   orderId,
@@ -59,11 +58,9 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
 }) => {
   const [isCommitting, setIsCommitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [deliveryMethod, setDeliveryMethod] = useState<"home">("home"); // DISABLED - Locker option removed
-  // const [selectedLockerId, setSelectedLockerId] = useState<string>(""); // DISABLED
-  // const [lockers, setLockers] = useState<LockerLocation[]>([]); // DISABLED
-  // const [loadingLockers, setLoadingLockers] = useState(false); // DISABLED
-  
+  const [deliveryMethod, setDeliveryMethod] = useState<"home" | "locker">("home");
+  const [selectedLocker, setSelectedLocker] = useState<BobGoLocation | null>(null);
+
   // Pre-commit checklist states
   const [isPackagedSecurely, setIsPackagedSecurely] = useState(false);
   const [canFulfillOrder, setCanFulfillOrder] = useState(false);
@@ -74,18 +71,11 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
     orderStatus === "courier_scheduled" ||
     orderStatus === "shipped";
 
-  // Check if form is valid - SIMPLIFIED: Only home delivery available
-  const isFormValid = isPackagedSecurely && canFulfillOrder;
-
-  // DISABLED - Locker loading functionality removed
-  // useEffect(() => {
-  //   if (deliveryMethod === "locker" && lockers.length === 0) {
-  //     loadLockers();
-  //   }
-  // }, [deliveryMethod]);
-
-  // DISABLED - Locker loading function removed
-  // const loadLockers = async () => { ... }
+  // Check if form is valid
+  const isFormValid =
+    isPackagedSecurely &&
+    canFulfillOrder &&
+    (deliveryMethod === "home" || (deliveryMethod === "locker" && selectedLocker));
 
   const handleCommit = async () => {
     setIsCommitting(true);
