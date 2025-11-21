@@ -414,6 +414,31 @@ const BobGoLocationsSection: React.FC = () => {
                             </div>
                           )}
                         </div>
+
+                        {/* Save to Profile Button */}
+                        <div className="pt-3 border-t border-gray-100">
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSaveLockerToProfile(location);
+                            }}
+                            disabled={savingLockerId === location.id}
+                            variant="outline"
+                            className="w-full border-purple-300 text-purple-700 hover:bg-purple-50"
+                          >
+                            {savingLockerId === location.id ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Saving...
+                              </>
+                            ) : (
+                              <>
+                                <Save className="h-4 w-4 mr-2" />
+                                Save to Profile
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   );
