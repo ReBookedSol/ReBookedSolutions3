@@ -1515,6 +1515,51 @@ export type Database = {
           },
         ]
       }
+      payout_requests: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          approved_at: string | null
+          bank_account_id: string | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          paid_at: string | null
+          requested_at: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          approved_at?: string | null
+          bank_account_id?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          requested_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          approved_at?: string | null
+          bank_account_id?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          requested_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address_encryption_version: number | null
@@ -1540,10 +1585,14 @@ export type Database = {
           phone_verified: boolean | null
           pickup_address_encrypted: string | null
           preferences: Json | null
+          preferred_delivery_locker_data: Json | null
           preferred_delivery_locker_location_id: number | null
           preferred_delivery_locker_provider_slug: string | null
+          preferred_delivery_locker_saved_at: string | null
+          preferred_pickup_locker_data: Json | null
           preferred_pickup_locker_location_id: number | null
           preferred_pickup_locker_provider_slug: string | null
+          preferred_pickup_locker_saved_at: string | null
           profile_picture_url: string | null
           role: string | null
           shipping_address_encrypted: string | null
@@ -1580,10 +1629,14 @@ export type Database = {
           phone_verified?: boolean | null
           pickup_address_encrypted?: string | null
           preferences?: Json | null
+          preferred_delivery_locker_data?: Json | null
           preferred_delivery_locker_location_id?: number | null
           preferred_delivery_locker_provider_slug?: string | null
+          preferred_delivery_locker_saved_at?: string | null
+          preferred_pickup_locker_data?: Json | null
           preferred_pickup_locker_location_id?: number | null
           preferred_pickup_locker_provider_slug?: string | null
+          preferred_pickup_locker_saved_at?: string | null
           profile_picture_url?: string | null
           role?: string | null
           shipping_address_encrypted?: string | null
@@ -1620,10 +1673,14 @@ export type Database = {
           phone_verified?: boolean | null
           pickup_address_encrypted?: string | null
           preferences?: Json | null
+          preferred_delivery_locker_data?: Json | null
           preferred_delivery_locker_location_id?: number | null
           preferred_delivery_locker_provider_slug?: string | null
+          preferred_delivery_locker_saved_at?: string | null
+          preferred_pickup_locker_data?: Json | null
           preferred_pickup_locker_location_id?: number | null
           preferred_pickup_locker_provider_slug?: string | null
+          preferred_pickup_locker_saved_at?: string | null
           profile_picture_url?: string | null
           role?: string | null
           shipping_address_encrypted?: string | null
@@ -1918,6 +1975,78 @@ export type Database = {
           },
         ]
       }
+      user_wallets: {
+        Row: {
+          available_balance: number | null
+          created_at: string | null
+          id: string
+          pending_balance: number | null
+          total_earned: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          available_balance?: number | null
+          created_at?: string | null
+          id?: string
+          pending_balance?: number | null
+          total_earned?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          available_balance?: number | null
+          created_at?: string | null
+          id?: string
+          pending_balance?: number | null
+          total_earned?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallet_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          reason: string | null
+          reference_order_id: string | null
+          reference_payout_id: string | null
+          status: string | null
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          reason?: string | null
+          reference_order_id?: string | null
+          reference_payout_id?: string | null
+          status?: string | null
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          reason?: string | null
+          reference_order_id?: string | null
+          reference_payout_id?: string | null
+          status?: string | null
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       account_details: {
@@ -2019,6 +2148,15 @@ export type Database = {
     Functions: {
       _assert_self_or_admin: { Args: { p_user_id: string }; Returns: undefined }
       activate_affiliate: { Args: { user_id: string }; Returns: string }
+      add_funds_to_wallet: {
+        Args: {
+          p_amount: number
+          p_order_id: string
+          p_reason?: string
+          p_seller_id: string
+        }
+        Returns: boolean
+      }
       admin_delete_user: {
         Args: { user_id_to_delete: string }
         Returns: boolean
@@ -2097,6 +2235,10 @@ export type Database = {
           p_seller_subaccount: string
           p_transaction_id: string
         }
+        Returns: string
+      }
+      create_payout_request: {
+        Args: { p_amount: number; p_user_id: string }
         Returns: string
       }
       delete_user_address: {
@@ -2279,6 +2421,15 @@ export type Database = {
           email: string
           id: string
           name: string
+        }[]
+      }
+      get_wallet_summary: {
+        Args: { p_user_id: string }
+        Returns: {
+          available_balance: number
+          pending_balance: number
+          total_earned: number
+          total_withdrawn: number
         }[]
       }
       has_role:
