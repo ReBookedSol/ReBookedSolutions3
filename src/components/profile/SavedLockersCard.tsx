@@ -144,13 +144,11 @@ const SavedLockersCard: React.FC<SavedLockersCardProps> = ({
     isDeleting,
     onDelete,
     onImageSelect,
-    onImageDownload,
   }: {
     locker: BobGoLocation;
     isDeleting: boolean;
     onDelete: () => void;
     onImageSelect: (imageUrl: string) => void;
-    onImageDownload: (imageUrl: string, lockerName: string) => void;
   }) => {
     const renderFieldValue = (value: any): string => {
       if (value === null || value === undefined) return "—";
