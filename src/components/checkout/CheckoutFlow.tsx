@@ -732,7 +732,8 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
           <Progress value={getProgressValue()} className="h-2 mx-2 sm:mx-0" />
           <div className="flex justify-between mt-2 text-xs sm:text-sm text-gray-500 px-2 sm:px-0">
             <span className="text-center flex-1">Summary</span>
-            <span className="text-center flex-1">Delivery</span>
+            <span className="text-center flex-1">Method</span>
+            <span className="text-center flex-1">Options</span>
             <span className="text-center flex-1">Payment</span>
             <span className="text-center flex-1">Complete</span>
           </div>
@@ -749,7 +750,24 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
           />
         )}
 
-        {checkoutState.step.current === 2 &&
+        {checkoutState.step.current === 2 && (
+          <Step1point5DeliveryMethod
+            bookTitle={checkoutState.book?.title || "your book"}
+            onSelectDeliveryMethod={(method, locker) => {
+              setCheckoutState((prev) => ({
+                ...prev,
+                delivery_method: method,
+                selected_locker: locker || null,
+              }));
+              goToStep(3);
+            }}
+            onBack={() => goToStep(1)}
+            onCancel={handleCancelCheckout}
+            loading={checkoutState.loading}
+          />
+        )}
+
+        {checkoutState.step.current === 3 &&
           checkoutState.buyer_address &&
           checkoutState.seller_address &&
           !isEditingAddress && (
