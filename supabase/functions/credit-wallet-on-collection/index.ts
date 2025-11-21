@@ -264,15 +264,17 @@ serve(async (req) => {
 
     console.log("📦 Order found:", { order_id, book_id: order.book_id, delivery_status: order.delivery_status });
 
-    // Only process if order is marked as delivered/collected
-    if (order.delivery_status !== "collected" && order.delivery_status !== "delivered") {
+    // Only process if order is marked as delivered/collected or if buyer feedback confirms receipt
+    // Valid statuses: collected, delivered, shipped (in case it's been shipped but not yet marked collected)
+    const validDeliveryStatuses = ["collected", "delivered", "shipped"];
+    if (!validDeliveryStatuses.includes(order.delivery_status)) {
       return new Response(
         JSON.stringify({
           success: false,
           error: "INVALID_DELIVERY_STATUS",
-          message: "Order must be delivered or collected",
+          message: "Order must be delivered, collected, or shipped",
           current_status: order.delivery_status,
-          expected_status: "collected or delivered"
+          expected_status: "collected, delivered, or shipped"
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
