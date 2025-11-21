@@ -161,57 +161,6 @@ function generateSellerCreditEmailHTML(data: {
 </html>`;
 }
 
-function generateSellerCreditEmailText(data: {
-  sellerName: string;
-  bookTitle: string;
-  bookPrice: number;
-  creditAmount: number;
-  orderId: string;
-  newBalance: number;
-}): string {
-  return `PAYMENT RECEIVED - Credit Added to Your Account
-
-Hello ${data.sellerName},
-
-Great news! Your book "${data.bookTitle}" has been successfully delivered and received by the buyer. Your payment is now available in your wallet!
-
-PAYMENT CONFIRMED
-Credit has been added to your account!
-
-TRANSACTION DETAILS:
-- Book Title: ${data.bookTitle}
-- Book Price: R${data.bookPrice.toFixed(2)}
-- Commission Rate: 10% (You keep 90%)
-- Credit Added: R${data.creditAmount.toFixed(2)}
-- Order ID: ${data.orderId}
-
-YOUR NEW WALLET BALANCE:
-R${data.newBalance.toFixed(2)}
-
-WHAT YOU CAN DO NEXT:
-- List More Books: Add more books to your inventory and earn from sales
-- Request Payout: Once you have accumulated funds, you can request a withdrawal to your bank account
-- View Transactions: Check your wallet history anytime in your profile
-- Track Orders: Monitor all your sales and deliveries
-
-PAYMENT METHODS:
-You have two options to receive your funds:
-1. Direct Bank Transfer: If you've set up banking details, payments are sent directly to your account within 1-2 business days
-2. Wallet Credit: Funds are held in your wallet and can be used for future purchases or withdrawn anytime
-
-READY TO MAKE MORE SALES?
-Visit your profile: https://rebookedsolutions.co.za/profile?tab=overview
-
-QUESTIONS?
-Contact us at support@rebookedsolutions.co.za
-
-Thank you for selling on ReBooked Solutions!
-
-Best regards,
-The ReBooked Solutions Team
-
-"Pre-Loved Pages, New Adventures"`;
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
