@@ -30,6 +30,7 @@ import {
   Clock,
   ShoppingBag,
   X,
+  Wallet,
 } from "lucide-react";
 import { getUserBooks } from "@/services/book/bookQueries";
 import { deleteBook } from "@/services/book/bookMutations";
@@ -42,6 +43,7 @@ import OrderManagementView from "@/components/orders/OrderManagementView";
 import { useCommit } from "@/hooks/useCommit";
 import EnhancedOrderCommitButton from "@/components/orders/EnhancedOrderCommitButton";
 import BankingProfileTab from "@/components/profile/BankingProfileTab";
+import WalletTab from "@/components/profile/WalletTab";
 import ShareProfileDialog from "@/components/ShareProfileDialog";
 import ShareReminderBanner from "@/components/ShareReminderBanner";
 import ProfileEditDialog from "@/components/ProfileEditDialog";
@@ -342,7 +344,7 @@ const Profile = () => {
           onValueChange={setActiveTab}
           className="space-y-6"
         >
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <User className="w-4 h-4" />
               {!isMobile && "Overview"}
@@ -354,6 +356,10 @@ const Profile = () => {
             <TabsTrigger value="activity" className="flex items-center gap-2">
               <Package className="w-4 h-4" />
               {!isMobile && "Activity"}
+            </TabsTrigger>
+            <TabsTrigger value="wallet" className="flex items-center gap-2">
+              <Wallet className="w-4 h-4" />
+              {!isMobile && "Wallet"}
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
