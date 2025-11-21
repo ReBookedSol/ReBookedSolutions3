@@ -2,7 +2,7 @@
 
 ## Overview
 
-The wallet system is a payment processing mechanism that automatically handles seller earnings when buyers confirm order delivery.
+The wallet system is a payment processing mechanism that automatically handles seller earnings when buyers confirm order delivery. **Banking details are now optional** — sellers can list books and receive payments through the wallet system even without setting up banking details.
 
 ## How It Works
 
