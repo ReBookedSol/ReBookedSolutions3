@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 import { parseRequestBody } from "../_shared/safe-body-parser.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -11,7 +12,43 @@ serve(async (req) => {
     const bodyResult = await parseRequestBody(req, corsHeaders);
     if (!bodyResult.success) return bodyResult.errorResponse;
 
-    const { fromAddress, toAddress, parcels, serviceType, preferences, collectionPickupPoint, deliveryPickupPoint } = bodyResult.data;
+    let { fromAddress, toAddress, parcels, serviceType, preferences, collectionPickupPoint, deliveryPickupPoint, user_id } = bodyResult.data;
+
+    // ===== FETCH USER PREFERENCES IF PROVIDED =====
+    if (user_id) {
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('preferred_pickup_locker_location_id, preferred_pickup_locker_provider_slug, preferred_pickup_locker_data, preferred_delivery_locker_location_id, preferred_delivery_locker_provider_slug, preferred_delivery_locker_data')
+        .eq('id', user_id)
+        .single();
+
+      if (profile) {
+        // Use preferred pickup locker if no collectionPickupPoint provided
+        if (!collectionPickupPoint && profile.preferred_pickup_locker_location_id) {
+          collectionPickupPoint = {
+            locationId: profile.preferred_pickup_locker_location_id,
+            providerSlug: profile.preferred_pickup_locker_provider_slug,
+            data: profile.preferred_pickup_locker_data
+          };
+          console.log("✅ Using preferred pickup locker from profile");
+        }
+
+        // Use preferred delivery locker if no deliveryPickupPoint provided
+        if (!deliveryPickupPoint && profile.preferred_delivery_locker_location_id) {
+          deliveryPickupPoint = {
+            locationId: profile.preferred_delivery_locker_location_id,
+            providerSlug: profile.preferred_delivery_locker_provider_slug,
+            data: profile.preferred_delivery_locker_data
+          };
+          console.log("✅ Using preferred delivery locker from profile");
+        }
+      }
+    }
 
     const validationErrors = [];
 
