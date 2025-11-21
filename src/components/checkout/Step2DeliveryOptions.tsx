@@ -12,11 +12,14 @@ import {
   AlertTriangle,
   X,
   Edit3,
+  CheckCircle,
 } from "lucide-react";
 import { CheckoutAddress, DeliveryOption } from "@/types/checkout";
 import { toast } from "sonner";
 import { getAllDeliveryQuotes, type UnifiedQuote } from "@/services/unifiedDeliveryService";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import BobGoLockerSelector from "@/components/checkout/BobGoLockerSelector";
+import { BobGoLocation } from "@/services/bobgoLocationsService";
 
 interface Step2DeliveryOptionsProps {
   buyerAddress: CheckoutAddress;
