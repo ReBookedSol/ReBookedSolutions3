@@ -104,6 +104,40 @@ const BobGoLockerSelector: React.FC<BobGoLockerSelectorProps> = ({
     }
   };
 
+  // Save locker to profile
+  const handleSaveLockerToProfile = async (location: BobGoLocation) => {
+    try {
+      setSavingLockerId(location.id || "");
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("You must be logged in to save a locker");
+        return;
+      }
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          preferred_delivery_locker_data: location,
+          preferred_delivery_locker_saved_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+
+      if (error) throw error;
+
+      toast.success("Locker saved to your profile! 🎉", {
+        description: `${location.name} is now your preferred delivery locker`,
+      });
+    } catch (error) {
+      console.error("Error saving locker:", error);
+      toast.error("Failed to save locker to profile");
+    } finally {
+      setSavingLockerId(null);
+    }
+  };
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
