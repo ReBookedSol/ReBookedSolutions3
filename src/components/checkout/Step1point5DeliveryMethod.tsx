@@ -190,21 +190,20 @@ const Step1point5DeliveryMethod: React.FC<Step1point5DeliveryMethodProps> = ({
             }
           }}>
             {/* Home Delivery Option */}
-            <label
-              onClick={() => {
-                setDeliveryMethod("home");
-                setSelectedLocker(null);
-              }}
+            <div
               className={`flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
                 deliveryMethod === "home"
                   ? "bg-blue-50 border-blue-500"
                   : "bg-gray-50 border-gray-200 hover:border-blue-300"
               }`}
+              onClick={() => {
+                setDeliveryMethod("home");
+                setSelectedLocker(null);
+              }}
             >
               <RadioGroupItem
                 value="home"
                 className="mt-1 flex-shrink-0 cursor-pointer"
-                onClick={(e) => e.stopPropagation()}
               />
               <div className="flex-1">
                 <div className="flex items-center gap-2 font-medium text-base">
@@ -215,7 +214,7 @@ const Step1point5DeliveryMethod: React.FC<Step1point5DeliveryMethodProps> = ({
                   The seller will arrange courier pickup from their address. The book will be delivered to your address.
                 </p>
               </div>
-            </label>
+            </div>
 
             {/* Locker Drop-Off Option */}
             <label
