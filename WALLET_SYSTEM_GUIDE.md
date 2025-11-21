@@ -52,16 +52,17 @@ When a buyer confirms delivery but seller has no banking details:
 ### 3. Payment States in Database
 
 #### Wallet Transactions Types:
-- `credit` → Money added to wallet (fallback when no banking)
-- `scheduled_bank_transfer` → Payment scheduled for direct bank transfer
+- `credit` → Money added to wallet (only when seller has NO banking details)
 - `debit` → Money withdrawn from wallet (payout)
 - `hold` → Money temporarily held
 - `release` → Held money released
 
 #### Banking Subaccounts Status:
-- `active` → Verified banking details, ready for direct transfers
+- `active` → Verified banking details, ready for direct bank transfers
 - `pending` → Banking details submitted, waiting verification
 - `inactive` → Disabled or not set up
+
+**Note:** When seller has active banking details, NO transaction record is created. The email notification is sent, and payment is processed externally to the wallet system.
 
 ### 4. Key Transaction Points
 
