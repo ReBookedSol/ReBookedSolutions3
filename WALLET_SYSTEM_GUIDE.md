@@ -19,35 +19,35 @@ Example:
 
 ### 2. Seller Payment Path - Two Routes
 
-#### Route A: Seller HAS Banking Details ✅
+#### Route A: Seller HAS Banking Details (Direct Payout) ✅
 When a buyer confirms delivery (clicks "Yes, I received it"):
 
-1. System checks if seller has **active banking details** set up
-2. If YES:
-   - Email sent: "Payment on the way" notification to seller
-   - **No wallet credit is added**
-   - Money will be sent directly to their registered bank account
-   - No additional database entries needed
+1. System checks if seller has **active banking details**
+2. If YES → Seller receives direct bank transfer
+   - Email sent: "Payment on the way" notification
+   - **No wallet credit is created**
+   - Money sent directly to registered bank account
+   - Fast, automatic processing
 
 **Timeline:**
 - Buyer confirms delivery → "Payment on the way" email sent
-- Platform processes → Money sent directly to seller's bank account
-- Seller receives payment directly (no wallet step needed)
+- Platform processes → Direct bank transfer initiated
+- Seller receives payment within 24-48 hours
 
-#### Route B: Seller NO Banking Details ⚠️
+#### Route B: Seller NO Banking Details (Wallet Fallback) ✅
 When a buyer confirms delivery but seller has no banking details:
 
 1. System checks banking_subaccounts table
 2. If NO active banking details → Payment is **added to wallet as credit**
-   - Credit is added to `available_balance` in user_wallets
+   - Credit added to `available_balance` in user_wallets
    - Type: `credit` in wallet_transactions
    - Status: `completed`
+   - Visible in Profile → Settings → Banking Information (Wallet section)
 
 **Next Steps for Seller:**
-- Seller sees credit in their Wallet tab
-- Seller can now either:
-  - **Option 1**: Set up banking details → Request payout from wallet
-  - **Option 2**: Keep credit in wallet for future use
+- **Option 1**: Set up banking details later → Request payout from wallet balance
+- **Option 2**: Keep credit in wallet for future use
+- **Option 3**: Use wallet balance towards future purchases
 
 ### 3. Payment States in Database
 
