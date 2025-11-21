@@ -84,12 +84,20 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
     try {
       console.log(`🚀 Committing to sale for order: ${orderId} with delivery method: ${deliveryMethod}`);
 
-      // Prepare the commit data with delivery method
+      if (deliveryMethod === "locker" && selectedLocker) {
+        console.log(`📍 Using locker: ${selectedLocker.id} - ${selectedLocker.name}`);
+      }
+
+      // Prepare the commit data with delivery method and locker info
       const commitData = {
         order_id: orderId,
         seller_id: sellerId,
-        delivery_method: deliveryMethod
-        // DISABLED - Locker options removed
+        delivery_method: deliveryMethod,
+        ...(deliveryMethod === "locker" && selectedLocker ? {
+          locker_id: selectedLocker.id,
+          locker_name: selectedLocker.name,
+          locker_address: selectedLocker.address || selectedLocker.full_address,
+        } : {}),
       };
 
       let data, error;
@@ -121,7 +129,9 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
           order_id: orderId,
           seller_id: sellerId,
           delivery_method: deliveryMethod,
-          // DISABLED - Locker ID removed
+          ...(deliveryMethod === "locker" && selectedLocker ? {
+            locker_id: selectedLocker.id,
+          } : {}),
         });
 
         if (fallbackResult.success) {
@@ -159,17 +169,30 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
 
       console.log("Commit successful:", data);
 
-      // Show success message for home delivery
-      toast.success("Order committed! Courier pickup will be scheduled automatically.", {
-        duration: 5000,
-      });
+      // Show success message based on delivery method
+      if (deliveryMethod === "locker") {
+        toast.success(`Order committed! Drop-off at ${selectedLocker?.name}`, {
+          duration: 5000,
+        });
 
-      toast.info(
-        "Pickup details sent to your email.",
-        {
-          duration: 7000,
-        },
-      );
+        toast.info(
+          `Seller to drop book at: ${selectedLocker?.address || selectedLocker?.full_address}. Details sent to email.`,
+          {
+            duration: 7000,
+          },
+        );
+      } else {
+        toast.success("Order committed! Courier pickup will be scheduled automatically.", {
+          duration: 5000,
+        });
+
+        toast.info(
+          "Pickup details sent to your email.",
+          {
+            duration: 7000,
+          },
+        );
+      }
 
       // Call success callback
       onCommitSuccess?.();
