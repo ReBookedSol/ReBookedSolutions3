@@ -495,7 +495,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
       order_summary: orderSummary,
     }));
 
-    goToStep(3);
+    goToStep(4);
   };
 
   const handlePaymentSuccess = async (orderData: OrderConfirmation) => {
