@@ -40,6 +40,7 @@ const ModernAddressTab = ({
   onSaveAddresses,
   isLoading = false,
 }: ModernAddressTabProps) => {
+  const savedLockersCardRef = useRef<{ loadSavedLockers: () => Promise<void> }>(null);
   const [editMode, setEditMode] = useState<
     "none" | "pickup" | "shipping" | "both"
   >("none");
