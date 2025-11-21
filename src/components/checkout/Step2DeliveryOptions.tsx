@@ -61,6 +61,67 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
     }
   }, [selectedLocker]);
 
+  const recalculateRatesForLocker = async (locker: BobGoLocation) => {
+    setLockerRatesLoading(true);
+    setError(null);
+
+    try {
+      console.log("📍 Recalculating rates for locker delivery:", {
+        locker: locker.name,
+        locationId: locker.id,
+        providerSlug: locker.provider_slug,
+      });
+
+      const quotesResp = await getAllDeliveryQuotes({
+        from: {
+          streetAddress: sellerAddress.street,
+          suburb: sellerAddress.city,
+          city: sellerAddress.city,
+          province: sellerAddress.province,
+          postalCode: sellerAddress.postal_code,
+        },
+        to: {
+          streetAddress: buyerAddress.street,
+          suburb: buyerAddress.city,
+          city: buyerAddress.city,
+          province: buyerAddress.province,
+          postalCode: buyerAddress.postal_code,
+        },
+        weight: 1,
+        deliveryLocker: {
+          locationId: locker.id || "",
+          providerSlug: locker.provider_slug || "",
+        },
+      });
+
+      setQuotes(quotesResp);
+
+      const DELIVERY_MARKUP = 15;
+      const options: DeliveryOption[] = quotesResp.map((q) => ({
+        courier: "bobgo",
+        service_name: q.service_name,
+        price: q.cost + DELIVERY_MARKUP,
+        estimated_days: q.transit_days,
+        description: `${q.provider_name} - ${q.features?.join(", ") || "Tracked"}`,
+        zone_type: "locker",
+        provider_name: q.provider_name,
+        provider_slug: q.provider_slug,
+        service_level_code: q.service_level_code,
+      }));
+
+      if (options.length > 0) {
+        console.log("✅ Updated rates for locker delivery:", options);
+        setDeliveryOptions(options);
+      }
+    } catch (err) {
+      console.error("Error recalculating locker rates:", err);
+      setError("Failed to recalculate rates for locker delivery");
+      toast.warning("Could not update rates for locker");
+    } finally {
+      setLockerRatesLoading(false);
+    }
+  };
+
   const fetchDeliveryOptions = async () => {
     setLoading(true);
     setError(null);
