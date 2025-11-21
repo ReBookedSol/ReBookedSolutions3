@@ -503,6 +503,8 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
                   sellerName={order.seller?.name || "Seller"}
                   deliveredDate={order.updated_at}
                   onFeedbackSubmitted={handleFeedbackSubmitted}
+                  totalAmount={order.total_amount || 0}
+                  sellerId={order.seller_id || ""}
                 />
               </>
             )}

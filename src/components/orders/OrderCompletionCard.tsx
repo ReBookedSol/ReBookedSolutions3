@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { CheckCircle, AlertCircle, Send, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { WalletService } from "@/services/walletService";
 
 interface OrderCompletionCardProps {
   orderId: string;
@@ -15,6 +16,8 @@ interface OrderCompletionCardProps {
   sellerName: string;
   deliveredDate?: string;
   onFeedbackSubmitted?: (feedback: any) => void;
+  totalAmount?: number;
+  sellerId?: string;
 }
 
 const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
@@ -23,6 +26,8 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
   sellerName,
   deliveredDate,
   onFeedbackSubmitted,
+  totalAmount = 0,
+  sellerId = "",
 }) => {
   const [receivedStatus, setReceivedStatus] = useState<"received" | "not_received" | null>(null);
   const [feedback, setFeedback] = useState("");
@@ -182,6 +187,25 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
       });
       setIsSubmitted(true);
       toast.success("Feedback submitted successfully!");
+
+      // Credit seller wallet if order is marked as received
+      if (receivedStatus === "received" && sellerId && totalAmount) {
+        try {
+          const walletResult = await WalletService.creditWalletOnCollection(
+            orderId,
+            sellerId,
+            totalAmount
+          );
+
+          if (walletResult.success) {
+            console.log("✅ Seller wallet credited successfully");
+          } else {
+            console.warn("Failed to credit seller wallet:", walletResult.error);
+          }
+        } catch (walletErr) {
+          console.warn("Error crediting wallet:", walletErr);
+        }
+      }
 
       // Create notification
       try {
