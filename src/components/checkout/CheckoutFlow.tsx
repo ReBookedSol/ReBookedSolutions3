@@ -384,7 +384,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
           const { getSimpleUserAddresses } = await import("@/services/simplifiedAddressService");
           const addrData = await getSimpleUserAddresses(user.id);
           const sa: any = addrData?.shipping_address || addrData?.pickup_address;
-          if (sa?.streetAddress && sa?.city && sa?.province && (sa?.postalCode || sa?.postal_code)) {
+          if ((sa?.streetAddress || sa?.street) && sa?.city && sa?.province && (sa?.postalCode || sa?.postal_code)) {
             buyerAddress = {
               street: sa.streetAddress || sa.street,
               city: sa.city,
@@ -402,7 +402,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
           const { getUserAddresses } = await import("@/services/addressService");
           const full = await getUserAddresses(user.id);
           const sa: any = full?.shipping_address || full?.pickup_address;
-          if (sa?.street && sa?.city && sa?.province && (sa?.postalCode || sa?.postal_code)) {
+          if ((sa?.street || sa?.streetAddress) && sa?.city && sa?.province && (sa?.postalCode || sa?.postal_code)) {
             buyerAddress = {
               street: sa.street || sa.streetAddress,
               city: sa.city,
@@ -796,22 +796,25 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
           !isEditingAddress && (
             <>
               {checkoutState.delivery_method === "locker" && checkoutState.selected_locker ? (
-                <Step2DeliveryOptions
-                  buyerAddress={{
-                    street: "",
-                    city: "",
-                    province: "",
-                    postal_code: "",
-                    country: "South Africa",
-                  }}
-                  sellerAddress={checkoutState.seller_address}
-                  onSelectDelivery={handleDeliverySelection}
-                  onBack={() => goToStep(2)}
-                  onCancel={handleCancelCheckout}
-                  onEditAddress={handleEditAddress}
-                  selectedDelivery={checkoutState.selected_delivery}
-                  preSelectedLocker={checkoutState.selected_locker}
-                />
+                checkoutState.buyer_address ? (
+                  <Step2DeliveryOptions
+                    buyerAddress={checkoutState.buyer_address}
+                    sellerAddress={checkoutState.seller_address}
+                    onSelectDelivery={handleDeliverySelection}
+                    onBack={() => goToStep(2)}
+                    onCancel={handleCancelCheckout}
+                    onEditAddress={handleEditAddress}
+                    selectedDelivery={checkoutState.selected_delivery}
+                    preSelectedLocker={checkoutState.selected_locker}
+                  />
+                ) : (
+                  <AddressInput
+                    title="Enter Your Delivery Address"
+                    onAddressSubmit={handleAddressSubmit}
+                    onSaveToProfile={handleSaveAddressToProfile}
+                    loading={checkoutState.loading}
+                  />
+                )
               ) : checkoutState.buyer_address ? (
                 <Step2DeliveryOptions
                   buyerAddress={checkoutState.buyer_address}

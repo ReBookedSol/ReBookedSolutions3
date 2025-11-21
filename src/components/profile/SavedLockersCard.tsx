@@ -33,7 +33,7 @@ const SavedLockersCard: React.FC<SavedLockersCardProps> = ({
   useEffect(() => {
     loadSavedLockers();
 
-    let unsubscribe: (() => void) | null = null;
+    let subscription: any = null;
 
     const setupRealtimeListener = async () => {
       try {
@@ -43,8 +43,11 @@ const SavedLockersCard: React.FC<SavedLockersCardProps> = ({
 
         if (!user) return;
 
-        const subscription = supabase
-          .channel(`profiles:${user.id}`)
+        // Create unique channel name with timestamp to avoid conflicts
+        const channelName = `profiles:${user.id}:${Date.now()}`;
+
+        subscription = supabase
+          .channel(channelName)
           .on(
             "postgres_changes",
             {
@@ -58,20 +61,18 @@ const SavedLockersCard: React.FC<SavedLockersCardProps> = ({
             }
           )
           .subscribe();
-
-        unsubscribe = () => {
-          subscription.unsubscribe();
-        };
       } catch (error) {
-        console.error("Error setting up realtime listener:", error);
+        console.error("Error setting up realtime listener:", error instanceof Error ? error.message : String(error));
       }
     };
 
     setupRealtimeListener();
 
     return () => {
-      if (unsubscribe) {
-        unsubscribe();
+      if (subscription) {
+        subscription.unsubscribe().catch((err: any) => {
+          console.debug("Error unsubscribing from channel:", err instanceof Error ? err.message : String(err));
+        });
       }
     };
   }, []);
@@ -164,7 +165,18 @@ const SavedLockersCard: React.FC<SavedLockersCardProps> = ({
     };
 
     // Get all locker fields, excluding empty values and certain fields
-    const excludeFields = ["image_url", "pickup_point_provider_logo_url"];
+    const excludeFields = [
+      "image_url",
+      "pickup_point_provider_logo_url",
+      "address",  // Use full_address instead
+      "compartment_errors",
+      "human_name",
+      "provider_slug",
+      "id",
+      "od",
+      "created_at",
+      "updated_at"
+    ];
     const fields = Object.entries(locker)
       .filter(
         ([key, value]) =>
@@ -176,117 +188,119 @@ const SavedLockersCard: React.FC<SavedLockersCardProps> = ({
       .sort(([keyA], [keyB]) => keyA.localeCompare(keyB));
 
     return (
-      <Card className="border-2 border-purple-200 hover:shadow-lg transition-shadow">
-        <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100 py-3 px-4">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <MapPin className="h-4 w-4 text-purple-600" />
-            Saved Locker
-            <Badge className="bg-green-100 text-green-800 text-xs">
+      <Card className="border border-gray-200 hover:shadow-md transition-all duration-200 overflow-hidden">
+        <CardHeader className="border-b border-gray-100 bg-white py-4 px-6">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+              <MapPin className="h-5 w-5 text-blue-600" />
+              {locker.name || "Saved Locker"}
+            </CardTitle>
+            <Badge className="bg-green-100 text-green-700 text-xs font-medium">
               <CheckCircle className="h-3 w-3 mr-1" />
-              Saved
+              Active
             </Badge>
-          </CardTitle>
+          </div>
         </CardHeader>
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            {/* Left: Image Section */}
-            <div className="flex-shrink-0 flex justify-center sm:justify-start">
-              {(locker.image_url || locker.pickup_point_provider_logo_url) ? (
-                <img
-                  src={locker.image_url || locker.pickup_point_provider_logo_url}
-                  alt={locker.name}
-                  className="h-28 w-28 sm:h-32 sm:w-32 object-cover rounded-lg border border-gray-200 shadow-sm"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              ) : (
-                <div className="h-28 w-28 sm:h-32 sm:w-32 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center flex-shrink-0">
-                  <MapPin className="h-8 w-8 text-gray-400" />
-                </div>
-              )}
-            </div>
 
-            {/* Right: Information Section */}
-            <div className="flex-1">
-              {/* Main Location Info */}
-              <div className="mb-3">
-                <h3 className="font-bold text-base text-gray-900 mb-1 break-words">{locker.name || "—"}</h3>
-                <p className="text-xs text-gray-600 break-words">
-                  {locker.full_address || locker.address || "—"}
+        <CardContent className="p-6">
+          <div className="space-y-5">
+            {/* Image and Basic Info Row */}
+            <div className="flex gap-5">
+              {/* Image */}
+              <div className="flex-shrink-0">
+                {(locker.image_url || locker.pickup_point_provider_logo_url) ? (
+                  <img
+                    src={locker.image_url || locker.pickup_point_provider_logo_url}
+                    alt={locker.name}
+                    className="h-24 w-24 object-cover rounded-lg border border-gray-200 shadow-sm"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div className="h-24 w-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border border-gray-200 flex items-center justify-center">
+                    <MapPin className="h-6 w-6 text-gray-400" />
+                  </div>
+                )}
+              </div>
+
+              {/* Address */}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-700 mb-1">Full Address</p>
+                <p className="text-sm text-gray-600 leading-relaxed break-words">
+                  {locker.full_address || "—"}
                 </p>
               </div>
+            </div>
 
-              {/* Fields Grid */}
-              {fields.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs mb-3">
-                  {fields.map(([key, value]) => {
-                    // Skip certain verbose fields
-                    if (["description", "lat", "lng", "provider_id", "type"].includes(key)) {
-                      return null;
-                    }
+            {/* Details Grid */}
+            {fields.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+                {fields.map(([key, value]) => {
+                  // Skip certain verbose and technical fields
+                  if (["description", "lat", "lng", "provider_id", "type", "full_address", "location_id"].includes(key)) {
+                    return null;
+                  }
 
-                    return (
-                      <div key={key} className="flex flex-col min-w-0">
-                        <p className="font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-1 mb-1 flex-wrap">
-                          {key === "phone" || key === "contact_phone" ? (
-                            <>
-                              <Phone className="h-3 w-3 flex-shrink-0" />
-                              <span>{formatFieldName(key)}</span>
-                            </>
-                          ) : key === "trading_hours" ? (
-                            <>
-                              <Clock className="h-3 w-3 flex-shrink-0" />
-                              <span>{formatFieldName(key)}</span>
-                            </>
-                          ) : (
-                            <span>{formatFieldName(key)}</span>
-                          )}
-                        </p>
+                  // Skip if no value
+                  if (!value) return null;
+
+                  return (
+                    <div key={key} className="flex flex-col">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
                         {key === "phone" || key === "contact_phone" ? (
-                          <a
-                            href={`tel:${value}`}
-                            className="text-purple-600 hover:text-purple-700 font-medium break-words text-xs"
-                          >
-                            {renderFieldValue(value)}
-                          </a>
-                        ) : typeof value === "object" ? (
-                          <span className="text-gray-600 text-xs break-words">
-                            {JSON.stringify(value)}
-                          </span>
+                          <>
+                            <Phone className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                            <span>Contact</span>
+                          </>
+                        ) : key === "trading_hours" ? (
+                          <>
+                            <Clock className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                            <span>Hours</span>
+                          </>
                         ) : (
-                          <p className="text-gray-700 text-xs break-words">
-                            {renderFieldValue(value)}
-                          </p>
+                          <span>{formatFieldName(key)}</span>
                         )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex gap-2 pt-3 border-t border-gray-100">
-                <Button
-                  onClick={onDelete}
-                  disabled={isDeleting}
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 border-red-300 text-red-700 hover:bg-red-50 text-xs"
-                >
-                  {isDeleting ? (
-                    <>
-                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                      Removing...
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 className="h-3 w-3 mr-1" />
-                      Remove
-                    </>
-                  )}
-                </Button>
+                      </p>
+                      {key === "phone" || key === "contact_phone" ? (
+                        <a
+                          href={`tel:${value}`}
+                          className="text-sm text-blue-600 hover:text-blue-700 font-medium break-words"
+                        >
+                          {renderFieldValue(value)}
+                        </a>
+                      ) : (
+                        <p className="text-sm text-gray-700 break-words">
+                          {renderFieldValue(value)}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
+            )}
+
+            {/* Action Button */}
+            <div className="pt-4 border-t border-gray-100">
+              <Button
+                onClick={onDelete}
+                disabled={isDeleting}
+                variant="outline"
+                size="sm"
+                className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 text-sm font-medium"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Removing...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Remove Locker
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </CardContent>

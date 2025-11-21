@@ -44,19 +44,21 @@ const Step1point5DeliveryMethod: React.FC<Step1point5DeliveryMethodProps> = ({
   const [savedLocker, setSavedLocker] = useState<BobGoLocation | null>(null);
   const [isLoadingSavedLocker, setIsLoadingSavedLocker] = useState(true);
   const [isSavingLocker, setIsSavingLocker] = useState(false);
+  const [hasAutoSelectedLocker, setHasAutoSelectedLocker] = useState(false);
 
   // Load saved locker from profile on mount
   useEffect(() => {
     loadSavedLocker();
   }, []);
 
-  // Auto-select delivery method based on saved locker
+  // Auto-select delivery method based on saved locker - only on first load
   useEffect(() => {
-    if (savedLocker && !selectedLocker) {
+    if (savedLocker && !hasAutoSelectedLocker) {
       setDeliveryMethod("locker");
       setSelectedLocker(savedLocker);
+      setHasAutoSelectedLocker(true);
     }
-  }, [savedLocker, selectedLocker]);
+  }, [savedLocker]);
 
   const loadSavedLocker = async () => {
     try {
@@ -183,12 +185,7 @@ const Step1point5DeliveryMethod: React.FC<Step1point5DeliveryMethodProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <RadioGroup value={deliveryMethod} onValueChange={(value) => {
-            setDeliveryMethod(value as "home" | "locker");
-            if (value === "home") {
-              setSelectedLocker(null);
-            }
-          }}>
+          <div className="space-y-3">
             {/* Home Delivery Option */}
             <div
               className={`flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
@@ -200,11 +197,27 @@ const Step1point5DeliveryMethod: React.FC<Step1point5DeliveryMethodProps> = ({
                 setDeliveryMethod("home");
                 setSelectedLocker(null);
               }}
+              role="radio"
+              aria-checked={deliveryMethod === "home"}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setDeliveryMethod("home");
+                  setSelectedLocker(null);
+                }
+              }}
             >
-              <RadioGroupItem
-                value="home"
-                className="mt-1 flex-shrink-0 cursor-pointer"
-              />
+              <div className="mt-1 flex-shrink-0 w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center" style={
+                deliveryMethod === "home" ? {
+                  borderColor: "#3b82f6",
+                  backgroundColor: "#3b82f6"
+                } : {}
+              }>
+                {deliveryMethod === "home" && (
+                  <div className="w-2 h-2 bg-white rounded-full"></div>
+                )}
+              </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 font-medium text-base">
                   <Home className="w-5 h-5 flex-shrink-0" />
@@ -226,11 +239,26 @@ const Step1point5DeliveryMethod: React.FC<Step1point5DeliveryMethodProps> = ({
               onClick={() => {
                 setDeliveryMethod("locker");
               }}
+              role="radio"
+              aria-checked={deliveryMethod === "locker"}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setDeliveryMethod("locker");
+                }
+              }}
             >
-              <RadioGroupItem
-                value="locker"
-                className="mt-1 flex-shrink-0 cursor-pointer"
-              />
+              <div className="mt-1 flex-shrink-0 w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center" style={
+                deliveryMethod === "locker" ? {
+                  borderColor: "#a855f7",
+                  backgroundColor: "#a855f7"
+                } : {}
+              }>
+                {deliveryMethod === "locker" && (
+                  <div className="w-2 h-2 bg-white rounded-full"></div>
+                )}
+              </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 font-medium text-base">
                   <MapPin className="w-5 h-5 flex-shrink-0" />
@@ -249,7 +277,7 @@ const Step1point5DeliveryMethod: React.FC<Step1point5DeliveryMethodProps> = ({
                 )}
               </div>
             </div>
-          </RadioGroup>
+          </div>
         </CardContent>
       </Card>
 
