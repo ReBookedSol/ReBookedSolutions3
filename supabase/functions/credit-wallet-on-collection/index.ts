@@ -57,7 +57,7 @@ serve(async (req) => {
         book_id,
         status,
         delivery_status,
-        books(id, price)
+        books(id, price, title)
       `)
       .eq("id", order_id)
       .single();
