@@ -23,6 +23,7 @@ import type { AddressData as GoogleAddressData } from "@/components/ManualAddres
 import { AddressData, Address } from "@/types/address";
 import { handleAddressError } from "@/utils/errorDisplayUtils";
 import BobGoLocationsSection from "./BobGoLocationsSection";
+import SavedLockersCard from "./SavedLockersCard";
 
 interface ModernAddressTabProps {
   addressData: AddressData | null;
