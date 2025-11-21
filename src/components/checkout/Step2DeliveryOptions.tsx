@@ -40,6 +40,7 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
   onCancel,
   onEditAddress,
   selectedDelivery,
+  preSelectedLocker,
 }) => {
   const [deliveryOptions, setDeliveryOptions] = useState<DeliveryOption[]>([]);
   const [quotes, setQuotes] = useState<UnifiedQuote[]>([]);
@@ -49,7 +50,13 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
   const [lockerRatesLoading, setLockerRatesLoading] = useState(false);
 
   useEffect(() => {
-    fetchDeliveryOptions();
+    // If a locker was pre-selected in Step1.5, automatically calculate locker rates
+    if (preSelectedLocker) {
+      setSelectedLocker(preSelectedLocker);
+      recalculateRatesForLocker(preSelectedLocker);
+    } else {
+      fetchDeliveryOptions();
+    }
   }, [buyerAddress, sellerAddress]);
 
   useEffect(() => {
@@ -349,7 +356,7 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                           <span className="font-medium text-gray-900 truncate">{q.service_name}</span>
-                          <span className="text-gray-700">��� R{(q.cost + 15).toFixed(2)}</span>
+                          <span className="text-gray-700">— R{(q.cost + 15).toFixed(2)}</span>
                         </div>
                         <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-gray-500">
                           <span className="inline-flex items-center gap-1">
