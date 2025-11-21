@@ -30,7 +30,6 @@ const BobGoLocationsSection: React.FC = () => {
   const [showLocations, setShowLocations] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [savingLockerId, setSavingLockerId] = useState<string | null>(null);
-  const [saveType, setSaveType] = useState<"delivery" | "pickup">("delivery");
   const debounceTimer = useRef<NodeJS.Timeout>();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
