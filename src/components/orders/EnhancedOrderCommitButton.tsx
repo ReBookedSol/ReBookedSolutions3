@@ -60,6 +60,9 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deliveryMethod, setDeliveryMethod] = useState<"home" | "locker">("home");
   const [selectedLocker, setSelectedLocker] = useState<BobGoLocation | null>(null);
+  const [savedLocker, setSavedLocker] = useState<BobGoLocation | null>(null);
+  const [isLoadingSavedLocker, setIsLoadingSavedLocker] = useState(false);
+  const [wantToChangeLocker, setWantToChangeLocker] = useState(false);
 
   // Pre-commit checklist states
   const [isPackagedSecurely, setIsPackagedSecurely] = useState(false);
