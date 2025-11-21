@@ -101,12 +101,13 @@ const BobGoRatesExplorer: React.FC = () => {
         length,
         width,
         height,
+        user_id: user?.id,
       });
       setQuotes(results);
     } finally {
       setLoading(false);
     }
-  }, [fromCity, fromProvince, fromPostal, toCity, toProvince, toPostal, weight, length, width, height]);
+  }, [fromCity, fromProvince, fromPostal, toCity, toProvince, toPostal, weight, length, width, height, user?.id]);
 
   const cheapest = useMemo(() => (quotes.length ? [...quotes].sort((a,b)=>a.cost-b.cost)[0] : undefined), [quotes]);
   const fastest = useMemo(() => (quotes.length ? [...quotes].sort((a,b)=>a.transit_days-b.transit_days)[0] : undefined), [quotes]);
