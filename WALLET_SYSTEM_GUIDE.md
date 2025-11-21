@@ -198,23 +198,32 @@ Seller Wallet Balance
 
 ## Troubleshooting
 
+**Issue**: Seller cannot create a listing
+- Check: Does seller have a pickup address? (Required)
+- Solution: Go to Profile → Addresses tab → Add pickup address
+- Note: Banking details are optional
+
 **Issue**: Seller not receiving payment after buyer confirmed delivery
-- Check: Does seller have active banking details? (`banking_subaccounts.status='active'`)
-- If YES: Email should have been sent with "Payment on the way" message. Check email logs and check if order was marked as received.
-- If NO: Money should be in wallet. Check `wallet_transactions` table for credit entries with `reference_order_id`.
+- Check 1: Does seller have active banking details? (`banking_subaccounts.status='active'`)
+  - If YES: Email "Payment on the way" should be sent. Payment goes directly to bank account.
+  - If NO: Money should appear in wallet. Check Profile → Settings → Banking Information (Wallet section).
+- Check 2: Verify order was actually marked as received by buyer (check delivery_status = 'delivered' or 'collected')
+- Check 3: Check `wallet_transactions` table for credit entries with matching `reference_order_id`
 
-**Issue**: Payment added to wallet but seller has banking details
-- This shouldn't happen. Verify that `banking_subaccounts.status` is actually 'active' (not 'pending' or 'inactive')
-- Check if banking details were set up AFTER order was received (only applies to new orders)
+**Issue**: Seller wants to switch from wallet to direct bank transfer
+- Solution: Set up banking details in Profile → Settings → Banking Information
+- Once banking status is 'active', next orders will trigger direct bank transfers
+- Previous wallet credits can be withdrawn via payout request in wallet
 
-**Issue**: Seller has wallet credit but wants direct bank transfer going forward
-- Solution: Seller sets up banking details (or updates if pending)
-- Verify status becomes 'active'
-- Next orders will send email instead of adding wallet credit
-- Previous credits can be withdrawn via payout request
+**Issue**: Seller has wallet credit but no banking setup
+- This is normal! The wallet is the fallback payment system.
+- Seller can:
+  - Keep the balance in wallet indefinitely
+  - Set up banking to request payout
+  - Use wallet for future transactions
 
-**Issue**: Banking setup failed
-- Check: Is banking_subaccounts table accessible?
-- Check: Did payment provider (Paystack) subaccount validation pass?
-- Check: Is seller profile verified?
-- If banking status is 'pending', it hasn't been verified yet - payments will go to wallet
+**Issue**: Banking setup failed or stuck on 'pending'
+- Check: Is Paystack integration working?
+- Check: Did seller complete all required banking fields?
+- Solution: Delete banking details and try setup again
+- Fallback: Use wallet system in the meantime
