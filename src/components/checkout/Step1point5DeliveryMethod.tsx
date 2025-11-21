@@ -114,6 +114,31 @@ const Step1point5DeliveryMethod: React.FC<Step1point5DeliveryMethodProps> = ({
         return;
       }
 
+      // Check if a locker is already saved
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("preferred_delivery_locker_data")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        throw profileError;
+      }
+
+      const hasSavedLocker = profile?.preferred_delivery_locker_data;
+
+      // If a locker is already saved, show confirmation
+      if (hasSavedLocker) {
+        const oldLockerName = (hasSavedLocker as any)?.name || "your saved locker";
+        const proceed = window.confirm(
+          `You already have "${oldLockerName}" saved as your locker.\n\nDo you want to replace it with "${selectedLocker.name}"?`
+        );
+        if (!proceed) {
+          setIsSavingLocker(false);
+          return;
+        }
+      }
+
       // Update user profile with full locker data
       const { error } = await supabase
         .from("profiles")
