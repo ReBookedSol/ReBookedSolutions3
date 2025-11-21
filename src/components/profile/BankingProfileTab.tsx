@@ -38,6 +38,7 @@ import type { BankingSubaccount } from "@/types/banking";
 import BankingForm from "@/components/banking/BankingForm";
 import PasswordVerificationForm from "@/components/banking/PasswordVerificationForm";
 import BankingDecryptionService, { type DecryptedBankingDetails } from "@/services/bankingDecryptionService";
+import WalletTab from "./WalletTab";
 
 const BankingProfileTab = () => {
   const { user } = useAuth();
@@ -484,6 +485,10 @@ const BankingProfileTab = () => {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {hasBankingSetup && (
+        <WalletTab />
       )}
 
       <Dialog open={showUpdateDialog} onOpenChange={handleCancelUpdate}>
