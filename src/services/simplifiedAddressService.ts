@@ -243,7 +243,36 @@ export const getSellerDeliveryAddress = async (
       console.error("❌ Alternative encrypted address source failed:", fallbackError);
     }
 
-    console.log("❌ No address data found for seller");
+    // Try to use seller's saved locker as fallback pickup location
+    console.log("📍 No address found, checking for seller's saved locker...");
+    try {
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("preferred_delivery_locker_data")
+        .eq("id", sellerId)
+        .maybeSingle();
+
+      if (!profileError && profile?.preferred_delivery_locker_data) {
+        const lockerData = profile.preferred_delivery_locker_data as any;
+        if (lockerData.id && lockerData.name) {
+          console.log("✅ Using seller's saved locker as pickup location:", lockerData.name);
+          // Return locker address as checkout address
+          const address = {
+            street: lockerData.full_address || lockerData.address || "",
+            city: lockerData.city || lockerData.suburb || "Locker Location",
+            province: lockerData.province || "",
+            postal_code: lockerData.postal_code || lockerData.postalCode || "",
+            country: "South Africa",
+            additional_info: `Pickup at: ${lockerData.name}`,
+          };
+          return address;
+        }
+      }
+    } catch (lockerError) {
+      console.warn("Failed to check seller's saved locker:", lockerError);
+    }
+
+    console.log("❌ No address or locker data found for seller");
     return null;
   } catch (error) {
     console.error("❌ Error getting seller address:", error);
