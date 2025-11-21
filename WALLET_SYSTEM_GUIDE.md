@@ -71,7 +71,7 @@ When a buyer confirms delivery but seller has no banking details:
 Order Received
     ↓
 Check: Does seller have ACTIVE banking details?
-    ├─ YES → Send "Payment on the way" email
+    ��─ YES → Send "Payment on the way" email
     │         NO wallet entry created
     │         Money goes directly to bank account
     │
@@ -186,15 +186,21 @@ Seller Wallet Balance
 
 **Issue**: Seller not receiving payment after buyer confirmed delivery
 - Check: Does seller have active banking details? (`banking_subaccounts.status='active'`)
-- If YES: Check if bank transfer was scheduled (look in wallet_transactions)
-- If NO: Money should be in wallet → seller needs to set up banking or request wallet payout
+- If YES: Email should have been sent with "Payment on the way" message. Check email logs and check if order was marked as received.
+- If NO: Money should be in wallet. Check `wallet_transactions` table for credit entries with `reference_order_id`.
 
-**Issue**: Seller has wallet credit but wants direct bank transfer
-- Solution: Seller sets up banking details
-- Next orders will use direct transfer
+**Issue**: Payment added to wallet but seller has banking details
+- This shouldn't happen. Verify that `banking_subaccounts.status` is actually 'active' (not 'pending' or 'inactive')
+- Check if banking details were set up AFTER order was received (only applies to new orders)
+
+**Issue**: Seller has wallet credit but wants direct bank transfer going forward
+- Solution: Seller sets up banking details (or updates if pending)
+- Verify status becomes 'active'
+- Next orders will send email instead of adding wallet credit
 - Previous credits can be withdrawn via payout request
 
 **Issue**: Banking setup failed
 - Check: Is banking_subaccounts table accessible?
 - Check: Did payment provider (Paystack) subaccount validation pass?
 - Check: Is seller profile verified?
+- If banking status is 'pending', it hasn't been verified yet - payments will go to wallet
