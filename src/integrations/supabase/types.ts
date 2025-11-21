@@ -1540,6 +1540,10 @@ export type Database = {
           phone_verified: boolean | null
           pickup_address_encrypted: string | null
           preferences: Json | null
+          preferred_delivery_locker_location_id: number | null
+          preferred_delivery_locker_provider_slug: string | null
+          preferred_pickup_locker_location_id: number | null
+          preferred_pickup_locker_provider_slug: string | null
           profile_picture_url: string | null
           role: string | null
           shipping_address_encrypted: string | null
@@ -1576,6 +1580,10 @@ export type Database = {
           phone_verified?: boolean | null
           pickup_address_encrypted?: string | null
           preferences?: Json | null
+          preferred_delivery_locker_location_id?: number | null
+          preferred_delivery_locker_provider_slug?: string | null
+          preferred_pickup_locker_location_id?: number | null
+          preferred_pickup_locker_provider_slug?: string | null
           profile_picture_url?: string | null
           role?: string | null
           shipping_address_encrypted?: string | null
@@ -1612,6 +1620,10 @@ export type Database = {
           phone_verified?: boolean | null
           pickup_address_encrypted?: string | null
           preferences?: Json | null
+          preferred_delivery_locker_location_id?: number | null
+          preferred_delivery_locker_provider_slug?: string | null
+          preferred_pickup_locker_location_id?: number | null
+          preferred_pickup_locker_provider_slug?: string | null
           profile_picture_url?: string | null
           role?: string | null
           shipping_address_encrypted?: string | null
@@ -2086,6 +2098,10 @@ export type Database = {
           p_transaction_id: string
         }
         Returns: string
+      }
+      delete_user_address: {
+        Args: { address_type: string; target_user_id: string }
+        Returns: Json
       }
       delete_user_profile: { Args: { user_id: string }; Returns: undefined }
       deny_seller_payout: {
