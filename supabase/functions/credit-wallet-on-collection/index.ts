@@ -317,7 +317,7 @@ serve(async (req) => {
         const sellerEmail = seller?.email;
         const sellerName = seller?.user_metadata?.first_name || seller?.user_metadata?.name || "Seller";
 
-        if (sellerEmail) {
+        if (seller?.id && sellerEmail) {
           // Get updated wallet balance
           const { data: walletData } = await supabase
             .from("user_wallets")
@@ -326,43 +326,47 @@ serve(async (req) => {
             .single();
 
           const newBalance = walletData?.available_balance || creditAmount;
+          const creditAmountRands = creditAmount / 100;
+          const newBalanceRands = newBalance / 100;
+          const bookPriceRands = bookPrice / 100;
 
           // Create in-app notification for seller
           try {
-            await supabase.from("notifications").insert({
+            const { error: notifError } = await supabase.from("notifications").insert({
               user_id: seller_id,
               type: "success",
               title: "💰 Payment Received!",
-              message: `Credit of R${(creditAmount / 100).toFixed(2)} has been added to your wallet for "${order.books?.title || 'Unknown Book'}". New balance: R${(newBalance / 100).toFixed(2)}`,
+              message: `Credit of R${creditAmountRands.toFixed(2)} has been added to your wallet for "${order.books?.title || 'Unknown Book'}". New balance: R${newBalanceRands.toFixed(2)}`,
               order_id: order_id,
               action_required: false
             });
+
+            if (notifError) {
+              console.error("Error creating in-app notification:", notifError);
+            } else {
+              console.log("✅ In-app notification created successfully");
+            }
           } catch (notificationError) {
             console.error("Error creating in-app notification:", notificationError);
-            // Don't fail the whole operation if notification fails
           }
 
-          // Send email notification
+          // Send email notification using supabase.functions.invoke like everywhere else
           try {
-            await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-              },
-              body: JSON.stringify({
+            await supabase.functions.invoke("send-email", {
+              body: {
                 to: sellerEmail,
                 subject: '💰 Payment Received - Credit Added to Your Account - ReBooked Solutions',
                 html: generateSellerCreditEmailHTML({
                   sellerName,
                   bookTitle: order.books?.title || 'Unknown Book',
-                  bookPrice: bookPrice / 100, // Convert from cents to rands
-                  creditAmount: creditAmount / 100, // Convert from cents to rands
+                  bookPrice: bookPriceRands,
+                  creditAmount: creditAmountRands,
                   orderId: order_id,
-                  newBalance: newBalance / 100, // Convert from cents to rands
+                  newBalance: newBalanceRands,
                 }),
-              }),
+              },
             });
+            console.log("✅ Credit notification email sent successfully");
           } catch (emailError) {
             console.error("Error sending credit notification email:", emailError);
             // Don't fail the whole operation if email fails
