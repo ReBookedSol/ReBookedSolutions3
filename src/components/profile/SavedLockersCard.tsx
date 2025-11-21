@@ -138,26 +138,6 @@ const SavedLockersCard: React.FC<SavedLockersCardProps> = ({
     }
   };
 
-  const handleDownloadImage = (imageUrl: string, lockerName: string) => {
-    try {
-      setIsDownloading(true);
-      const a = document.createElement("a");
-      a.href = imageUrl;
-      a.download = `${lockerName || "locker"}-image.jpg`;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-
-      toast.success("Image download started");
-    } catch (error) {
-      console.error("Error downloading image:", error);
-      toast.error("Failed to download image. Try opening in a new tab instead.");
-    } finally {
-      setIsDownloading(false);
-    }
-  };
 
   const LockerCard = ({
     locker,
