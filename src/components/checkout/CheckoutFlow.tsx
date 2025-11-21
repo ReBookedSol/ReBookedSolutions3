@@ -558,7 +558,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
       });
     }
 
-    goToStep(4);
+    goToStep(5);
   };
 
     const handlePaymentError = (error: string) => {
