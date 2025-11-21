@@ -478,10 +478,25 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
     }
 
     const PLATFORM_FEE = 20; // R20 platform fee
+
+    // For locker delivery, show locker location as delivery address
+    let deliveryAddress = checkoutState.buyer_address;
+    if (checkoutState.delivery_method === "locker" && checkoutState.selected_locker) {
+      const locker = checkoutState.selected_locker;
+      deliveryAddress = {
+        street: (locker as any).full_address || (locker as any).address || "",
+        city: (locker as any).city || (locker as any).suburb || "Locker Location",
+        province: (locker as any).province || "",
+        postal_code: (locker as any).postal_code || (locker as any).postalCode || "",
+        country: "South Africa",
+        additional_info: `Pickup at: ${locker.name}`,
+      };
+    }
+
     const orderSummary: OrderSummary = {
       book: checkoutState.book!,
       delivery,
-      buyer_address: checkoutState.buyer_address,
+      buyer_address: deliveryAddress,
       seller_address: checkoutState.seller_address!,
       book_price: checkoutState.book!.price,
       delivery_price: delivery.price,
