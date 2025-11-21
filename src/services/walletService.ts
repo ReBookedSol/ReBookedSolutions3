@@ -1,4 +1,158 @@
 import { supabase } from "@/integrations/supabase/client";
+import { EMAIL_STYLES, EMAIL_FOOTER } from "@/utils/emailStyles";
+
+const EMAIL_STYLES_INLINE = `<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f3fef7;
+    padding: 20px;
+    color: #1f4e3d;
+    margin: 0;
+  }
+  .container {
+    max-width: 500px;
+    margin: auto;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+  .btn {
+    display: inline-block;
+    padding: 12px 20px;
+    background-color: #3ab26f;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 20px;
+    font-weight: bold;
+  }
+  .link {
+    color: #3ab26f;
+  }
+  .header {
+    background: #3ab26f;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    border-radius: 10px 10px 0 0;
+    margin: -30px -30px 20px -30px;
+  }
+  .info-box {
+    background: #f3fef7;
+    border: 1px solid #3ab26f;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 15px 0;
+  }
+  .info-box-success {
+    background: #f0fdf4;
+    border: 1px solid #10b981;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 15px 0;
+  }
+  .footer {
+    background: #f3fef7;
+    color: #1f4e3d;
+    padding: 20px;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.5;
+    margin: 30px -30px -30px -30px;
+    border-radius: 0 0 10px 10px;
+    border-top: 1px solid #e5e7eb;
+  }
+  h1, h2, h3 { margin: 0 0 10px 0; color: #1f4e3d; }
+  ul { margin: 10px 0; padding-left: 20px; }
+  li { margin: 5px 0; }
+  p { margin: 10px 0; line-height: 1.6; }
+</style>`;
+
+const EMAIL_FOOTER_INLINE = `<div class="footer">
+  <p>This is an automated message from ReBooked Solutions. Please do not reply to this email.</p>
+  <p>For assistance, contact: <a href="mailto:support@rebookedsolutions.co.za" class="link">support@rebookedsolutions.co.za</a></p>
+  <p>Visit us at: <a href="https://rebookedsolutions.co.za" class="link">https://rebookedsolutions.co.za</a></p>
+  <p style="margin-top: 15px; font-style: italic;">"Pre-Loved Pages, New Adventures"</p>
+</div>`;
+
+function generateSellerCreditEmailHTML(data: {
+  sellerName: string;
+  bookTitle: string;
+  bookPrice: number;
+  creditAmount: number;
+  orderId: string;
+  newBalance: number;
+}): string {
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>💰 Payment Received - Credit Added to Your Account</title>
+  ${EMAIL_STYLES_INLINE}
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>💰 Payment Received!</h1>
+      <p>Your book has been delivered and credit has been added</p>
+    </div>
+
+    <p>Hello ${data.sellerName},</p>
+
+    <p><strong>Great news!</strong> Your book <strong>"${data.bookTitle}"</strong> has been successfully delivered and received by the buyer. Your payment is now available in your wallet!</p>
+
+    <div class="info-box-success">
+      <h3 style="margin-top: 0; color: #10b981;">✅ Payment Confirmed</h3>
+      <p style="margin: 0;"><strong>Credit has been added to your account!</strong></p>
+    </div>
+
+    <div class="info-box">
+      <h3 style="margin-top: 0;">📋 Transaction Details</h3>
+      <p><strong>Book Title:</strong> ${data.bookTitle}</p>
+      <p><strong>Book Price:</strong> R${data.bookPrice.toFixed(2)}</p>
+      <p><strong>Commission Rate:</strong> 10% (You keep 90%)</p>
+      <p style="border-top: 1px solid #ddd; padding-top: 10px; margin-top: 10px;"><strong>Credit Added:</strong> <span style="font-size: 1.2em; color: #10b981;">R${data.creditAmount.toFixed(2)}</span></p>
+      <p><strong>Order ID:</strong> ${data.orderId}</p>
+    </div>
+
+    <div class="info-box-success">
+      <h3 style="margin-top: 0; color: #10b981;">💳 Your New Wallet Balance</h3>
+      <p style="margin: 0; font-size: 1.1em; color: #10b981;"><strong>R${data.newBalance.toFixed(2)}</strong></p>
+    </div>
+
+    <h3>💡 What You Can Do Next:</h3>
+    <ul>
+      <li><strong>List More Books:</strong> Add more books to your inventory and earn from sales</li>
+      <li><strong>Request Payout:</strong> Once you have accumulated funds, you can request a withdrawal to your bank account</li>
+      <li><strong>View Transactions:</strong> Check your wallet history anytime in your profile</li>
+      <li><strong>Track Orders:</strong> Monitor all your sales and deliveries</li>
+    </ul>
+
+    <h3>📊 Payment Methods:</h3>
+    <p>You have two options to receive your funds:</p>
+    <ol>
+      <li><strong>Direct Bank Transfer:</strong> If you've set up banking details, payments are sent directly to your account within 1-2 business days</li>
+      <li><strong>Wallet Credit:</strong> Funds are held in your wallet and can be used for future purchases or withdrawn anytime</li>
+    </ol>
+
+    <h3>🚀 Ready to Make More Sales?</h3>
+    <p style="text-align: center; margin: 30px 0;">
+      <a href="https://rebookedsolutions.co.za/profile?tab=overview" class="btn">
+        View Your Wallet & Profile
+      </a>
+    </p>
+
+    <p style="color: #1f4e3d;"><strong>Questions?</strong> Contact us at <a href="mailto:support@rebookedsolutions.co.za" class="link">support@rebookedsolutions.co.za</a></p>
+
+    <p>Thank you for selling on ReBooked Solutions!</p>
+    <p>Best regards,<br><strong>The ReBooked Solutions Team</strong></p>
+
+    ${EMAIL_FOOTER_INLINE}
+  </div>
+</body>
+</html>`;
+}
 
 export interface WalletBalance {
   available_balance: number;
