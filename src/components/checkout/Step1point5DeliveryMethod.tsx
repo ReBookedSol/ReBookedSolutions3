@@ -112,12 +112,12 @@ const Step1point5DeliveryMethod: React.FC<Step1point5DeliveryMethodProps> = ({
         return;
       }
 
-      // Update user profile with locker preference
+      // Update user profile with full locker data
       const { error } = await supabase
         .from("profiles")
         .update({
-          preferred_delivery_locker_location_id: parseInt(selectedLocker.id || "0"),
-          preferred_delivery_locker_provider_slug: selectedLocker.provider_slug || "bobgo",
+          preferred_delivery_locker_data: selectedLocker,
+          preferred_delivery_locker_saved_at: new Date().toISOString(),
         })
         .eq("id", user.id);
 
