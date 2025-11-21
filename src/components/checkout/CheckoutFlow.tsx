@@ -459,7 +459,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
     }
   };
 
-  const goToStep = (step: 1 | 2 | 3 | 4) => {
+  const goToStep = (step: 1 | 2 | 3 | 4 | 5) => {
     setCheckoutState((prev) => ({
       ...prev,
       step: {
