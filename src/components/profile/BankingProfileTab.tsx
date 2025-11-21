@@ -184,6 +184,9 @@ const BankingProfileTab = () => {
 
   return (
     <div className="space-y-6">
+      {hasBankingSetup && (
+        <WalletTab />
+      )}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -439,57 +442,6 @@ const BankingProfileTab = () => {
         </CardContent>
       </Card>
 
-      {hasBankingSetup && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Payment Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="bg-green-50 p-4 rounded-lg">
-              <h4 className="font-medium text-green-900 mb-2">
-                How Payments Work
-              </h4>
-              <ul className="text-sm text-green-800 space-y-1">
-                <li>• You receive 90% of each book sale</li>
-                <li>• ReBooked Marketplace keeps 10% as platform fee</li>
-                <li>• Payments are held in escrow until delivery confirmation</li>
-                <li>• Funds are released to your account within 1-2 business days after delivery</li>
-                <li>• All transactions are processed securely through Paystack</li>
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {hasBankingSetup && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-book-600" />
-              Payment Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-blue-900 mb-1">BobPay Payment Processing</p>
-                    <p className="text-sm text-blue-800">
-                      All customer payments are securely processed through BobPay. Funds will be released to your bank account within 2-5 business days after the buyer confirms successful delivery.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {hasBankingSetup && (
-        <WalletTab />
-      )}
 
       <Dialog open={showUpdateDialog} onOpenChange={handleCancelUpdate}>
         <DialogContent className="w-[88vw] max-w-sm sm:max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl mx-auto">
