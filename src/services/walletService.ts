@@ -27,7 +27,7 @@ export class WalletService {
       if (!user) return null;
 
       const { data, error } = await supabase
-        .rpc("get_wallet_summary", { p_user_id: user.id });
+        .rpc("get_wallet_summary", { p_user_id: user.id }, { count: 'exact' });
 
       if (error || !data || data.length === 0) {
         console.error("Error fetching wallet balance:", error);
@@ -52,7 +52,7 @@ export class WalletService {
   static async getUserWalletBalance(userId: string): Promise<WalletBalance | null> {
     try {
       const { data, error } = await supabase
-        .rpc("get_wallet_summary", { p_user_id: userId });
+        .rpc("get_wallet_summary", { p_user_id: userId }, { count: 'exact' });
 
       if (error || !data || data.length === 0) {
         console.error("Error fetching user wallet balance:", error);
@@ -112,30 +112,22 @@ export class WalletService {
    */
   static async creditWalletOnCollection(
     orderId: string,
-    sellerId: string
+    sellerId: string,
+    bookPrice: number
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/credit-wallet-on-collection`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-          },
-          body: JSON.stringify({
-            order_id: orderId,
-            seller_id: sellerId,
-          }),
-        }
-      );
+      // Call the database function directly
+      const { data, error } = await supabase.rpc("add_funds_to_wallet", {
+        p_seller_id: sellerId,
+        p_amount: Math.round(bookPrice * 90 / 100),
+        p_order_id: orderId,
+        p_reason: "Book received",
+      });
 
-      const result = await response.json();
-
-      if (!response.ok) {
+      if (error) {
         return {
           success: false,
-          error: result.error?.message || "Failed to credit wallet",
+          error: error.message || "Failed to credit wallet",
         };
       }
 
