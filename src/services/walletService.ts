@@ -21,17 +21,37 @@ export class WalletService {
   /**
    * Get wallet balance for current user
    */
-  static async getWalletBalance(): Promise<WalletBalance | null> {
+  static async getWalletBalance(): Promise<WalletBalance> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+      if (!user) {
+        return {
+          available_balance: 0,
+          pending_balance: 0,
+          total_earned: 0,
+        };
+      }
 
       const { data, error } = await supabase
-        .rpc("get_wallet_summary", { p_user_id: user.id }, { count: 'exact' });
+        .rpc("get_wallet_summary", { p_user_id: user.id });
 
-      if (error || !data || data.length === 0) {
-        console.error("Error fetching wallet balance:", error);
-        return null;
+      if (error) {
+        console.warn("Error fetching wallet balance:", error);
+        // Return default zero balances if wallet doesn't exist yet
+        return {
+          available_balance: 0,
+          pending_balance: 0,
+          total_earned: 0,
+        };
+      }
+
+      if (!data || data.length === 0) {
+        // No wallet exists yet, return zeros
+        return {
+          available_balance: 0,
+          pending_balance: 0,
+          total_earned: 0,
+        };
       }
 
       const balance = data[0];
@@ -42,21 +62,40 @@ export class WalletService {
       };
     } catch (error) {
       console.error("Error in getWalletBalance:", error);
-      return null;
+      // Return safe defaults on error
+      return {
+        available_balance: 0,
+        pending_balance: 0,
+        total_earned: 0,
+      };
     }
   }
 
   /**
    * Get wallet balance for a specific user (admin only)
    */
-  static async getUserWalletBalance(userId: string): Promise<WalletBalance | null> {
+  static async getUserWalletBalance(userId: string): Promise<WalletBalance> {
     try {
       const { data, error } = await supabase
-        .rpc("get_wallet_summary", { p_user_id: userId }, { count: 'exact' });
+        .rpc("get_wallet_summary", { p_user_id: userId });
 
-      if (error || !data || data.length === 0) {
-        console.error("Error fetching user wallet balance:", error);
-        return null;
+      if (error) {
+        console.warn("Error fetching user wallet balance:", error);
+        // Return default zero balances if wallet doesn't exist yet
+        return {
+          available_balance: 0,
+          pending_balance: 0,
+          total_earned: 0,
+        };
+      }
+
+      if (!data || data.length === 0) {
+        // No wallet exists yet, return zeros
+        return {
+          available_balance: 0,
+          pending_balance: 0,
+          total_earned: 0,
+        };
       }
 
       const balance = data[0];
@@ -67,7 +106,12 @@ export class WalletService {
       };
     } catch (error) {
       console.error("Error in getUserWalletBalance:", error);
-      return null;
+      // Return safe defaults on error
+      return {
+        available_balance: 0,
+        pending_balance: 0,
+        total_earned: 0,
+      };
     }
   }
 
