@@ -73,9 +73,7 @@ const Step1point5DeliveryMethod: React.FC<Step1point5DeliveryMethodProps> = ({
       // Fetch user profile with locker preferences
       const { data: profile, error } = await supabase
         .from("profiles")
-        .select(
-          "preferred_delivery_locker_location_id, preferred_delivery_locker_provider_slug"
-        )
+        .select("preferred_delivery_locker_data")
         .eq("id", user.id)
         .single();
 
@@ -85,24 +83,10 @@ const Step1point5DeliveryMethod: React.FC<Step1point5DeliveryMethodProps> = ({
         return;
       }
 
-      if (
-        profile?.preferred_delivery_locker_location_id &&
-        profile?.preferred_delivery_locker_provider_slug
-      ) {
-        // For now, create a basic locker object from saved data
-        // In a real scenario, you'd fetch the full locker details from an API
-        const lockerObj: BobGoLocation = {
-          id: profile.preferred_delivery_locker_location_id.toString(),
-          name: `Saved Locker (${profile.preferred_delivery_locker_provider_slug})`,
-          address: "Locker location details saved",
-          full_address: "Locker location details saved",
-          latitude: 0,
-          longitude: 0,
-          provider_slug: profile.preferred_delivery_locker_provider_slug,
-        };
-
-        setSavedLocker(lockerObj);
-        console.log("✅ Loaded saved locker from profile");
+      if (profile?.preferred_delivery_locker_data) {
+        const lockerData = profile.preferred_delivery_locker_data as BobGoLocation;
+        setSavedLocker(lockerData);
+        console.log("✅ Loaded saved locker from profile:", lockerData);
       }
     } catch (error) {
       console.error("Error loading saved locker:", error);
