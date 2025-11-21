@@ -140,13 +140,17 @@ export const getAllDeliveryQuotes = async (
   request: UnifiedQuoteRequest,
 ): Promise<UnifiedQuote[]> => {
   try {
+    const provinceCode = toProvinceCode(request.from.province);
+
     const body: any = {
       fromAddress: {
-        suburb: request.from.suburb || request.from.city,
-        province: toProvinceCode(request.from.province),
-        postalCode: request.from.postalCode,
-        streetAddress: request.from.streetAddress,
+        street_address: request.from.streetAddress || "",
+        company: request.from.company || "",
+        local_area: request.from.suburb || request.from.city,
         city: request.from.city,
+        zone: provinceCode,
+        country: "ZA",
+        code: request.from.postalCode,
       },
       parcels: [
         {
@@ -168,12 +172,15 @@ export const getAllDeliveryQuotes = async (
       };
       console.log("🚀 Calculating rates to locker:", request.deliveryLocker);
     } else {
+      const toProvinceCode_value = toProvinceCode(request.to.province);
       body.toAddress = {
-        suburb: request.to.suburb || request.to.city,
-        province: toProvinceCode(request.to.province),
-        postalCode: request.to.postalCode,
-        streetAddress: request.to.streetAddress,
+        street_address: request.to.streetAddress || "",
+        company: request.to.company || "",
+        local_area: request.to.suburb || request.to.city,
         city: request.to.city,
+        zone: toProvinceCode_value,
+        country: "ZA",
+        code: request.to.postalCode,
       };
       console.log("🚀 Calculating rates to address:", request.to.city);
     }
