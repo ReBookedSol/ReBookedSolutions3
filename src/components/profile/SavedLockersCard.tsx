@@ -380,11 +380,69 @@ const SavedLockersCard: React.FC<SavedLockersCardProps> = ({
   }
 
   return (
-    <LockerCard
-      locker={savedLocker}
-      isDeleting={isDeleting}
-      onDelete={handleDeleteLocker}
-    />
+    <>
+      <LockerCard
+        locker={savedLocker}
+        isDeleting={isDeleting}
+        onDelete={handleDeleteLocker}
+        onImageSelect={setSelectedImage}
+        onImageDownload={handleDownloadImage}
+      />
+
+      {/* Image Modal */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="bg-white rounded-lg max-w-2xl w-full shadow-xl">
+            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-900">Locker Image</h3>
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="text-gray-500 hover:text-gray-700 text-2xl font-light"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-4 flex flex-col items-center justify-center max-h-96 overflow-auto">
+              <img
+                src={selectedImage}
+                alt="Locker location"
+                className="w-full h-auto rounded-lg"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+            <div className="p-4 border-t border-gray-200 flex gap-2">
+              <Button
+                onClick={() => handleDownloadImage(selectedImage, savedLocker?.name || "locker")}
+                disabled={isDownloading}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {isDownloading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Downloading...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 mr-2" />
+                    Download Image
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={() => setSelectedImage(null)}
+                variant="outline"
+                className="flex-1"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
