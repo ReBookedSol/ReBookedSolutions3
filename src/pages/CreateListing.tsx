@@ -50,6 +50,7 @@ const CreateListing = () => {
     condition: "Good",
     category: "",
     curriculum: undefined,
+    itemType: "textbook",
     grade: "",
     universityYear: "",
     university: "",
