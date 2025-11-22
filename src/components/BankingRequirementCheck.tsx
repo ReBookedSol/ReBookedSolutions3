@@ -45,38 +45,42 @@ const BankingRequirementCheck: React.FC<BankingRequirementCheckProps> = ({
       setLoading(true);
       console.log("🔍 Checking listing requirements for user:", user.id, forceRefresh ? "(forced refresh)" : "");
 
-      // Check banking details directly from banking_subaccounts table (looking for active status)
-      const { data: bankingDetails } = await supabase
-        .from("banking_subaccounts")
-        .select("id, status")
-        .eq("user_id", user.id)
-        .in("status", ["active", "pending"])
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // Check for saved locker
+      let hasSavedLocker = false;
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("preferred_delivery_locker_data")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (profile?.preferred_delivery_locker_data) {
+          const lockerData = profile.preferred_delivery_locker_data as any;
+          if (lockerData.id && lockerData.name) {
+            hasSavedLocker = true;
+            console.log("📍 User has saved locker");
+          }
+        }
+      } catch (error) {
+        console.warn("Failed to check saved locker:", error);
+      }
 
       // Check pickup address from seller requirements
       const requirements = await BankingService.getSellerRequirements(user.id);
 
-      const hasBankingActive = !!bankingDetails && bankingDetails.status === "active";
-      const hasBankingPending = !!bankingDetails && bankingDetails.status === "pending";
-      const hasBankingSetup = hasBankingActive || hasBankingPending;
+      console.log("✅ Locker result:", hasSavedLocker, "📍 Address result:", requirements);
 
-      console.log("✅ Banking details result:", {
-        hasBankingActive,
-        hasBankingPending,
-        status: bankingDetails?.status
-      }, "📍 Address result:", requirements);
+      // User can list if they have EITHER locker OR pickup address
+      const canList = hasSavedLocker || requirements.hasPickupAddress;
 
-      // Banking is now optional - sellers can use wallet as fallback payment method
       const status: BankingRequirementsStatus = {
-        hasBankingInfo: hasBankingSetup,
+        hasBankingInfo: true, // Not checked anymore - banking is not required
         hasPickupAddress: requirements.hasPickupAddress,
-        isVerified: hasBankingActive,
-        // Only address is required now (banking is optional due to wallet system)
-        canListBooks: requirements.hasPickupAddress,
-        missingRequirements: [
-          ...(requirements.hasPickupAddress ? [] : ["Pickup address required for book collection"]),
+        isVerified: true,
+        canListBooks: canList,
+        missingRequirements: canList ? [] : [
+          ...(hasSavedLocker ? [] : ["Locker saved OR "]),
+          ...(requirements.hasPickupAddress ? [] : ["Pickup address required"]),
         ],
       };
 
