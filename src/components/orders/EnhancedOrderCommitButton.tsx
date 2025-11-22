@@ -422,6 +422,10 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
             </CardHeader>
             <CardContent>
               <RadioGroup value={deliveryMethod} onValueChange={(value) => {
+                if (buyerDeliveryType === "door" && value === "locker") {
+                  toast.error("Locker drop-off is not available. Buyer selected home delivery.");
+                  return;
+                }
                 setDeliveryMethod(value as "home" | "locker");
                 if (value === "home") {
                   setSelectedLocker(null);
