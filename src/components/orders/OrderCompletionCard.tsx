@@ -498,14 +498,17 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
 </html>`;
                   const text = `Payment on the way\n\nHello ${sellerFullName},\n\nThe buyer has confirmed delivery of ${bookTitle} (Order ID: ${orderId.slice(-8)}). We will process your payment and notify you once released.\n\nView order: https://rebookedsolutions.co.za/seller/orders/${orderId}`;
 
+                  console.log("📤 Sending 'Payment on the way' email to:", sellerEmail);
                   await emailService.sendEmail({
                     to: sellerEmail,
                     subject: "Payment on the way — ReBooked Solutions",
                     html,
                     text,
                   });
+                  console.log("✅ 'Payment on the way' email sent successfully");
                 } else {
                   // Seller does NOT have banking details - send wallet credit notification email
+                  console.log("💰 Seller DOES NOT have banking details - sending wallet credit email");
                   const creditAmount = totalAmount * 0.9; // 90% of total amount
                   const walletTemplate = createWalletCreditNotificationEmail({
                     sellerName: sellerFullName,
@@ -516,15 +519,17 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
                     newBalance: creditAmount, // Note: This is simplified, in production you'd fetch actual balance
                   });
 
+                  console.log("📤 Sending wallet credit email to:", sellerEmail);
                   await emailService.sendEmail({
                     to: sellerEmail,
                     subject: walletTemplate.subject,
                     html: walletTemplate.html,
                     text: walletTemplate.text,
                   });
+                  console.log("✅ Wallet credit email sent successfully");
                 }
               } catch (bankingCheckErr) {
-                console.warn("Error checking banking details:", bankingCheckErr);
+                console.error("❌ Error checking banking details:", bankingCheckErr);
                 // If there's an error checking banking details, default to wallet credit email
                 try {
                   const creditAmount = totalAmount * 0.9;
