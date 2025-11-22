@@ -218,6 +218,107 @@ serve(async (req) => {
 
     // Get buyer delivery information based on type
     let deliveryData: any = null;
+    let shippingAddress: any = null;
+
+    // Resolve buyer's physical delivery/shipping address from the order first, then profile as backup
+    console.log(`[commit-to-sale] Resolving buyer delivery/shipping address from order/profile`);
+    try {
+      const anyOrder: any = order;
+
+      // 1) Prefer explicit delivery address stored on the order
+      if (anyOrder.delivery_address_encrypted) {
+        console.log("[commit-to-sale] Using order.delivery_address_encrypted");
+        const deliveryResp = await supabase.functions.invoke("decrypt-address", {
+          body: {
+            table: "orders",
+            target_id: order_id,
+            address_type: "delivery",
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (deliveryResp.data?.success) {
+          shippingAddress = deliveryResp.data.data;
+        }
+      }
+
+      // 2) Fallback to shipping address on the order
+      if (!shippingAddress && anyOrder.shipping_address_encrypted) {
+        console.log("[commit-to-sale] Falling back to order.shipping_address_encrypted");
+        const shippingResp = await supabase.functions.invoke("decrypt-address", {
+          body: {
+            table: "orders",
+            target_id: order_id,
+            address_type: "shipping",
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (shippingResp.data?.success) {
+          shippingAddress = shippingResp.data.data;
+        }
+      }
+    } catch (e) {
+      console.warn("[commit-to-sale] order-level address decryption failed:", e);
+    }
+
+    // Fallback to buyer profile if we still don't have an address
+    if (!shippingAddress && order.buyer_id) {
+      console.log(`[commit-to-sale] Using buyer profile shipping address`);
+      const { data: buyerProfile } = await supabase
+        .from("profiles")
+        .select("shipping_address_encrypted")
+        .eq("id", order.buyer_id)
+        .maybeSingle();
+
+      if (buyerProfile?.shipping_address_encrypted) {
+        const profileShippingResp = await supabase.functions.invoke("decrypt-address", {
+          body: {
+            table: "profiles",
+            target_id: order.buyer_id,
+            address_type: "shipping"
+          },
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (profileShippingResp.data?.success) {
+          shippingAddress = profileShippingResp.data.data;
+        }
+      }
+    }
+
+    // Final fallback for locker deliveries: seller's pickup address
+    if (!shippingAddress && deliveryType === 'locker' && order.seller_id) {
+      console.log(`[commit-to-sale] Falling back to seller profile pickup address for locker shipment`);
+      const { data: sellerProfile } = await supabase
+        .from("profiles")
+        .select("pickup_address_encrypted")
+        .eq("id", order.seller_id)
+        .maybeSingle();
+
+      if (sellerProfile?.pickup_address_encrypted) {
+        try {
+          const profilePickupResp = await supabase.functions.invoke("decrypt-address", {
+            body: {
+              table: "profiles",
+              target_id: order.seller_id,
+              address_type: "pickup",
+            },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (profilePickupResp.data?.success) {
+            shippingAddress = profilePickupResp.data.data;
+          }
+        } catch (e) {
+          console.warn("[commit-to-sale] seller pickup address fallback failed:", e);
+        }
+      }
+    }
 
     if (deliveryType === 'locker') {
       // Locker delivery - get locker details from order
@@ -232,7 +333,8 @@ serve(async (req) => {
           type: 'locker',
           location_id: deliveryLocationId,
           provider_slug: deliveryProviderSlug,
-          locker_data: deliveryLockerData
+          locker_data: deliveryLockerData,
+          address: shippingAddress || null
         };
       } else if (deliveryLockerData?.id && deliveryLockerData?.provider_slug) {
         // Fallback to locker_data JSON
@@ -240,7 +342,8 @@ serve(async (req) => {
           type: 'locker',
           location_id: deliveryLockerData.id,
           provider_slug: deliveryLockerData.provider_slug,
-          locker_data: deliveryLockerData
+          locker_data: deliveryLockerData,
+          address: shippingAddress || null
         };
       } else {
         // Fallback to buyer profile for missing locker info
@@ -256,63 +359,15 @@ serve(async (req) => {
             type: 'locker',
             location_id: buyerProfile.preferred_delivery_locker_location_id,
             provider_slug: buyerProfile.preferred_delivery_locker_provider_slug || 'pargo',
-            locker_data: buyerProfile.preferred_delivery_locker_data
+            locker_data: buyerProfile.preferred_delivery_locker_data,
+            address: shippingAddress || null
           };
         } else {
           throw new Error("Buyer locker delivery information not found");
         }
       }
     } else {
-      // Door delivery - get physical address
-      console.log(`[commit-to-sale] Getting buyer door delivery address from order`);
-      let shippingAddress = null;
-
-      try {
-        if (order.shipping_address_encrypted) {
-          const shippingResp = await supabase.functions.invoke("decrypt-address", {
-            body: {
-              table: "orders",
-              target_id: order_id,
-              address_type: "shipping"
-            },
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          });
-          if (shippingResp.data?.success) {
-            shippingAddress = shippingResp.data.data;
-          }
-        }
-      } catch (e) {
-        console.warn("[commit-to-sale] shipping address decryption failed:", e);
-      }
-
-      // Fallback to buyer profile
-      if (!shippingAddress && order.buyer_id) {
-        console.log(`[commit-to-sale] Using buyer profile shipping address`);
-        const { data: buyerProfile } = await supabase
-          .from("profiles")
-          .select("shipping_address_encrypted")
-          .eq("id", order.buyer_id)
-          .maybeSingle();
-
-        if (buyerProfile?.shipping_address_encrypted) {
-          const profileShippingResp = await supabase.functions.invoke("decrypt-address", {
-            body: {
-              table: "profiles",
-              target_id: order.buyer_id,
-              address_type: "shipping"
-            },
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          });
-          if (profileShippingResp.data?.success) {
-            shippingAddress = profileShippingResp.data.data;
-          }
-        }
-      }
-
+      // Door delivery - require physical address
       if (!shippingAddress) throw new Error("Buyer shipping address not found");
 
       deliveryData = {
@@ -382,6 +437,21 @@ serve(async (req) => {
       shipmentPayload.delivery_locker_location_id = deliveryData.location_id;
       shipmentPayload.delivery_locker_provider_slug = deliveryData.provider_slug;
       shipmentPayload.delivery_locker_data = deliveryData.locker_data;
+
+      const shippingAddress = deliveryData.address;
+      if (shippingAddress) {
+        shipmentPayload.delivery_address = {
+          company: "",
+          streetAddress: shippingAddress.streetAddress || shippingAddress.street_address || "",
+          suburb: shippingAddress.local_area || shippingAddress.suburb || shippingAddress.city || "",
+          city: shippingAddress.city || shippingAddress.local_area || shippingAddress.suburb || "",
+          province: shippingAddress.province || shippingAddress.zone || "",
+          postalCode: shippingAddress.postalCode || shippingAddress.postal_code || shippingAddress.code || "",
+          contact_name: buyerName,
+          contact_phone: buyerPhone,
+          contact_email: buyerEmail
+        };
+      }
       console.log(`[commit-to-sale] Delivery: Locker ${deliveryData.location_id} (${deliveryData.provider_slug})`);
     } else {
       const shippingAddress = deliveryData.address;
