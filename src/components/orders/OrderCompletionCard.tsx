@@ -375,17 +375,15 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
             // Seller: Check if they have banking details and send appropriate email
             if (sellerEmail && order.seller_id) {
               try {
-                // Check if seller has banking details
-                const { data: bankingRecord, error: bankingError } = await supabase
-                  .from("banking_subaccounts")
-                  .select("*")
-                  .eq("user_id", order.seller_id)
-                  .in("status", ["active", "pending"])
-                  .order("created_at", { ascending: false })
-                  .limit(1)
+                // Check if seller has banking details set up
+                const { data: sellerProfile, error: profileError } = await supabase
+                  .from("profiles")
+                  .select("preferences")
+                  .eq("id", order.seller_id)
                   .single();
 
-                const hasBankingDetails = !!bankingRecord && !bankingError;
+                const hasBankingDetails = !profileError &&
+                  sellerProfile?.preferences?.banking_setup_complete === true;
 
                 if (hasBankingDetails) {
                   // Seller has banking details - send "Payment on the way" email
