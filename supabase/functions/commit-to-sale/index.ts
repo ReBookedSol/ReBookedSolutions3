@@ -15,10 +15,13 @@ serve(async (req) => {
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ success: false, error: "Unauthorized" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     const token = authHeader.replace("Bearer ", "");
@@ -27,14 +30,17 @@ serve(async (req) => {
       throw new Error("Unauthorized");
     }
 
-    let body: any = null;
+    let body = null;
     try {
       body = await req.json();
     } catch {
-      return new Response(JSON.stringify({ success: false, error: "Invalid JSON body" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ success: false, error: "Invalid JSON body" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     const { order_id } = body || {};
@@ -62,81 +68,313 @@ serve(async (req) => {
     }
 
     // Ensure items is an array
-    let items: any[] = [];
+    let items = [];
     try {
       items = Array.isArray(order.items) ? order.items : (order.items ? JSON.parse(order.items) : []);
     } catch {
       items = [];
     }
 
-    // Get seller pickup address from order (try encrypted first, fall back to plaintext)
-    console.log(`[commit-to-sale] Getting seller pickup address from order`);
-    let pickupAddress: any = null;
-    try {
-      if (order.pickup_address_encrypted) {
-        const pickupResp = await supabase.functions.invoke("decrypt-address", {
-          body: { table: "orders", target_id: order_id, address_type: "pickup" },
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (pickupResp.data?.success) {
-          pickupAddress = pickupResp.data.data;
+    // Determine pickup and delivery types from order
+    const pickupType = order.pickup_type || 'door';
+    const deliveryType = order.delivery_type || 'door';
+
+    console.log(`[commit-to-sale] Shipment type: ${pickupType} → ${deliveryType}`);
+
+    // Get seller pickup information based on type
+    let pickupData: any = null;
+
+    if (pickupType === 'locker') {
+      // Locker pickup - get locker details from order
+      console.log(`[commit-to-sale] Getting seller locker pickup info from order`);
+
+      const pickupLocationId = order.pickup_locker_location_id;
+      const pickupProviderSlug = order.pickup_locker_provider_slug;
+      const pickupLockerData = order.pickup_locker_data;
+
+      if (pickupLocationId && pickupProviderSlug) {
+        pickupData = {
+          type: 'locker',
+          location_id: pickupLocationId,
+          provider_slug: pickupProviderSlug,
+          locker_data: pickupLockerData
+        };
+      } else if (pickupLockerData?.id && pickupLockerData?.provider_slug) {
+        // Fallback to locker_data JSON
+        pickupData = {
+          type: 'locker',
+          location_id: pickupLockerData.id,
+          provider_slug: pickupLockerData.provider_slug,
+          locker_data: pickupLockerData
+        };
+      } else {
+        // Fallback to seller profile for missing locker info
+        console.log(`[commit-to-sale] Locker info incomplete, checking seller profile`);
+        const { data: sellerProfile } = await supabase
+          .from("profiles")
+          .select("preferred_delivery_locker_location_id, preferred_delivery_locker_provider_slug, preferred_delivery_locker_data")
+          .eq("id", order.seller_id)
+          .single();
+
+        if (sellerProfile?.preferred_delivery_locker_location_id) {
+          pickupData = {
+            type: 'locker',
+            location_id: sellerProfile.preferred_delivery_locker_location_id,
+            provider_slug: sellerProfile.preferred_delivery_locker_provider_slug || 'pargo',
+            locker_data: sellerProfile.preferred_delivery_locker_data
+          };
+        } else {
+          throw new Error("Seller locker pickup information not found");
         }
       }
-    } catch (e) {
-      console.warn("[commit-to-sale] pickup address decryption failed:", e);
-    }
+    } else {
+      // Door pickup - get physical address
+      console.log(`[commit-to-sale] Getting seller door pickup address from order`);
+      let pickupAddress = null;
 
-    // Fallback to book-level pickup address if not on order
-    if (!pickupAddress && order.book_id) {
       try {
-        console.log(`[commit-to-sale] Falling back to book (${order.book_id}) pickup address`);
-        const { data: bookRow } = await supabase
-          .from("books")
-          .select("pickup_address_encrypted, pickup_address")
-          .eq("id", order.book_id)
-          .maybeSingle();
-
-        if (bookRow?.pickup_address_encrypted) {
-          const bookPickupResp = await supabase.functions.invoke("decrypt-address", {
-            body: { table: "books", target_id: order.book_id, address_type: "pickup" },
-            headers: { Authorization: `Bearer ${token}` },
+        if (order.pickup_address_encrypted) {
+          const pickupResp = await supabase.functions.invoke("decrypt-address", {
+            body: {
+              table: "orders",
+              target_id: order_id,
+              address_type: "pickup"
+            },
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
           });
-          if (bookPickupResp.data?.success) {
-            pickupAddress = bookPickupResp.data.data;
-          } else if (bookRow?.pickup_address) {
-            pickupAddress = bookRow.pickup_address;
+          if (pickupResp.data?.success) {
+            pickupAddress = pickupResp.data.data;
           }
-        } else if (bookRow?.pickup_address) {
-          pickupAddress = bookRow.pickup_address;
         }
       } catch (e) {
-        console.warn("[commit-to-sale] book-level pickup address fallback failed:", e);
+        console.warn("[commit-to-sale] pickup address decryption failed:", e);
       }
+
+      // Fallback to book-level pickup address if not on order
+      if (!pickupAddress && order.book_id) {
+        try {
+          console.log(`[commit-to-sale] Falling back to book (${order.book_id}) pickup address`);
+          const { data: bookRow } = await supabase
+            .from("books")
+            .select("pickup_address_encrypted")
+            .eq("id", order.book_id)
+            .maybeSingle();
+
+          if (bookRow?.pickup_address_encrypted) {
+            const bookPickupResp = await supabase.functions.invoke("decrypt-address", {
+              body: {
+                table: "books",
+                target_id: order.book_id,
+                address_type: "pickup"
+              },
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            });
+            if (bookPickupResp.data?.success) {
+              pickupAddress = bookPickupResp.data.data;
+            }
+          }
+        } catch (e) {
+          console.warn("[commit-to-sale] book-level pickup address fallback failed:", e);
+        }
+      }
+
+      // Final fallback to seller profile
+      if (!pickupAddress) {
+        console.log(`[commit-to-sale] Using seller profile pickup address`);
+        const { data: sellerProfile } = await supabase
+          .from("profiles")
+          .select("pickup_address_encrypted")
+          .eq("id", order.seller_id)
+          .single();
+
+        if (sellerProfile?.pickup_address_encrypted) {
+          const profilePickupResp = await supabase.functions.invoke("decrypt-address", {
+            body: {
+              table: "profiles",
+              target_id: order.seller_id,
+              address_type: "pickup"
+            },
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          if (profilePickupResp.data?.success) {
+            pickupAddress = profilePickupResp.data.data;
+          }
+        }
+      }
+
+      if (!pickupAddress) throw new Error("Seller pickup address not found");
+
+      pickupData = {
+        type: 'door',
+        address: pickupAddress
+      };
     }
 
-    if (!pickupAddress) throw new Error("Seller pickup address not found");
-
-    // Get buyer shipping address from order (try encrypted first, fall back to plaintext)
-    console.log(`[commit-to-sale] Getting buyer shipping address from order`);
+    // Get buyer delivery information based on type
+    let deliveryData: any = null;
     let shippingAddress: any = null;
+
+    // Resolve buyer's physical delivery/shipping address from the order first, then profile as backup
+    console.log(`[commit-to-sale] Resolving buyer delivery/shipping address from order/profile`);
     try {
-      if (order.shipping_address_encrypted) {
+      const anyOrder: any = order;
+
+      // 1) Prefer explicit delivery address stored on the order
+      if (anyOrder.delivery_address_encrypted) {
+        console.log("[commit-to-sale] Using order.delivery_address_encrypted");
+        const deliveryResp = await supabase.functions.invoke("decrypt-address", {
+          body: {
+            table: "orders",
+            target_id: order_id,
+            address_type: "delivery",
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (deliveryResp.data?.success) {
+          shippingAddress = deliveryResp.data.data;
+        }
+      }
+
+      // 2) Fallback to shipping address on the order
+      if (!shippingAddress && anyOrder.shipping_address_encrypted) {
+        console.log("[commit-to-sale] Falling back to order.shipping_address_encrypted");
         const shippingResp = await supabase.functions.invoke("decrypt-address", {
-          body: { table: "orders", target_id: order_id, address_type: "shipping" },
-          headers: { Authorization: `Bearer ${token}` },
+          body: {
+            table: "orders",
+            target_id: order_id,
+            address_type: "shipping",
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
         if (shippingResp.data?.success) {
           shippingAddress = shippingResp.data.data;
         }
       }
-      if (!shippingAddress && order.shipping_address) {
-        shippingAddress = order.shipping_address;
-      }
     } catch (e) {
-      console.warn("[commit-to-sale] shipping address resolution failed:", e);
+      console.warn("[commit-to-sale] order-level address decryption failed:", e);
     }
 
-    if (!shippingAddress) throw new Error("Buyer shipping address not found");
+    // Fallback to buyer profile if we still don't have an address
+    if (!shippingAddress && order.buyer_id) {
+      console.log(`[commit-to-sale] Using buyer profile shipping address`);
+      const { data: buyerProfile } = await supabase
+        .from("profiles")
+        .select("shipping_address_encrypted")
+        .eq("id", order.buyer_id)
+        .maybeSingle();
+
+      if (buyerProfile?.shipping_address_encrypted) {
+        const profileShippingResp = await supabase.functions.invoke("decrypt-address", {
+          body: {
+            table: "profiles",
+            target_id: order.buyer_id,
+            address_type: "shipping"
+          },
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (profileShippingResp.data?.success) {
+          shippingAddress = profileShippingResp.data.data;
+        }
+      }
+    }
+
+    // Final fallback for locker deliveries: seller's pickup address
+    if (!shippingAddress && deliveryType === 'locker' && order.seller_id) {
+      console.log(`[commit-to-sale] Falling back to seller profile pickup address for locker shipment`);
+      const { data: sellerProfile } = await supabase
+        .from("profiles")
+        .select("pickup_address_encrypted")
+        .eq("id", order.seller_id)
+        .maybeSingle();
+
+      if (sellerProfile?.pickup_address_encrypted) {
+        try {
+          const profilePickupResp = await supabase.functions.invoke("decrypt-address", {
+            body: {
+              table: "profiles",
+              target_id: order.seller_id,
+              address_type: "pickup",
+            },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (profilePickupResp.data?.success) {
+            shippingAddress = profilePickupResp.data.data;
+          }
+        } catch (e) {
+          console.warn("[commit-to-sale] seller pickup address fallback failed:", e);
+        }
+      }
+    }
+
+    if (deliveryType === 'locker') {
+      // Locker delivery - get locker details from order
+      console.log(`[commit-to-sale] Getting buyer locker delivery info from order`);
+
+      const deliveryLocationId = order.delivery_locker_location_id;
+      const deliveryProviderSlug = order.delivery_locker_provider_slug;
+      const deliveryLockerData = order.delivery_locker_data;
+
+      if (deliveryLocationId && deliveryProviderSlug) {
+        deliveryData = {
+          type: 'locker',
+          location_id: deliveryLocationId,
+          provider_slug: deliveryProviderSlug,
+          locker_data: deliveryLockerData,
+          address: shippingAddress || null
+        };
+      } else if (deliveryLockerData?.id && deliveryLockerData?.provider_slug) {
+        // Fallback to locker_data JSON
+        deliveryData = {
+          type: 'locker',
+          location_id: deliveryLockerData.id,
+          provider_slug: deliveryLockerData.provider_slug,
+          locker_data: deliveryLockerData,
+          address: shippingAddress || null
+        };
+      } else {
+        // Fallback to buyer profile for missing locker info
+        console.log(`[commit-to-sale] Locker info incomplete, checking buyer profile`);
+        const { data: buyerProfile } = await supabase
+          .from("profiles")
+          .select("preferred_delivery_locker_location_id, preferred_delivery_locker_provider_slug, preferred_delivery_locker_data")
+          .eq("id", order.buyer_id)
+          .maybeSingle();
+
+        if (buyerProfile?.preferred_delivery_locker_location_id) {
+          deliveryData = {
+            type: 'locker',
+            location_id: buyerProfile.preferred_delivery_locker_location_id,
+            provider_slug: buyerProfile.preferred_delivery_locker_provider_slug || 'pargo',
+            locker_data: buyerProfile.preferred_delivery_locker_data,
+            address: shippingAddress || null
+          };
+        } else {
+          throw new Error("Buyer locker delivery information not found");
+        }
+      }
+    } else {
+      // Door delivery - require physical address
+      if (!shippingAddress) throw new Error("Buyer shipping address not found");
+
+      deliveryData = {
+        type: 'door',
+        address: shippingAddress
+      };
+    }
 
     // Get contact information from order (stored at order creation time)
     const sellerName = order.seller_full_name || "Seller";
@@ -153,69 +391,90 @@ serve(async (req) => {
 
     console.log(`[commit-to-sale] Using buyer's selected courier: ${order.selected_courier_name} - ${order.selected_service_name}`);
 
-    const fromAddress = {
-      streetAddress: pickupAddress.streetAddress || pickupAddress.street_address || "",
-      suburb: pickupAddress.local_area || pickupAddress.suburb || pickupAddress.city || "",
-      city: pickupAddress.city || pickupAddress.local_area || pickupAddress.suburb || "",
-      province: pickupAddress.province || pickupAddress.zone || "",
-      postalCode: pickupAddress.postalCode || pickupAddress.postal_code || pickupAddress.code || "",
-    };
-
-    const toAddress = {
-      streetAddress: shippingAddress.streetAddress || shippingAddress.street_address || "",
-      suburb: shippingAddress.local_area || shippingAddress.suburb || shippingAddress.city || "",
-      city: shippingAddress.city || shippingAddress.local_area || shippingAddress.suburb || "",
-      province: shippingAddress.province || shippingAddress.zone || "",
-      postalCode: shippingAddress.postalCode || shippingAddress.postal_code || shippingAddress.code || "",
-    };
-
+    // Build parcels array
     const parcels = (items || []).map((item: any) => ({
       description: item?.title || "Book",
       weight: 1,
       length: 25,
       width: 20,
       height: 3,
-      value: Number(item?.price) || 100,
+      value: Number(item?.price) || 100
     }));
 
-    const providerName = order.selected_courier_name || "bobgo";
-    const serviceName = order.selected_service_name || "Standard";
-
-    // Create shipment with Bob Go
-    const shipmentPayload = {
+    // Build shipment payload based on pickup and delivery types
+    const shipmentPayload: any = {
       order_id,
       provider_slug: order.selected_courier_slug,
       service_level_code: order.selected_service_code,
-      pickup_address: {
+      parcels,
+      reference: `ORDER-${order_id}`
+    };
+
+    // Add pickup information based on type
+    if (pickupData.type === 'locker') {
+      shipmentPayload.pickup_locker_location_id = pickupData.location_id;
+      shipmentPayload.pickup_locker_provider_slug = pickupData.provider_slug;
+      shipmentPayload.pickup_locker_data = pickupData.locker_data;
+      console.log(`[commit-to-sale] Pickup: Locker ${pickupData.location_id} (${pickupData.provider_slug})`);
+    } else {
+      const pickupAddress = pickupData.address;
+      shipmentPayload.pickup_address = {
         company: sellerName,
-        streetAddress: fromAddress.streetAddress,
-        suburb: fromAddress.suburb,
-        city: fromAddress.city,
-        province: fromAddress.province,
-        postalCode: fromAddress.postalCode,
+        streetAddress: pickupAddress.streetAddress || pickupAddress.street_address || "",
+        suburb: pickupAddress.local_area || pickupAddress.suburb || pickupAddress.city || "",
+        city: pickupAddress.city || pickupAddress.local_area || pickupAddress.suburb || "",
+        province: pickupAddress.province || pickupAddress.zone || "",
+        postalCode: pickupAddress.postalCode || pickupAddress.postal_code || pickupAddress.code || "",
         contact_name: sellerName,
         contact_phone: sellerPhone,
-        contact_email: sellerEmail,
-      },
-      delivery_address: {
+        contact_email: sellerEmail
+      };
+      console.log(`[commit-to-sale] Pickup: Door address ${pickupAddress.city}`);
+    }
+
+    // Add delivery information based on type
+    if (deliveryData.type === 'locker') {
+      shipmentPayload.delivery_locker_location_id = deliveryData.location_id;
+      shipmentPayload.delivery_locker_provider_slug = deliveryData.provider_slug;
+      shipmentPayload.delivery_locker_data = deliveryData.locker_data;
+
+      const shippingAddress = deliveryData.address;
+      if (shippingAddress) {
+        shipmentPayload.delivery_address = {
+          company: "",
+          streetAddress: shippingAddress.streetAddress || shippingAddress.street_address || "",
+          suburb: shippingAddress.local_area || shippingAddress.suburb || shippingAddress.city || "",
+          city: shippingAddress.city || shippingAddress.local_area || shippingAddress.suburb || "",
+          province: shippingAddress.province || shippingAddress.zone || "",
+          postalCode: shippingAddress.postalCode || shippingAddress.postal_code || shippingAddress.code || "",
+          contact_name: buyerName,
+          contact_phone: buyerPhone,
+          contact_email: buyerEmail
+        };
+      }
+      console.log(`[commit-to-sale] Delivery: Locker ${deliveryData.location_id} (${deliveryData.provider_slug})`);
+    } else {
+      const shippingAddress = deliveryData.address;
+      shipmentPayload.delivery_address = {
         company: "",
-        streetAddress: toAddress.streetAddress,
-        suburb: toAddress.suburb,
-        city: toAddress.city,
-        province: toAddress.province,
-        postalCode: toAddress.postalCode,
+        streetAddress: shippingAddress.streetAddress || shippingAddress.street_address || "",
+        suburb: shippingAddress.local_area || shippingAddress.suburb || shippingAddress.city || "",
+        city: shippingAddress.city || shippingAddress.local_area || shippingAddress.suburb || "",
+        province: shippingAddress.province || shippingAddress.zone || "",
+        postalCode: shippingAddress.postalCode || shippingAddress.postal_code || shippingAddress.code || "",
         contact_name: buyerName,
         contact_phone: buyerPhone,
-        contact_email: buyerEmail,
-      },
-      parcels,
-      reference: `ORDER-${order_id}`,
-    };
+        contact_email: buyerEmail
+      };
+      console.log(`[commit-to-sale] Delivery: Door address ${shippingAddress.city}`);
+    }
 
     console.log(`[commit-to-sale] Creating Bob Go shipment`);
     const shipmentResponse = await supabase.functions.invoke("bobgo-create-shipment", {
       body: shipmentPayload,
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     });
 
     if (shipmentResponse.error) {
@@ -227,27 +486,25 @@ serve(async (req) => {
     console.log(`[commit-to-sale] Shipment created successfully`);
 
     // Update order with commitment and shipment details
-    // Use 'scheduled' instead of 'pickup_scheduled' as per database constraint
-    const { error: updateError } = await supabase
-      .from("orders")
-      .update({
-        status: "committed",
-        committed_at: new Date().toISOString(),
-        delivery_status: "scheduled",
-        tracking_number: shipmentData.tracking_number || order.tracking_number || null,
-        delivery_data: {
-          ...(order.delivery_data || {}),
-          provider: providerName,
-          provider_slug: order.selected_courier_slug,
-          service_level: serviceName,
-          service_level_code: order.selected_service_code,
-          rate_amount: order.selected_shipping_cost,
-          shipment_id: shipmentData.shipment_id,
-          waybill_url: shipmentData.waybill_url,
-        },
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", order_id);
+    const { error: updateError } = await supabase.from("orders").update({
+      status: "committed",
+      committed_at: new Date().toISOString(),
+      delivery_status: "scheduled",
+      tracking_number: shipmentData.tracking_number || order.tracking_number || null,
+      delivery_data: {
+        ...order.delivery_data || {},
+        provider: order.selected_courier_name || "bobgo",
+        provider_slug: order.selected_courier_slug,
+        service_level: order.selected_service_name || "Standard",
+        service_level_code: order.selected_service_code,
+        rate_amount: order.selected_shipping_cost,
+        shipment_id: shipmentData.shipment_id,
+        waybill_url: shipmentData.waybill_url,
+        pickup_type: pickupType,
+        delivery_type: deliveryType
+      },
+      updated_at: new Date().toISOString()
+    }).eq("id", order_id);
 
     if (updateError) {
       console.error("[commit-to-sale] Failed to update order:", updateError);
@@ -255,6 +512,7 @@ serve(async (req) => {
     }
 
     // Email templates
+    const deliveryMethodText = deliveryType === 'locker' ? 'to your selected locker' : 'to your address';
     const buyerHtml = `
 <!DOCTYPE html>
 <html>
@@ -276,12 +534,13 @@ serve(async (req) => {
       <h1>🎉 Order Confirmed!</h1>
     </div>
     <h2>Great news, ${buyerName}!</h2>
-    <p><strong>${sellerName}</strong> has confirmed your order and is preparing your book(s) for delivery.</p>
+    <p><strong>${sellerName}</strong> has confirmed your order and is preparing your book(s) for delivery ${deliveryMethodText}.</p>
     <div class="info-box">
       <h3>📚 Order Details</h3>
       <p><strong>Order ID:</strong> ${order_id}</p>
       <p><strong>Book(s):</strong> ${(items || []).map((item: any) => item.title || "Book").join(", ")}</p>
       <p><strong>Seller:</strong> ${sellerName}</p>
+      <p><strong>Delivery Method:</strong> ${deliveryType === 'locker' ? 'Locker Delivery' : 'Door-to-Door'}</p>
       <p><strong>Estimated Delivery:</strong> 2-3 business days</p>
       ${shipmentData.tracking_number ? `<p><strong>Tracking Number:</strong> ${shipmentData.tracking_number}</p>` : ""}
     </div>
@@ -297,6 +556,7 @@ serve(async (req) => {
 </body>
 </html>`;
 
+    const pickupMethodText = pickupType === 'locker' ? 'from your selected locker' : 'from your address';
     const sellerHtml = `
 <!DOCTYPE html>
 <html>
@@ -318,15 +578,16 @@ serve(async (req) => {
       <h1>Order Commitment Confirmed!</h1>
     </div>
     <h2>Thank you, ${sellerName}!</h2>
-    <p>You've successfully committed to sell your book(s). The buyer has been notified and pickup has been scheduled.</p>
+    <p>You've successfully committed to sell your book(s). The buyer has been notified and pickup has been scheduled ${pickupMethodText}.</p>
     <div class="info-box">
       <h3>📋 Order Details</h3>
       <p><strong>Order ID:</strong> ${order_id}</p>
       <p><strong>Book(s):</strong> ${(items || []).map((item: any) => item.title || "Book").join(", ")}</p>
       <p><strong>Buyer:</strong> ${buyerName}</p>
+      <p><strong>Pickup Method:</strong> ${pickupType === 'locker' ? 'Locker Pickup' : 'Door-to-Door'}</p>
       ${shipmentData.tracking_number ? `<p><strong>Tracking Number:</strong> ${shipmentData.tracking_number}</p>` : ""}
     </div>
-    <p>A courier will contact you within 24 hours to arrange pickup.</p>
+    <p>${pickupType === 'locker' ? 'Please drop off your package at the selected locker location.' : 'A courier will contact you within 24 hours to arrange pickup.'}</p>
     <p>Thank you for selling with ReBooked Solutions! 📚</p>
     <div class="footer">
       <p><strong>This is an automated message from ReBooked Solutions.</strong><br/>Please do not reply to this email.</p>
@@ -346,8 +607,8 @@ serve(async (req) => {
         body: {
           to: buyerEmail,
           subject: "Order Confirmed - Pickup Scheduled",
-          html: buyerHtml,
-        },
+          html: buyerHtml
+        }
       });
     } catch (e) {
       console.warn("[commit-to-sale] Failed to send buyer email:", e);
@@ -358,21 +619,21 @@ serve(async (req) => {
         body: {
           to: sellerEmail,
           subject: "Order Commitment Confirmed - Prepare for Pickup",
-          html: sellerHtml,
-        },
+          html: sellerHtml
+        }
       });
     } catch (e) {
       console.warn("[commit-to-sale] Failed to send seller email:", e);
     }
 
     // Create notifications for both parties
-    const notifications: any[] = [];
+    const notifications = [];
     if (order.buyer_id) {
       notifications.push({
         user_id: order.buyer_id,
         type: "success",
         title: "Order Confirmed",
-        message: `Your order has been confirmed and a shipment has been created. Tracking: ${shipmentData.tracking_number || "TBA"}`,
+        message: `Your order has been confirmed and will be delivered ${deliveryMethodText}. Tracking: ${shipmentData.tracking_number || "TBA"}`
       });
     }
     if (order.seller_id) {
@@ -380,9 +641,10 @@ serve(async (req) => {
         user_id: order.seller_id,
         type: "success",
         title: "Order Committed",
-        message: `You have successfully committed to the order. Tracking: ${shipmentData.tracking_number || "TBA"}`,
+        message: `You have successfully committed to the order. Pickup ${pickupMethodText}. Tracking: ${shipmentData.tracking_number || "TBA"}`
       });
     }
+
     if (notifications.length > 0) {
       try {
         await supabase.from("notifications").insert(notifications);
@@ -399,15 +661,23 @@ serve(async (req) => {
         message: "Order committed successfully",
         tracking_number: shipmentData.tracking_number,
         waybill_url: shipmentData.waybill_url,
+        pickup_type: pickupType,
+        delivery_type: deliveryType
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200
+      }
     );
   } catch (error) {
     console.error("[commit-to-sale] Error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return new Response(
       JSON.stringify({ success: false, error: errorMessage }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400
+      }
     );
   }
 });
