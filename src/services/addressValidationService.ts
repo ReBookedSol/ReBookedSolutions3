@@ -39,15 +39,11 @@ export const canUserListBooks = async (userId: string): Promise<boolean> => {
         if (lockerData.id && lockerData.name) {
           hasSavedLocker = true;
           console.log("📍 User has saved locker for listing");
+          return true; // Can list if they have a locker
         }
       }
     } catch (error) {
       console.warn("Failed to check saved locker:", error);
-    }
-
-    if (hasSavedLocker) {
-      console.log(`✅ User ${userId} can list books - has saved locker`);
-      return true;
     }
 
     // 2) Try the preferred encrypted path (profiles/books decryption via edge function)
