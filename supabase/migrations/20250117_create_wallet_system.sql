@@ -164,12 +164,35 @@ CREATE OR REPLACE FUNCTION credit_wallet_on_collection(
     p_order_id UUID,
     p_book_price BIGINT
 )
-RETURNS BOOLEAN AS $$
+RETURNS TABLE (
+    success BOOLEAN,
+    credit_amount BIGINT,
+    new_balance BIGINT,
+    error_message TEXT
+) AS $$
 DECLARE
     v_amount_to_credit BIGINT;
+    v_new_balance BIGINT;
 BEGIN
+    -- Validate inputs
+    IF p_seller_id IS NULL THEN
+        RETURN QUERY SELECT FALSE, 0::BIGINT, 0::BIGINT, 'seller_id is required'::TEXT;
+        RETURN;
+    END IF;
+
+    IF p_book_price IS NULL OR p_book_price <= 0 THEN
+        RETURN QUERY SELECT FALSE, 0::BIGINT, 0::BIGINT, 'book_price must be greater than 0'::TEXT;
+        RETURN;
+    END IF;
+
     -- Calculate 90% of book price (already in cents)
     v_amount_to_credit := (p_book_price * 90) / 100;
+
+    -- Check if seller exists in auth.users
+    IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = p_seller_id) THEN
+        RETURN QUERY SELECT FALSE, 0::BIGINT, 0::BIGINT, 'seller_id does not exist'::TEXT;
+        RETURN;
+    END IF;
 
     -- Ensure wallet exists or create it
     INSERT INTO user_wallets (user_id, available_balance, total_earned)
@@ -178,6 +201,11 @@ BEGIN
     SET available_balance = user_wallets.available_balance + v_amount_to_credit,
         total_earned = user_wallets.total_earned + v_amount_to_credit;
 
+    -- Get the new balance
+    SELECT available_balance INTO v_new_balance
+    FROM user_wallets
+    WHERE user_id = p_seller_id;
+
     -- Log transaction
     INSERT INTO wallet_transactions (
         user_id, type, amount, reason, reference_order_id, status
@@ -185,9 +213,9 @@ BEGIN
         p_seller_id, 'credit', v_amount_to_credit, 'Book received', p_order_id, 'completed'
     );
 
-    RETURN TRUE;
+    RETURN QUERY SELECT TRUE, v_amount_to_credit, v_new_balance, NULL::TEXT;
 EXCEPTION WHEN OTHERS THEN
-    RETURN FALSE;
+    RETURN QUERY SELECT FALSE, 0::BIGINT, 0::BIGINT, 'Database error: ' || SQLERRM;
 END;
 $$ LANGUAGE plpgsql;
 
