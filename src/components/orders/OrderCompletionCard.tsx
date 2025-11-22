@@ -400,6 +400,7 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
                 console.log("💳 Seller has banking details?", hasBankingDetails);
 
                 if (hasBankingDetails) {
+                  console.log("💰 Seller HAS banking details - sending 'Payment on the way' email");
                   // Seller has banking details - send "Payment on the way" email
                   const html = `<!DOCTYPE html>
 <html>
