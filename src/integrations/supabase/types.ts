@@ -428,6 +428,7 @@ export type Database = {
           curriculum: string | null
           description: string
           front_cover: string | null
+          genre: string | null
           grade: string | null
           id: string
           image_url: string
@@ -463,6 +464,7 @@ export type Database = {
           curriculum?: string | null
           description: string
           front_cover?: string | null
+          genre?: string | null
           grade?: string | null
           id?: string
           image_url: string
@@ -498,6 +500,7 @@ export type Database = {
           curriculum?: string | null
           description?: string
           front_cover?: string | null
+          genre?: string | null
           grade?: string | null
           id?: string
           image_url?: string
@@ -1191,8 +1194,12 @@ export type Database = {
           decline_reason: string | null
           declined_at: string | null
           delivery_data: Json | null
+          delivery_locker_data: Json | null
+          delivery_locker_location_id: number | null
+          delivery_locker_provider_slug: string | null
           delivery_option: string | null
           delivery_status: string | null
+          delivery_type: string | null
           id: string
           items: Json
           metadata: Json | null
@@ -1203,6 +1210,10 @@ export type Database = {
           payment_status: string | null
           paystack_reference: string | null
           pickup_address_encrypted: string | null
+          pickup_locker_data: Json | null
+          pickup_locker_location_id: number | null
+          pickup_locker_provider_slug: string | null
+          pickup_type: string | null
           refund_reference: string | null
           refund_status: string | null
           refunded_at: string | null
@@ -1240,8 +1251,12 @@ export type Database = {
           decline_reason?: string | null
           declined_at?: string | null
           delivery_data?: Json | null
+          delivery_locker_data?: Json | null
+          delivery_locker_location_id?: number | null
+          delivery_locker_provider_slug?: string | null
           delivery_option?: string | null
           delivery_status?: string | null
+          delivery_type?: string | null
           id?: string
           items?: Json
           metadata?: Json | null
@@ -1252,6 +1267,10 @@ export type Database = {
           payment_status?: string | null
           paystack_reference?: string | null
           pickup_address_encrypted?: string | null
+          pickup_locker_data?: Json | null
+          pickup_locker_location_id?: number | null
+          pickup_locker_provider_slug?: string | null
+          pickup_type?: string | null
           refund_reference?: string | null
           refund_status?: string | null
           refunded_at?: string | null
@@ -1289,8 +1308,12 @@ export type Database = {
           decline_reason?: string | null
           declined_at?: string | null
           delivery_data?: Json | null
+          delivery_locker_data?: Json | null
+          delivery_locker_location_id?: number | null
+          delivery_locker_provider_slug?: string | null
           delivery_option?: string | null
           delivery_status?: string | null
+          delivery_type?: string | null
           id?: string
           items?: Json
           metadata?: Json | null
@@ -1301,6 +1324,10 @@ export type Database = {
           payment_status?: string | null
           paystack_reference?: string | null
           pickup_address_encrypted?: string | null
+          pickup_locker_data?: Json | null
+          pickup_locker_location_id?: number | null
+          pickup_locker_provider_slug?: string | null
+          pickup_type?: string | null
           refund_reference?: string | null
           refund_status?: string | null
           refunded_at?: string | null
