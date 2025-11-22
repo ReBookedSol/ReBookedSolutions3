@@ -51,6 +51,8 @@ const BookFilters = ({
   setSelectedGrade,
   selectedCurriculum,
   setSelectedCurriculum,
+  selectedGenre,
+  setSelectedGenre,
   selectedUniversityYear,
   setSelectedUniversityYear,
   selectedUniversity,
