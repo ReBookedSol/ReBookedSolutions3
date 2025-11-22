@@ -419,18 +419,21 @@ serve(async (req) => {
     } else {
       const pickupAddress = pickupData.address;
       shipmentPayload.pickup_address = {
-        company: sellerName,
-        streetAddress: pickupAddress.streetAddress || pickupAddress.street_address || "",
-        suburb: pickupAddress.local_area || pickupAddress.suburb || pickupAddress.city || "",
+        street_address: pickupAddress.streetAddress || pickupAddress.street_address || "",
+        local_area: pickupAddress.local_area || pickupAddress.suburb || pickupAddress.city || "",
         city: pickupAddress.city || pickupAddress.local_area || pickupAddress.suburb || "",
-        province: pickupAddress.province || pickupAddress.zone || "",
-        postalCode: pickupAddress.postalCode || pickupAddress.postal_code || pickupAddress.code || "",
-        contact_name: sellerName,
-        contact_phone: sellerPhone,
-        contact_email: sellerEmail
+        zone: pickupAddress.province || pickupAddress.zone || "ZA",
+        code: pickupAddress.postalCode || pickupAddress.postal_code || pickupAddress.code || "",
+        country: pickupAddress.country || "ZA",
+        company: sellerName
       };
       console.log(`[commit-to-sale] Pickup: Door address ${pickupAddress.city}`);
     }
+
+    // Always include pickup contact details (required by BobGo, even for locker pickups)
+    shipmentPayload.pickup_contact_name = sellerName;
+    shipmentPayload.pickup_contact_phone = sellerPhone;
+    shipmentPayload.pickup_contact_email = sellerEmail;
 
     // Add delivery information based on type
     if (deliveryData.type === 'locker') {
@@ -441,31 +444,31 @@ serve(async (req) => {
       const shippingAddress = deliveryData.address;
       if (shippingAddress) {
         shipmentPayload.delivery_address = {
-          company: "",
-          streetAddress: shippingAddress.streetAddress || shippingAddress.street_address || "",
-          suburb: shippingAddress.local_area || shippingAddress.suburb || shippingAddress.city || "",
+          street_address: shippingAddress.streetAddress || shippingAddress.street_address || "",
+          local_area: shippingAddress.local_area || shippingAddress.suburb || shippingAddress.city || "",
           city: shippingAddress.city || shippingAddress.local_area || shippingAddress.suburb || "",
-          province: shippingAddress.province || shippingAddress.zone || "",
-          postalCode: shippingAddress.postalCode || shippingAddress.postal_code || shippingAddress.code || "",
-          contact_name: buyerName,
-          contact_phone: buyerPhone,
-          contact_email: buyerEmail
+          zone: shippingAddress.province || shippingAddress.zone || "ZA",
+          code: shippingAddress.postalCode || shippingAddress.postal_code || shippingAddress.code || "",
+          country: shippingAddress.country || "ZA"
         };
       }
+      shipmentPayload.delivery_contact_name = buyerName;
+      shipmentPayload.delivery_contact_phone = buyerPhone;
+      shipmentPayload.delivery_contact_email = buyerEmail;
       console.log(`[commit-to-sale] Delivery: Locker ${deliveryData.location_id} (${deliveryData.provider_slug})`);
     } else {
       const shippingAddress = deliveryData.address;
       shipmentPayload.delivery_address = {
-        company: "",
-        streetAddress: shippingAddress.streetAddress || shippingAddress.street_address || "",
-        suburb: shippingAddress.local_area || shippingAddress.suburb || shippingAddress.city || "",
+        street_address: shippingAddress.streetAddress || shippingAddress.street_address || "",
+        local_area: shippingAddress.local_area || shippingAddress.suburb || shippingAddress.city || "",
         city: shippingAddress.city || shippingAddress.local_area || shippingAddress.suburb || "",
-        province: shippingAddress.province || shippingAddress.zone || "",
-        postalCode: shippingAddress.postalCode || shippingAddress.postal_code || shippingAddress.code || "",
-        contact_name: buyerName,
-        contact_phone: buyerPhone,
-        contact_email: buyerEmail
+        zone: shippingAddress.province || shippingAddress.zone || "ZA",
+        code: shippingAddress.postalCode || shippingAddress.postal_code || shippingAddress.code || "",
+        country: shippingAddress.country || "ZA"
       };
+      shipmentPayload.delivery_contact_name = buyerName;
+      shipmentPayload.delivery_contact_phone = buyerPhone;
+      shipmentPayload.delivery_contact_email = buyerEmail;
       console.log(`[commit-to-sale] Delivery: Door address ${shippingAddress.city}`);
     }
 
