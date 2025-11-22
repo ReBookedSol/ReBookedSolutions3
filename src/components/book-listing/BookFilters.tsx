@@ -287,7 +287,7 @@ const BookFilters = ({
           )}
 
           {/* Curriculum Filter */}
-          {(bookType === "school" || bookType === "all") && (
+          {bookType === "school" && (
             <div className="mb-6">
               <h3 className="text-sm font-medium text-gray-700 mb-2">Curriculum</h3>
               <Select value={selectedCurriculum} onValueChange={(value) => setSelectedCurriculum(value)}>
