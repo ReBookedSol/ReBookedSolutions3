@@ -419,16 +419,17 @@ serve(async (req) => {
     } else {
       const pickupAddress = pickupData.address;
       shipmentPayload.pickup_address = {
-        company: sellerName,
-        streetAddress: pickupAddress.streetAddress || pickupAddress.street_address || "",
-        suburb: pickupAddress.local_area || pickupAddress.suburb || pickupAddress.city || "",
+        street_address: pickupAddress.streetAddress || pickupAddress.street_address || "",
+        local_area: pickupAddress.local_area || pickupAddress.suburb || pickupAddress.city || "",
         city: pickupAddress.city || pickupAddress.local_area || pickupAddress.suburb || "",
-        province: pickupAddress.province || pickupAddress.zone || "",
-        postalCode: pickupAddress.postalCode || pickupAddress.postal_code || pickupAddress.code || "",
-        contact_name: sellerName,
-        contact_phone: sellerPhone,
-        contact_email: sellerEmail
+        zone: pickupAddress.province || pickupAddress.zone || "ZA",
+        code: pickupAddress.postalCode || pickupAddress.postal_code || pickupAddress.code || "",
+        country: pickupAddress.country || "ZA",
+        company: sellerName
       };
+      shipmentPayload.pickup_contact_name = sellerName;
+      shipmentPayload.pickup_contact_phone = sellerPhone;
+      shipmentPayload.pickup_contact_email = sellerEmail;
       console.log(`[commit-to-sale] Pickup: Door address ${pickupAddress.city}`);
     }
 
