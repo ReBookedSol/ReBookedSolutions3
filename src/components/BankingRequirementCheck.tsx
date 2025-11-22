@@ -122,23 +122,21 @@ const BankingRequirementCheck: React.FC<BankingRequirementCheckProps> = ({
 
   return (
     <div className="space-y-6">
-      <Card className="border-orange-200 bg-orange-50">
+      <Card className="border-blue-200 bg-blue-50">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-orange-800">
-            <AlertTriangle className="h-5 w-5" />
-            Save a Locker to Start Listing
+          <CardTitle className="text-blue-900 text-lg">
+            Before you start, please enter a locker
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-orange-700">
-            Search for and save a BobGo locker location to your profile to start listing books:
+          <p className="text-blue-800">
+            Select a BobGo locker where you'll drop off your book once it's sold:
           </p>
 
           {/* Locker Search Section */}
           <div className="p-4 bg-white rounded-lg border border-blue-200">
-            <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-blue-600" />
-              Search for a BobGo Locker
+            <h4 className="font-medium text-gray-900 mb-3">
+              Search for a Location
             </h4>
             <BobGoLockerSelector
               onLockerSelect={() => {}}
