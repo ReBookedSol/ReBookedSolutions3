@@ -31,6 +31,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import FallbackCommitService from "@/services/fallbackCommitService";
 import BobGoLockerSelector from "@/components/checkout/BobGoLockerSelector";
 import { BobGoLocation } from "@/services/bobgoLocationsService";
@@ -63,19 +64,50 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
   const [savedLocker, setSavedLocker] = useState<BobGoLocation | null>(null);
   const [isLoadingSavedLocker, setIsLoadingSavedLocker] = useState(false);
   const [wantToChangeLocker, setWantToChangeLocker] = useState(false);
+  const [buyerDeliveryType, setBuyerDeliveryType] = useState<string | null>(null);
+  const [isLoadingOrder, setIsLoadingOrder] = useState(false);
 
   // Pre-commit checklist states
   const [isPackagedSecurely, setIsPackagedSecurely] = useState(false);
   const [canFulfillOrder, setCanFulfillOrder] = useState(false);
 
-  // Load saved locker when dialog opens and reset state when closing
+  // Load saved locker and buyer's delivery type when dialog opens and reset state when closing
   useEffect(() => {
     if (isDialogOpen) {
       loadSavedLocker();
+      fetchBuyerDeliveryType();
       setWantToChangeLocker(false);
       setSelectedLocker(null);
     }
   }, [isDialogOpen]);
+
+  const fetchBuyerDeliveryType = async () => {
+    try {
+      setIsLoadingOrder(true);
+
+      // Fetch the order to check the buyer's delivery type
+      const { data: order, error } = await supabase
+        .from("orders")
+        .select("delivery_type")
+        .eq("id", orderId)
+        .single();
+
+      if (error) {
+        console.warn("Failed to load order delivery type:", error);
+        setBuyerDeliveryType(null);
+        return;
+      }
+
+      if (order?.delivery_type) {
+        setBuyerDeliveryType(order.delivery_type);
+        console.log("✅ Buyer's delivery type:", order.delivery_type);
+      }
+    } catch (error) {
+      console.error("Error loading order delivery type:", error);
+    } finally {
+      setIsLoadingOrder(false);
+    }
+  };
 
   const loadSavedLocker = async () => {
     try {
