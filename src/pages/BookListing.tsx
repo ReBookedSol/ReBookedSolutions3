@@ -71,6 +71,7 @@ const BookListing = () => {
         category?: string;
         condition?: string;
         grade?: string;
+        genre?: string;
         curriculum?: 'CAPS' | 'Cambridge' | 'IEB';
         universityYear?: string;
         university?: string;
@@ -84,6 +85,7 @@ const BookListing = () => {
       if (category) filters.category = category;
       if (selectedCondition) filters.condition = selectedCondition;
       if (grade) filters.grade = grade;
+      if (selectedGenre) filters.genre = selectedGenre;
       if (curriculum || selectedCurriculum) filters.curriculum = (curriculum || selectedCurriculum) as any;
       if (universityYear) filters.universityYear = universityYear;
       if (selectedUniversity) filters.university = selectedUniversity;
