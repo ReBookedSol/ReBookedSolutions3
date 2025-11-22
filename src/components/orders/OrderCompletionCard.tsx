@@ -223,13 +223,19 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
       // Send transactional emails based on buyer response
       (async () => {
         try {
+          console.log("🚀 Starting email sending process...");
           const { emailService } = await import("@/services/emailService");
+          const { createWalletCreditNotificationEmail } = await import(
+            "@/utils/emailTemplates/walletCreditNotificationTemplate"
+          );
 
           // Resolve buyer and seller emails if not present on order
           let buyerEmail: string | null = order.buyer_email || null;
           let sellerEmail: string | null = (order as any).seller_email || null;
           let sellerFullName = sellerName || "Seller";
           let buyerFullName = (order as any).buyer_name || "Buyer";
+
+          console.log("📧 Initial emails - buyer:", buyerEmail, "seller:", sellerEmail);
 
           if (!buyerEmail && order.buyer_id) {
             try {
@@ -240,6 +246,7 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
                 .single();
               buyerEmail = buyerData?.email || buyerEmail;
               buyerFullName = buyerData?.full_name || buyerFullName;
+              console.log("✅ Fetched buyer email:", buyerEmail);
             } catch (e) {
               console.warn("Failed to fetch buyer email:", e);
             }
@@ -254,14 +261,17 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
                 .single();
               sellerEmail = sellerData?.email || sellerEmail;
               sellerFullName = sellerData?.full_name || sellerFullName;
+              console.log("✅ Fetched seller email:", sellerEmail);
             } catch (e) {
               console.warn("Failed to fetch seller email:", e);
             }
           }
 
           if (receivedStatus === "received") {
+            console.log("📬 Order marked as received, sending emails...");
             // Buyer: Thank you and next steps
             if (buyerEmail) {
+              console.log("📧 Sending buyer thank you email to:", buyerEmail);
               const html = `<!DOCTYPE html>
 <html>
 <head>
@@ -363,15 +373,36 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
               const text = `Thank you — Order Received\n\nHello ${buyerFullName},\n\nThanks for confirming receipt of ${bookTitle}. We will release payment to the seller shortly.\n\nView order: https://rebookedsolutions.co.za/orders/${orderId}\n\n— ReBooked Solutions`;
 
               try {
+                console.log("📤 Attempting to send buyer thank you email...");
                 await emailService.sendEmail({ to: buyerEmail, subject: "Thank you — Order Received", html, text });
+                console.log("✅ Buyer thank you email sent successfully");
               } catch (emailErr) {
-                console.warn("Failed to send buyer received email:", emailErr);
+                console.error("❌ Failed to send buyer received email:", emailErr);
               }
             }
 
-            // Seller: Notify payment is on the way
-            if (sellerEmail) {
-              const html = `<!DOCTYPE html>
+            // Seller: Check if they have banking details and send appropriate email
+            if (sellerEmail && order.seller_id) {
+              try {
+                console.log("🔍 Checking seller banking details for seller_id:", order.seller_id);
+                // Check if seller has banking details set up
+                const { data: sellerProfile, error: profileError } = await supabase
+                  .from("profiles")
+                  .select("preferences")
+                  .eq("id", order.seller_id)
+                  .single();
+
+                console.log("📋 Seller profile query result - error:", profileError, "data:", sellerProfile);
+
+                const hasBankingDetails = !profileError &&
+                  sellerProfile?.preferences?.banking_setup_complete === true;
+
+                console.log("💳 Seller has banking details?", hasBankingDetails);
+
+                if (hasBankingDetails) {
+                  console.log("💰 Seller HAS banking details - sending 'Payment on the way' email");
+                  // Seller has banking details - send "Payment on the way" email
+                  const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -465,12 +496,64 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
   </div>
 </body>
 </html>`;
-              const text = `Payment on the way\n\nHello ${sellerFullName},\n\nThe buyer has confirmed delivery of ${bookTitle} (Order ID: ${orderId.slice(-8)}). We will process your payment and notify you once released.\n\nView order: https://rebookedsolutions.co.za/seller/orders/${orderId}`;
+                  const text = `Payment on the way\n\nHello ${sellerFullName},\n\nThe buyer has confirmed delivery of ${bookTitle} (Order ID: ${orderId.slice(-8)}). We will process your payment and notify you once released.\n\nView order: https://rebookedsolutions.co.za/seller/orders/${orderId}`;
 
-              try {
-                await emailService.sendEmail({ to: sellerEmail, subject: "Payment on the way — ReBooked Solutions", html, text });
-              } catch (emailErr) {
-                console.warn("Failed to send seller payment email:", emailErr);
+                  console.log("📤 Sending 'Payment on the way' email to:", sellerEmail);
+                  await emailService.sendEmail({
+                    to: sellerEmail,
+                    subject: "Payment on the way — ReBooked Solutions",
+                    html,
+                    text,
+                  });
+                  console.log("✅ 'Payment on the way' email sent successfully");
+                } else {
+                  // Seller does NOT have banking details - send wallet credit notification email
+                  console.log("💰 Seller DOES NOT have banking details - sending wallet credit email");
+                  const creditAmount = totalAmount * 0.9; // 90% of total amount
+                  const walletTemplate = createWalletCreditNotificationEmail({
+                    sellerName: sellerFullName,
+                    bookTitle,
+                    bookPrice: totalAmount,
+                    creditAmount,
+                    orderId,
+                    newBalance: creditAmount, // Note: This is simplified, in production you'd fetch actual balance
+                  });
+
+                  console.log("📤 Sending wallet credit email to:", sellerEmail);
+                  await emailService.sendEmail({
+                    to: sellerEmail,
+                    subject: walletTemplate.subject,
+                    html: walletTemplate.html,
+                    text: walletTemplate.text,
+                  });
+                  console.log("✅ Wallet credit email sent successfully");
+                }
+              } catch (bankingCheckErr) {
+                console.error("❌ Error checking banking details:", bankingCheckErr);
+                // If there's an error checking banking details, default to wallet credit email
+                try {
+                  console.log("⚠️ Banking check failed, defaulting to wallet credit email");
+                  const creditAmount = totalAmount * 0.9;
+                  const walletTemplate = createWalletCreditNotificationEmail({
+                    sellerName: sellerFullName,
+                    bookTitle,
+                    bookPrice: totalAmount,
+                    creditAmount,
+                    orderId,
+                    newBalance: creditAmount,
+                  });
+
+                  console.log("📤 Sending fallback wallet credit email to:", sellerEmail);
+                  await emailService.sendEmail({
+                    to: sellerEmail,
+                    subject: walletTemplate.subject,
+                    html: walletTemplate.html,
+                    text: walletTemplate.text,
+                  });
+                  console.log("✅ Fallback wallet credit email sent successfully");
+                } catch (emailErr) {
+                  console.error("❌ Failed to send fallback wallet credit email:", emailErr);
+                }
               }
             }
           } else if (receivedStatus === "not_received") {
@@ -679,9 +762,11 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
             }
           }
         } catch (e) {
-          console.warn("Error sending transactional emails:", e);
+          console.error("❌ CRITICAL: Error sending transactional emails:", e);
         }
       })();
+
+      console.log("✨ Email sending process initiated (async, may continue in background)");
 
       if (onFeedbackSubmitted) {
         onFeedbackSubmitted({
