@@ -91,6 +91,19 @@ export const BookTypeSection = ({
             <GraduationCap className="h-4 w-4" />
             University
           </button>
+          <button
+            type="button"
+            onClick={() => onBookTypeChange("reader")}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all border-l ${
+              bookType === "reader"
+                ? "bg-book-600 text-white shadow-inner"
+                : "bg-white text-gray-700 hover:bg-gray-50"
+            }`}
+            aria-pressed={bookType === "reader"}
+          >
+            <BookOpen className="h-4 w-4" />
+            Reader
+          </button>
         </div>
       </div>
 
