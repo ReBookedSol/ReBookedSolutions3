@@ -95,36 +95,41 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
       const buyerFullName = buyerProfile.full_name || buyerProfile.name || `${buyerProfile.first_name || ''} ${buyerProfile.last_name || ''}`.trim() || 'Buyer';
       const sellerFullName = sellerProfile.full_name || sellerProfile.name || `${sellerProfile.first_name || ''} ${sellerProfile.last_name || ''}`.trim() || 'Seller';
 
-      // Step 2: Encrypt the shipping address
-      console.log("🔐 Encrypting shipping address...");
-      const shippingObject = {
-        streetAddress: orderSummary.buyer_address.street,
-        city: orderSummary.buyer_address.city,
-        province: orderSummary.buyer_address.province,
-        postalCode: orderSummary.buyer_address.postal_code,
-        country: orderSummary.buyer_address.country,
-        phone: orderSummary.buyer_address.phone,
-        additional_info: orderSummary.buyer_address.additional_info,
-      };
-
-      const { data: encResult, error: encError } = await supabase.functions.invoke(
-        'encrypt-address',
-        { body: { object: shippingObject } }
-      );
-
-      if (encError || !encResult?.success || !encResult?.data) {
-        throw new Error(encError?.message || 'Failed to encrypt shipping address');
-      }
-
-      const shipping_address_encrypted = JSON.stringify(encResult.data);
-
-      // Step 3: Create the order with encrypted address (before payment)
-      console.log("📦 Creating order before payment initialization...");
-
       // Prepare locker data if delivery method is locker
       const deliveryType = orderSummary.delivery_method === "locker" ? "locker" : "door";
       const deliveryLockerData = orderSummary.delivery_method === "locker" ? orderSummary.selected_locker : null;
       const deliveryLockerLocationId = orderSummary.delivery_method === "locker" ? orderSummary.selected_locker?.id : null;
+
+      // Step 2: Encrypt the shipping address (only for door deliveries)
+      let shipping_address_encrypted = "";
+      if (deliveryType === "door") {
+        console.log("🔐 Encrypting shipping address...");
+        const shippingObject = {
+          streetAddress: orderSummary.buyer_address.street,
+          city: orderSummary.buyer_address.city,
+          province: orderSummary.buyer_address.province,
+          postalCode: orderSummary.buyer_address.postal_code,
+          country: orderSummary.buyer_address.country,
+          phone: orderSummary.buyer_address.phone,
+          additional_info: orderSummary.buyer_address.additional_info,
+        };
+
+        const { data: encResult, error: encError } = await supabase.functions.invoke(
+          'encrypt-address',
+          { body: { object: shippingObject } }
+        );
+
+        if (encError || !encResult?.success || !encResult?.data) {
+          throw new Error(encError?.message || 'Failed to encrypt shipping address');
+        }
+
+        shipping_address_encrypted = JSON.stringify(encResult.data);
+      } else {
+        console.log("📦 Locker delivery selected - skipping address encryption");
+      }
+
+      // Step 3: Create the order (before payment)
+      console.log("📦 Creating order before payment initialization...");
 
       const { data: createdOrder, error: orderError } = await supabase
         .from("orders")
