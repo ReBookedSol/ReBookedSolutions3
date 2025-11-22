@@ -7,16 +7,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { School, GraduationCap } from "lucide-react";
+import { School, GraduationCap, BookOpen } from "lucide-react";
 import { UNIVERSITY_YEARS, SOUTH_AFRICAN_UNIVERSITIES_SIMPLE } from "@/constants/universities";
 import { CREATE_LISTING_CATEGORIES } from "@/constants/createListingCategories";
 import { BookFormData } from "@/types/book";
 
 interface BookTypeSectionProps {
-  bookType: "school" | "university";
+  bookType: "school" | "university" | "reader";
   formData: BookFormData;
   errors: Record<string, string>;
-  onBookTypeChange: (type: "school" | "university") => void;
+  onBookTypeChange: (type: "school" | "university" | "reader") => void;
   onSelectChange: (name: string, value: string) => void;
 }
 
@@ -90,6 +90,19 @@ export const BookTypeSection = ({
           >
             <GraduationCap className="h-4 w-4" />
             University
+          </button>
+          <button
+            type="button"
+            onClick={() => onBookTypeChange("reader")}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all border-l ${
+              bookType === "reader"
+                ? "bg-book-600 text-white shadow-inner"
+                : "bg-white text-gray-700 hover:bg-gray-50"
+            }`}
+            aria-pressed={bookType === "reader"}
+          >
+            <BookOpen className="h-4 w-4" />
+            Reader
           </button>
         </div>
       </div>
@@ -187,7 +200,7 @@ export const BookTypeSection = ({
             <p className="text-sm text-red-500 mt-1">{errors.grade}</p>
           )}
         </div>
-      ) : (
+      ) : bookType === "university" ? (
         <>
           {/* University Year Selection - Required */}
           <div>
@@ -258,7 +271,7 @@ export const BookTypeSection = ({
             </Select>
           </div>
         </>
-      )}
+      ) : null}
     </div>
   );
 };

@@ -133,6 +133,9 @@ export const getBooks = async (filters?: BookFilters): Promise<Book[]> => {
           if (filters.condition) {
             query = query.eq("condition", filters.condition);
           }
+          if (filters.itemType && filters.itemType !== 'all') {
+            query = query.eq("item_type", filters.itemType);
+          }
           if (filters.grade) {
             query = query.eq("grade", filters.grade);
           }

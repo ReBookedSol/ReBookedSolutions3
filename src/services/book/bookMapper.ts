@@ -38,6 +38,7 @@ export const mapBookFromDatabase = (bookData: BookQueryResult): Book => {
     additionalImages: Array.isArray(bookData.additional_images) ? bookData.additional_images : [],
     sold: bookData.sold || false,
     createdAt: bookData.created_at || new Date().toISOString(),
+    itemType: (bookData.item_type as 'textbook' | 'reader') || 'textbook',
     grade: bookData.grade,
     universityYear: bookData.university_year,
     university: bookData.university,

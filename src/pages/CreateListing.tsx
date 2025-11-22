@@ -50,6 +50,7 @@ const CreateListing = () => {
     condition: "Good",
     category: "",
     curriculum: undefined,
+    itemType: "textbook",
     grade: "",
     universityYear: "",
     university: "",
@@ -70,7 +71,7 @@ const CreateListing = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [bookType, setBookType] = useState<"school" | "university">("school");
+  const [bookType, setBookType] = useState<"school" | "university" | "reader">("school");
   const [showFirstUploadDialog, setShowFirstUploadDialog] = useState(false);
   const [showPostListingDialog, setShowPostListingDialog] = useState(false);
   const [showShareProfileDialog, setShowShareProfileDialog] = useState(false);
@@ -136,12 +137,16 @@ const CreateListing = () => {
     }
   };
 
-  const handleBookTypeChange = (type: "school" | "university") => {
+  const handleBookTypeChange = (type: "school" | "university" | "reader") => {
     setBookType(type);
+    let newItemType: "textbook" | "reader" = type === "reader" ? "reader" : "textbook";
+
     if (type === "school") {
-      setFormData({ ...formData, universityYear: "", university: "" });
-    } else {
-      setFormData({ ...formData, grade: "" });
+      setFormData({ ...formData, universityYear: "", university: "", itemType: newItemType });
+    } else if (type === "university") {
+      setFormData({ ...formData, grade: "", itemType: newItemType });
+    } else if (type === "reader") {
+      setFormData({ ...formData, grade: "", universityYear: "", university: "", itemType: newItemType });
     }
   };
 
@@ -166,6 +171,8 @@ const CreateListing = () => {
     if (bookType === "university" && !formData.universityYear) {
       newErrors.universityYear = "University Year is required for university books";
     }
+
+    // Reader type doesn't require grade or universityYear
 
     if (!bookImages.frontCover)
       newErrors.frontCover = "Front cover photo is required";

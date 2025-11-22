@@ -13,6 +13,7 @@ export interface Book {
   additionalImages?: string[];
   sold: boolean;
   createdAt: string;
+  itemType: "textbook" | "reader";
   grade?: string;
   universityYear?: string;
   university?: string;
@@ -42,6 +43,7 @@ export interface BookFormData {
   backCover?: string;
   insidePages?: string;
   additionalImages?: string[];
+  itemType: "textbook" | "reader";
   grade?: string;
   universityYear?: string;
   university?: string;

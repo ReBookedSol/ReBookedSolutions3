@@ -28,8 +28,8 @@ interface BookFiltersProps {
   setSelectedProvince: (province: string) => void;
   priceRange: [number, number];
   setPriceRange: (range: [number, number]) => void;
-  bookType: "all" | "school" | "university";
-  setBookType: (type: "all" | "school" | "university") => void;
+  bookType: "all" | "school" | "university" | "reader";
+  setBookType: (type: "all" | "school" | "university" | "reader") => void;
   showFilters: boolean;
   setShowFilters: (show: boolean) => void;
   onSearch: (e: React.FormEvent) => void;
@@ -131,13 +131,20 @@ const BookFilters = ({
     setSelectedProvince(province === selectedProvince ? "" : province);
   };
 
-  const handleBookTypeChange = (type: "all" | "school" | "university") => {
+  const handleBookTypeChange = (type: "all" | "school" | "university" | "reader") => {
     setBookType(type);
     if (type === "school") {
       setSelectedUniversityYear("");
       setSelectedUniversity("");
+      setSelectedGrade("");
     } else if (type === "university") {
       setSelectedGrade("");
+      setSelectedUniversityYear("");
+      setSelectedUniversity("");
+    } else if (type === "reader") {
+      setSelectedGrade("");
+      setSelectedUniversityYear("");
+      setSelectedUniversity("");
     }
   };
 
@@ -241,11 +248,20 @@ const BookFilters = ({
                 <GraduationCap className="mr-1 h-4 w-4" />
                 University
               </Button>
+              <Button
+                variant={bookType === "reader" ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleBookTypeChange("reader")}
+                className="flex items-center"
+              >
+                <BookOpen className="mr-1 h-4 w-4" />
+                Readers
+              </Button>
             </div>
           </div>
 
           {/* Grade Filter */}
-          {(bookType === "school" || bookType === "all") && (
+          {bookType === "school" && (
             <div className="mb-6">
               <h3 className="text-sm font-medium text-gray-700 mb-2">Grade</h3>
               <div className="grid grid-cols-2 gap-2">
@@ -271,7 +287,7 @@ const BookFilters = ({
           )}
 
           {/* Curriculum Filter */}
-          {(bookType === "school" || bookType === "all") && (
+          {bookType === "school" && (
             <div className="mb-6">
               <h3 className="text-sm font-medium text-gray-700 mb-2">Curriculum</h3>
               <Select value={selectedCurriculum} onValueChange={(value) => setSelectedCurriculum(value)}>
@@ -288,7 +304,7 @@ const BookFilters = ({
           )}
 
           {/* University Selection */}
-          {(bookType === "university" || bookType === "all") && (
+          {bookType === "university" && (
             <div className="mb-6">
               <h3 className="text-sm font-medium text-gray-700 mb-2">
                 University
@@ -302,7 +318,7 @@ const BookFilters = ({
           )}
 
           {/* University Year Filter */}
-          {(bookType === "university" || bookType === "all") && (
+          {bookType === "university" && (
             <div className="mb-6">
               <h3 className="text-sm font-medium text-gray-700 mb-2">
                 University Year
