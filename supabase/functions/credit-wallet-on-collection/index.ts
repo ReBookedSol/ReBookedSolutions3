@@ -451,7 +451,15 @@ serve(async (req) => {
           newBalance: newBalance,
         });
 
-        const { data: emailResult, error: emailError } = await supabase.functions.invoke("send-email", {
+        // Create a service role client for function invocation
+        const serviceClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false
+          }
+        });
+
+        const { data: emailResult, error: emailError } = await serviceClient.functions.invoke("send-email", {
           body: {
             to: sellerEmail,
             subject: '💰 Payment Received - Credit Added to Your Account - ReBooked Solutions',
