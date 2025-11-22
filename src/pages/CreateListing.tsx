@@ -172,6 +172,8 @@ const CreateListing = () => {
       newErrors.universityYear = "University Year is required for university books";
     }
 
+    // Reader type doesn't require grade or universityYear
+
     if (!bookImages.frontCover)
       newErrors.frontCover = "Front cover photo is required";
     if (!bookImages.backCover)
