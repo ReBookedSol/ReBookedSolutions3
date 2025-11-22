@@ -365,16 +365,16 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
                     provider_slug: q.provider_slug,
                     service_level_code: q.service_level_code,
                   };
-                  const isSelected = !!selectedDelivery &&
-                    selectedDelivery.service_name === option.service_name &&
-                    selectedDelivery.price === option.price;
+                  const isSelected = !!localSelectedDelivery &&
+                    localSelectedDelivery.service_name === option.service_name &&
+                    localSelectedDelivery.price === option.price;
                   return (
                     <div
                       key={idx}
                       className={`flex items-center justify-between gap-4 p-4 transition-colors ${
                         isSelected ? "bg-blue-50" : "hover:bg-gray-50"
                       }`}
-                      onClick={() => onSelectDelivery(option)}
+                      onClick={() => { setLocalSelectedDelivery(option); onSelectDelivery(option); }}
                     >
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
