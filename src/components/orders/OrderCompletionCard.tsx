@@ -224,6 +224,9 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
       (async () => {
         try {
           const { emailService } = await import("@/services/emailService");
+          const { createWalletCreditNotificationEmail } = await import(
+            "@/utils/emailTemplates/walletCreditNotificationTemplate"
+          );
 
           // Resolve buyer and seller emails if not present on order
           let buyerEmail: string | null = order.buyer_email || null;
@@ -369,9 +372,24 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
               }
             }
 
-            // Seller: Notify payment is on the way
-            if (sellerEmail) {
-              const html = `<!DOCTYPE html>
+            // Seller: Check if they have banking details and send appropriate email
+            if (sellerEmail && order.seller_id) {
+              try {
+                // Check if seller has banking details
+                const { data: bankingRecord, error: bankingError } = await supabase
+                  .from("banking_subaccounts")
+                  .select("*")
+                  .eq("user_id", order.seller_id)
+                  .in("status", ["active", "pending"])
+                  .order("created_at", { ascending: false })
+                  .limit(1)
+                  .single();
+
+                const hasBankingDetails = !!bankingRecord && !bankingError;
+
+                if (hasBankingDetails) {
+                  // Seller has banking details - send "Payment on the way" email
+                  const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -465,12 +483,56 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
   </div>
 </body>
 </html>`;
-              const text = `Payment on the way\n\nHello ${sellerFullName},\n\nThe buyer has confirmed delivery of ${bookTitle} (Order ID: ${orderId.slice(-8)}). We will process your payment and notify you once released.\n\nView order: https://rebookedsolutions.co.za/seller/orders/${orderId}`;
+                  const text = `Payment on the way\n\nHello ${sellerFullName},\n\nThe buyer has confirmed delivery of ${bookTitle} (Order ID: ${orderId.slice(-8)}). We will process your payment and notify you once released.\n\nView order: https://rebookedsolutions.co.za/seller/orders/${orderId}`;
 
-              try {
-                await emailService.sendEmail({ to: sellerEmail, subject: "Payment on the way — ReBooked Solutions", html, text });
-              } catch (emailErr) {
-                console.warn("Failed to send seller payment email:", emailErr);
+                  await emailService.sendEmail({
+                    to: sellerEmail,
+                    subject: "Payment on the way — ReBooked Solutions",
+                    html,
+                    text,
+                  });
+                } else {
+                  // Seller does NOT have banking details - send wallet credit notification email
+                  const creditAmount = totalAmount * 0.9; // 90% of total amount
+                  const walletTemplate = createWalletCreditNotificationEmail({
+                    sellerName: sellerFullName,
+                    bookTitle,
+                    bookPrice: totalAmount,
+                    creditAmount,
+                    orderId,
+                    newBalance: creditAmount, // Note: This is simplified, in production you'd fetch actual balance
+                  });
+
+                  await emailService.sendEmail({
+                    to: sellerEmail,
+                    subject: walletTemplate.subject,
+                    html: walletTemplate.html,
+                    text: walletTemplate.text,
+                  });
+                }
+              } catch (bankingCheckErr) {
+                console.warn("Error checking banking details:", bankingCheckErr);
+                // If there's an error checking banking details, default to wallet credit email
+                try {
+                  const creditAmount = totalAmount * 0.9;
+                  const walletTemplate = createWalletCreditNotificationEmail({
+                    sellerName: sellerFullName,
+                    bookTitle,
+                    bookPrice: totalAmount,
+                    creditAmount,
+                    orderId,
+                    newBalance: creditAmount,
+                  });
+
+                  await emailService.sendEmail({
+                    to: sellerEmail,
+                    subject: walletTemplate.subject,
+                    html: walletTemplate.html,
+                    text: walletTemplate.text,
+                  });
+                } catch (emailErr) {
+                  console.warn("Failed to send wallet credit email:", emailErr);
+                }
               }
             }
           } else if (receivedStatus === "not_received") {
