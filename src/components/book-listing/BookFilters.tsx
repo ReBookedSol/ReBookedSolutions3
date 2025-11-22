@@ -8,6 +8,7 @@ import { Filter, Search, School, GraduationCap, BookOpen, MapPin } from "lucide-
 import { UniversitySelector } from "@/components/ui/university-selector";
 import { UNIVERSITY_YEARS } from "@/constants/universities";
 import { CREATE_LISTING_CATEGORIES } from "@/constants/createListingCategories";
+import { ALL_READER_GENRES } from "@/constants/readerGenres";
 
 interface BookFiltersProps {
   searchQuery: string;
