@@ -304,7 +304,7 @@ const BookFilters = ({
           )}
 
           {/* University Selection */}
-          {(bookType === "university" || bookType === "all") && (
+          {bookType === "university" && (
             <div className="mb-6">
               <h3 className="text-sm font-medium text-gray-700 mb-2">
                 University
