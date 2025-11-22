@@ -253,18 +253,21 @@ const ModernAddressTab = ({
             )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-6">
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              Set up your pickup and shipping addresses to enable book sales and
-              deliveries. The pickup address is where our couriers can pick up your books,
-              and the shipping address is where you'll receive books you
-              purchase.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
       </Card>
+
+      {/* Saved Lockers Section - Moved to Top */}
+      <SavedLockersCard ref={savedLockersCardRef} isLoading={isLoading} />
+
+      {/* Locker Recommendation Alert */}
+      <Alert className="bg-blue-50 border-blue-300">
+        <Info className="h-4 w-4 text-blue-600" />
+        <AlertDescription className="text-blue-800">
+          <span className="font-semibold">Pro Tip: Using the locker system is easier and safer!</span> Avoid unnecessary rescheduling with buyers, and get paid faster since books are delivered quickly. The locker system is the fastest way to complete deliveries.
+        </AlertDescription>
+      </Alert>
+
+      {/* BobGo Locations Section - Moved to Top */}
+      <BobGoLocationsSection onLockerSaved={() => savedLockersCardRef.current?.loadSavedLockers()} />
 
       {/* Address Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -578,12 +581,6 @@ const ModernAddressTab = ({
           </CardContent>
         </Card>
       </div>
-
-      {/* Saved Lockers Section */}
-      <SavedLockersCard ref={savedLockersCardRef} isLoading={isLoading} />
-
-      {/* BobGo Locations Section */}
-      <BobGoLocationsSection onLockerSaved={() => savedLockersCardRef.current?.loadSavedLockers()} />
 
       {/* Action Buttons for Edit Mode */}
       {editMode !== "none" && (
