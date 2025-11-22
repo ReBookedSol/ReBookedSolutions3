@@ -427,10 +427,12 @@ serve(async (req) => {
 
     console.log("✅ Wallet credited successfully");
 
-    // Calculate amounts for display (assuming prices are stored in cents)
-    const creditAmount = (bookPrice * 90) / 100;
+    // Use amounts from RPC result (already calculated by the function)
+    const creditAmount = rpcResult.credit_amount;
+    const newBalance = rpcResult.new_balance;
     const bookPriceRands = bookPrice / 100;
     const creditAmountRands = creditAmount / 100;
+    const newBalanceRands = newBalance / 100;
 
     // Get seller details for notifications
     const { data: { users }, error: userError } = await supabase.auth.admin.listUsers();
