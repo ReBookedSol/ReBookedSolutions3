@@ -31,6 +31,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import FallbackCommitService from "@/services/fallbackCommitService";
 import BobGoLockerSelector from "@/components/checkout/BobGoLockerSelector";
 import { BobGoLocation } from "@/services/bobgoLocationsService";
@@ -63,19 +64,50 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
   const [savedLocker, setSavedLocker] = useState<BobGoLocation | null>(null);
   const [isLoadingSavedLocker, setIsLoadingSavedLocker] = useState(false);
   const [wantToChangeLocker, setWantToChangeLocker] = useState(false);
+  const [buyerDeliveryType, setBuyerDeliveryType] = useState<string | null>(null);
+  const [isLoadingOrder, setIsLoadingOrder] = useState(false);
 
   // Pre-commit checklist states
   const [isPackagedSecurely, setIsPackagedSecurely] = useState(false);
   const [canFulfillOrder, setCanFulfillOrder] = useState(false);
 
-  // Load saved locker when dialog opens and reset state when closing
+  // Load saved locker and buyer's delivery type when dialog opens and reset state when closing
   useEffect(() => {
     if (isDialogOpen) {
       loadSavedLocker();
+      fetchBuyerDeliveryType();
       setWantToChangeLocker(false);
       setSelectedLocker(null);
     }
   }, [isDialogOpen]);
+
+  const fetchBuyerDeliveryType = async () => {
+    try {
+      setIsLoadingOrder(true);
+
+      // Fetch the order to check the buyer's delivery type
+      const { data: order, error } = await supabase
+        .from("orders")
+        .select("delivery_type")
+        .eq("id", orderId)
+        .single();
+
+      if (error) {
+        console.warn("Failed to load order delivery type:", error);
+        setBuyerDeliveryType(null);
+        return;
+      }
+
+      if (order?.delivery_type) {
+        setBuyerDeliveryType(order.delivery_type);
+        console.log("✅ Buyer's delivery type:", order.delivery_type);
+      }
+    } catch (error) {
+      console.error("Error loading order delivery type:", error);
+    } finally {
+      setIsLoadingOrder(false);
+    }
+  };
 
   const loadSavedLocker = async () => {
     try {
@@ -390,6 +422,10 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
             </CardHeader>
             <CardContent>
               <RadioGroup value={deliveryMethod} onValueChange={(value) => {
+                if (buyerDeliveryType === "door" && value === "locker") {
+                  toast.error("Locker drop-off is not available. Buyer selected home delivery.");
+                  return;
+                }
                 setDeliveryMethod(value as "home" | "locker");
                 if (value === "home") {
                   setSelectedLocker(null);
@@ -422,27 +458,52 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
 
                   {/* Locker Drop-Off Option */}
                   <div
-                    className={`flex items-start space-x-3 p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                      deliveryMethod === "locker"
-                        ? "bg-purple-50 border-purple-500"
-                        : "bg-gray-50 border-gray-200 hover:border-purple-300"
+                    className={`flex items-start space-x-3 p-3 sm:p-4 border-2 rounded-lg transition-all ${
+                      buyerDeliveryType === "door"
+                        ? "cursor-not-allowed opacity-60 bg-gray-100 border-gray-300"
+                        : `cursor-pointer ${
+                            deliveryMethod === "locker"
+                              ? "bg-purple-50 border-purple-500"
+                              : "bg-gray-50 border-gray-200 hover:border-purple-300"
+                          }`
                     }`}
-                    onClick={() => handleSelectLockerMethod(savedLocker)}
+                    onClick={() => {
+                      if (buyerDeliveryType !== "door") {
+                        handleSelectLockerMethod(savedLocker);
+                      }
+                    }}
                   >
-                    <RadioGroupItem value="locker" className="mt-1 flex-shrink-0" />
+                    <RadioGroupItem value="locker" className="mt-1 flex-shrink-0" disabled={buyerDeliveryType === "door"} />
                     <div className="flex-1">
-                      <Label className="flex items-center gap-2 font-medium text-sm sm:text-base cursor-pointer">
+                      <Label className={`flex items-center gap-2 font-medium text-sm sm:text-base ${
+                        buyerDeliveryType === "door" ? "text-gray-500" : "cursor-pointer"
+                      }`}>
                         <MapPin className="w-4 h-4 flex-shrink-0" />
                         <span>BobGo Locker Drop-Off</span>
                       </Label>
-                      <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                        Drop the book at a nearby BobGo location. Buyer will collect from there.
+                      <p className={`text-xs sm:text-sm mt-1 ${
+                        buyerDeliveryType === "door" ? "text-gray-500" : "text-gray-600"
+                      }`}>
+                        {buyerDeliveryType === "door"
+                          ? "The buyer has chosen home delivery, so locker drop-off is not available for this order."
+                          : "Drop the book at a nearby BobGo location. Buyer will collect from there."
+                        }
                       </p>
                     </div>
                   </div>
 
+                  {/* Alert when buyer chose door delivery */}
+                  {buyerDeliveryType === "door" && (
+                    <Alert className="bg-blue-50 border-blue-200">
+                      <Info className="h-4 w-4 text-blue-600" />
+                      <AlertDescription className="text-blue-800">
+                        The buyer has selected home delivery. As the seller, you must arrange courier pickup from your address. Locker drop-off is not available for this order.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
                   {/* Locker Selection UI - Only show if locker method is selected */}
-                  {deliveryMethod === "locker" && (
+                  {deliveryMethod === "locker" && buyerDeliveryType !== "door" && (
                   <div className="mt-4 pt-4 border-t border-gray-200 space-y-4">
                     {isLoadingSavedLocker ? (
                       <div className="flex items-center justify-center py-4">

@@ -380,41 +380,7 @@ const CreateListing = () => {
       <div
         className="container mx-auto px-4 md:px-8 py-4 md:py-8 max-w-5xl"
       >
-        {/* Address Requirement Alert */}
-        {!isCheckingAddress && canListBooks === false && (
-          <Alert className="mb-6 border-orange-200 bg-orange-50">
-            <AlertTriangle className="h-4 w-4 text-orange-600" />
-            <AlertDescription className="text-orange-800">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="font-medium">Pickup Address Required</span>
-                  <p className="text-sm mt-1">
-                    You need to set a pickup address in your profile before you
-                    can list books for sale.
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={() => navigate("/profile")}
-                  className="ml-4 border-orange-300 text-orange-700 hover:bg-orange-100"
-                >
-                  Go to Profile
-                </Button>
-              </div>
-            </AlertDescription>
-          </Alert>
-        )}
-
         {/* Loading Address Check */}
-        {isCheckingAddress && (
-          <Alert className="mb-6">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <AlertDescription>
-              Checking address requirements...
-            </AlertDescription>
-          </Alert>
-        )}
-
         <BackButton
           fallbackPath="/books"
           className={`mb-4 md:mb-6 text-book-600 hover:text-book-700 ${isMobile ? "h-10" : ""}`}

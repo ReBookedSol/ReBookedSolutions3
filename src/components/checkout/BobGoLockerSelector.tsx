@@ -155,6 +155,11 @@ const BobGoLockerSelector: React.FC<BobGoLockerSelectorProps> = ({
       toast.success("Locker saved! 🎉", {
         description: `${location.name} is now saved to your profile`,
       });
+
+      // Reload page after successful save
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (error) {
       console.error("Error saving locker:", error);
       toast.error("Failed to save locker to profile");
