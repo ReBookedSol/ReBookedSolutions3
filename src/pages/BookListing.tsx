@@ -47,7 +47,7 @@ const BookListing = () => {
     searchParams.get("province") || "",
   );
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
-  const [bookType, setBookType] = useState<"all" | "school" | "university">(
+  const [bookType, setBookType] = useState<"all" | "school" | "university" | "reader">(
     "all",
   );
 
@@ -76,6 +76,7 @@ const BookListing = () => {
         province?: string;
         minPrice?: number;
         maxPrice?: number;
+        itemType?: 'textbook' | 'reader' | 'all';
       } = {};
 
       if (searchQuery) filters.search = searchQuery;
@@ -89,6 +90,9 @@ const BookListing = () => {
 
       if (priceRange[0] > 0) filters.minPrice = priceRange[0];
       if (priceRange[1] < 1000) filters.maxPrice = priceRange[1];
+      if (bookType !== "all") {
+        filters.itemType = bookType === "school" || bookType === "university" ? "textbook" : bookType;
+      }
 
       console.log("📋 BookListing: Applying filters:", filters);
 
@@ -135,7 +139,7 @@ const BookListing = () => {
       setIsLoading(false);
       console.log("🏁 BookListing: Loading complete, isLoading set to false");
     }
-  }, [searchParams, selectedCondition, selectedUniversity, selectedProvince, selectedCurriculum, priceRange, currentPage]);
+  }, [searchParams, selectedCondition, selectedUniversity, selectedProvince, selectedCurriculum, priceRange, currentPage, bookType]);
 
   // Initial load
   useEffect(() => {
