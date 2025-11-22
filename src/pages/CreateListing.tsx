@@ -143,9 +143,9 @@ const CreateListing = () => {
     let newItemType: "textbook" | "reader" = type === "reader" ? "reader" : "textbook";
 
     if (type === "school") {
-      setFormData({ ...formData, universityYear: "", university: "", itemType: newItemType });
+      setFormData({ ...formData, universityYear: "", university: "", genre: "", itemType: newItemType });
     } else if (type === "university") {
-      setFormData({ ...formData, grade: "", itemType: newItemType });
+      setFormData({ ...formData, grade: "", genre: "", itemType: newItemType });
     } else if (type === "reader") {
       setFormData({ ...formData, grade: "", universityYear: "", university: "", itemType: newItemType });
     }
