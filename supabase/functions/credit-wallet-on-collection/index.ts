@@ -242,7 +242,7 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-    // Get order details with seller info - much simpler!
+    // Get order details with seller info
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .select("id, total_amount, book_id, status, delivery_status, seller_email, seller_full_name")
@@ -306,7 +306,7 @@ serve(async (req) => {
     console.log("📚 Book found:", { book_id: book.id, title: book.title, price: book.price });
 
     // Use the book's price directly
-    const bookPrice = book.price;
+    const bookPrice = Number(book.price);
 
     if (!bookPrice || bookPrice <= 0) {
       return new Response(
@@ -350,11 +350,12 @@ serve(async (req) => {
     // No banking details - credit wallet
     console.log("💳 Crediting wallet with book price:", bookPrice);
 
+    // Call RPC with explicit numeric type cast
     const { data: creditResult, error: creditError } = await supabase
       .rpc('credit_wallet_on_collection', {
         p_seller_id: seller_id,
         p_order_id: order_id,
-        p_book_price: bookPrice,
+        p_book_price: bookPrice.toString(), // Convert to string to match numeric type
       });
 
     if (creditError) {
@@ -410,13 +411,13 @@ serve(async (req) => {
     console.log("✅ Wallet credited successfully");
 
     // Get amounts from RPC result
-    const creditAmount = rpcResult.credit_amount;
-    const newBalance = rpcResult.new_balance;
+    const creditAmount = Number(rpcResult.credit_amount);
+    const newBalance = Number(rpcResult.new_balance);
     const bookPriceRands = bookPrice / 100;
     const creditAmountRands = creditAmount / 100;
     const newBalanceRands = newBalance / 100;
 
-    // Get seller details - now directly from order!
+    // Get seller details from order
     const sellerEmail = order.seller_email;
     const sellerName = order.seller_full_name || "Seller";
 
