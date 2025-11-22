@@ -461,8 +461,8 @@ serve(async (req) => {
     // Build shipment payload based on pickup and delivery types
     const shipmentPayload: any = {
       order_id,
-      provider_slug: order.selected_courier_slug,
-      service_level_code: order.selected_service_code,
+      provider_slug: selectedCourierSlug,
+      service_level_code: selectedServiceCode,
       parcels,
       reference: `ORDER-${order_id}`
     };
