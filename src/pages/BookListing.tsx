@@ -41,6 +41,7 @@ const BookListing = () => {
   const [selectedCondition, setSelectedCondition] = useState("");
   const [selectedGrade, setSelectedGrade] = useState("");
   const [selectedCurriculum, setSelectedCurriculum] = useState("");
+  const [selectedGenre, setSelectedGenre] = useState("");
   const [selectedUniversityYear, setSelectedUniversityYear] = useState("");
   const [selectedUniversity, setSelectedUniversity] = useState("");
   const [selectedProvince, setSelectedProvince] = useState(
