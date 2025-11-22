@@ -272,6 +272,39 @@ export const BookTypeSection = ({
             </Select>
           </div>
         </>
+      ) : bookType === "reader" ? (
+        <div>
+          <Label htmlFor="genre" className="text-base font-medium">
+            Genre <span className="text-red-500">*</span>
+          </Label>
+          <Select
+            value={(formData as any).genre || ""}
+            onValueChange={(value) => onSelectChange("genre", value)}
+          >
+            <SelectTrigger className={errors.genre ? "border-red-500" : ""}>
+              <SelectValue placeholder="Select a genre" />
+            </SelectTrigger>
+            <SelectContent className="max-h-72">
+              <div className="space-y-1 p-1">
+                {Object.entries(GENRE_CATEGORIES).map(([category, genres]) => (
+                  <div key={category}>
+                    <div className="px-2 py-1.5 text-sm font-semibold text-gray-700 sticky top-0 bg-white">
+                      {category}
+                    </div>
+                    {genres.map((genre) => (
+                      <SelectItem key={genre} value={genre} className="ml-2">
+                        {genre}
+                      </SelectItem>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </SelectContent>
+          </Select>
+          {errors.genre && (
+            <p className="text-sm text-red-500 mt-1">{errors.genre}</p>
+          )}
+        </div>
       ) : null}
     </div>
   );
