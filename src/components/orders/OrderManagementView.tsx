@@ -364,7 +364,16 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
     ].includes(order.status);
 
     const deliveryStatus = (order.delivery_status || "created").toLowerCase();
-    const steps = ["created", "collected", "in_transit", "out_for_delivery", "delivered"] as const;
+
+    // Determine if this is a locker-to-locker delivery
+    const isLockerDelivery = order.delivery_data?.zone_type === "locker-to-locker" ||
+                             (order.delivery_data?.delivery_type === "locker" && order.delivery_data?.pickup_type === "locker");
+
+    // Dynamic steps based on delivery type
+    const baseSteps = ["created", "collected", "in_transit"] as const;
+    const steps = isLockerDelivery
+      ? [...baseSteps, "ready_for_pickup", "delivered"] as const
+      : [...baseSteps, "out_for_delivery", "delivered"] as const;
 
     const statusToIndex: Record<string, number> = {
       created: 0,
@@ -374,7 +383,9 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
       picked_up: 1,
       in_transit: 2,
       out_for_delivery: 3,
-      delivered: 4,
+      ready_for_pickup: 3,
+      ready: 3,
+      delivered: isLockerDelivery ? 4 : 4,
     };
 
     const currentIndex = statusToIndex[deliveryStatus] ?? 0;
@@ -391,8 +402,15 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
           <span>{order.status === "pending_commit" ? "Not Committed" : "Committed"}</span>
         </div>
 
+        {/* Delivery method indicator */}
+        {isLockerDelivery && (
+          <div className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded inline-block">
+            📦 Locker-to-Locker Delivery
+          </div>
+        )}
+
         {/* Delivery stages */}
-        <div className="grid grid-cols-5 gap-2">
+        <div className={`grid gap-2 ${steps.length > 5 ? "grid-cols-3 md:grid-cols-6" : "grid-cols-5"}`}>
           {steps.map((step, idx) => (
             <div key={step} className="flex flex-col items-center text-xs">
               <div
@@ -406,8 +424,8 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
                     : "bg-gray-300"
                 }`}
               />
-              <span className="mt-1 capitalize text-gray-600">
-                {step.replaceAll("_", " ")}
+              <span className="mt-1 capitalize text-gray-600 text-center leading-tight">
+                {step === "ready_for_pickup" ? "Ready for Pickup" : step.replaceAll("_", " ")}
               </span>
             </div>
           ))}
