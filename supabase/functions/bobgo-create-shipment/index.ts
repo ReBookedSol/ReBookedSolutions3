@@ -159,14 +159,25 @@ serve(async (req) => {
       }
 
       bobgoPayload.collection_address = formattedPickupAddress;
-      if (pickup_contact_name) bobgoPayload.collection_contact_name = pickup_contact_name.toString().trim();
-      if (pickup_contact_phone) bobgoPayload.collection_contact_mobile_number = pickup_contact_phone.toString().trim();
-      if (pickup_contact_email) bobgoPayload.collection_contact_email = pickup_contact_email.toString().trim();
-
       console.log(`[bobgo-create-shipment] Collection: Door address - ${formattedPickupAddress.local_area}, ${formattedPickupAddress.city}`);
     } else {
       throw new Error("Either pickup address or locker location required");
     }
+
+    // Always include pickup contact details (required by BobGo, even for locker pickups)
+    if (!pickup_contact_name) {
+      throw new Error("Pickup contact name is required");
+    }
+    if (!pickup_contact_phone) {
+      throw new Error("Pickup contact phone is required");
+    }
+    if (!pickup_contact_email) {
+      throw new Error("Pickup contact email is required");
+    }
+
+    bobgoPayload.collection_contact_name = pickup_contact_name.toString().trim();
+    bobgoPayload.collection_contact_mobile_number = pickup_contact_phone.toString().trim();
+    bobgoPayload.collection_contact_email = pickup_contact_email.toString().trim();
 
     // Add delivery information
     if (delivery_locker_location_id) {
