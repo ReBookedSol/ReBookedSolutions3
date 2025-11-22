@@ -80,12 +80,20 @@ serve(async (req) => {
       throw new Error("BOBGO_API_KEY not configured");
     }
 
-    let BOBGO_BASE_URL = Deno.env.get("BOBGO_BASE_URL") || "https://api.bobgo.co.za";
-    if (!BOBGO_BASE_URL.endsWith("/v2")) {
-      if (BOBGO_BASE_URL.includes("bobgo.co.za") && !/\/v2$/.test(BOBGO_BASE_URL)) {
-        BOBGO_BASE_URL = BOBGO_BASE_URL + "/v2";
+    // Resolve BobGo Base URL with proper handling
+    function resolveBaseUrl() {
+      const env = (Deno.env.get("BOBGO_BASE_URL") || "").trim().replace(/\/+$/, "");
+      if (!env) return "https://api.bobgo.co.za/v2";
+      if (env.includes("sandbox.bobgo.co.za") && !env.includes("api.sandbox.bobgo.co.za")) {
+        return "https://api.sandbox.bobgo.co.za/v2";
       }
+      if (env.includes("bobgo.co.za") && !/\/v2$/.test(env)) {
+        return env + "/v2";
+      }
+      return env;
     }
+
+    const BOBGO_BASE_URL = resolveBaseUrl();
 
     console.log(`[bobgo-create-shipment] Creating shipment for order ${order_id}`);
     console.log(`[bobgo-create-shipment] Provider: ${provider_slug}, Service: ${service_level_code}`);
