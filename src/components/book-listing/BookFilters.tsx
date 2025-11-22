@@ -131,13 +131,20 @@ const BookFilters = ({
     setSelectedProvince(province === selectedProvince ? "" : province);
   };
 
-  const handleBookTypeChange = (type: "all" | "school" | "university") => {
+  const handleBookTypeChange = (type: "all" | "school" | "university" | "reader") => {
     setBookType(type);
     if (type === "school") {
       setSelectedUniversityYear("");
       setSelectedUniversity("");
+      setSelectedGrade("");
     } else if (type === "university") {
       setSelectedGrade("");
+      setSelectedUniversityYear("");
+      setSelectedUniversity("");
+    } else if (type === "reader") {
+      setSelectedGrade("");
+      setSelectedUniversityYear("");
+      setSelectedUniversity("");
     }
   };
 
