@@ -1616,9 +1616,6 @@ export type Database = {
           preferred_delivery_locker_location_id: number | null
           preferred_delivery_locker_provider_slug: string | null
           preferred_delivery_locker_saved_at: string | null
-          preferred_pickup_locker_data: Json | null
-          preferred_pickup_locker_location_id: number | null
-          preferred_pickup_locker_provider_slug: string | null
           preferred_pickup_locker_saved_at: string | null
           profile_picture_url: string | null
           role: string | null
@@ -1660,9 +1657,6 @@ export type Database = {
           preferred_delivery_locker_location_id?: number | null
           preferred_delivery_locker_provider_slug?: string | null
           preferred_delivery_locker_saved_at?: string | null
-          preferred_pickup_locker_data?: Json | null
-          preferred_pickup_locker_location_id?: number | null
-          preferred_pickup_locker_provider_slug?: string | null
           preferred_pickup_locker_saved_at?: string | null
           profile_picture_url?: string | null
           role?: string | null
@@ -1704,9 +1698,6 @@ export type Database = {
           preferred_delivery_locker_location_id?: number | null
           preferred_delivery_locker_provider_slug?: string | null
           preferred_delivery_locker_saved_at?: string | null
-          preferred_pickup_locker_data?: Json | null
-          preferred_pickup_locker_location_id?: number | null
-          preferred_pickup_locker_provider_slug?: string | null
           preferred_pickup_locker_saved_at?: string | null
           profile_picture_url?: string | null
           role?: string | null
