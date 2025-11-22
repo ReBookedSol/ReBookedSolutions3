@@ -60,6 +60,10 @@ const CheckoutSuccess: React.FC = () => {
                 selected_courier_name: order.selected_courier_name,
                 selected_service_name: order.selected_service_name,
                 selected_shipping_cost: order.selected_shipping_cost,
+                delivery_type: order.delivery_type || "door",
+                delivery_locker_data: order.delivery_locker_data || null,
+                delivery_locker_location_id: order.delivery_locker_location_id || null,
+                delivery_locker_provider_slug: order.delivery_locker_provider_slug || null,
               }
             }
           );
