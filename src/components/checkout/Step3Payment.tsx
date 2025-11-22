@@ -349,244 +349,6 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
       toast.success('Payment successful. Order created.');
 
       // Order created; backend will handle any further status transitions.
-
-                                    if (error) {
-        // Direct error logging for debugging
-        console.log("🔍 DIRECT ERROR LOG - Type:", typeof error);
-        console.log("🔍 DIRECT ERROR LOG - Constructor:", error?.constructor?.name);
-        console.log("🔍 DIRECT ERROR LOG - Raw:", error);
-        console.log("🔍 DIRECT ERROR LOG - Message:", error?.message);
-        console.log("�� DIRECT ERROR LOG - Details:", error?.details);
-        console.log("🔍 DIRECT ERROR LOG - Code:", error?.code);
-        console.log("🔍 DIRECT ERROR LOG - Hint:", error?.hint);
-        console.log("🔍 DIRECT ERROR LOG - Stringified:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
-
-        const errorDetails = logError("Edge Function Error", error, {
-          requestBody,
-          orderSummary: orderSummary.book.id
-        });
-
-                                // Fixed error message extraction for Supabase FunctionsError
-        const extractErrorMessage = (err: any): string => {
-          console.log('🔍 Extracting error message from:', err);
-
-          // Handle null/undefined
-          if (err === null || err === undefined) {
-            return 'Edge function returned null error';
-          }
-
-          // Direct string check
-          if (typeof err === 'string') {
-            return err === '[object Object]' ? 'Edge function returned unreadable error' : err;
-          }
-
-          // Handle Supabase FunctionsError objects
-          if (err && typeof err === 'object') {
-            // Most common Supabase patterns
-            if (err.context?.message) {
-              return String(err.context.message);
-            }
-
-            if (err.message && err.message !== '[object Object]') {
-              return String(err.message);
-            }
-
-            if (err.details && err.details !== '[object Object]') {
-              return String(err.details);
-            }
-
-            if (err.hint) {
-              return String(err.hint);
-            }
-
-            if (err.code) {
-              return `Error code: ${err.code}`;
-            }
-
-            // Check if this looks like a network error
-            if (err.name === 'FunctionsError' || err.name === 'FunctionsHttpError') {
-              return 'Edge function is not available or not deployed';
-            }
-
-            // Try to extract any string property
-            const keys = Object.keys(err);
-            for (const key of keys) {
-              const value = err[key];
-              if (typeof value === 'string' && value && value !== '[object Object]') {
-                return `${key}: ${value}`;
-              }
-            }
-
-            // If all else fails, describe what we have
-            return `Edge function error (${err.constructor?.name || 'Unknown'}) with keys: ${keys.join(', ')}`;
-          }
-
-          return 'Edge function returned an unrecognizable error';
-        };
-
-        const userFriendlyMessage = extractErrorMessage(error);
-
-        console.log("🔍 RAW ERROR:", error);
-        console.log("🔍 EXTRACTED MESSAGE:", userFriendlyMessage);
-        console.log("🔍 MESSAGE TYPE:", typeof userFriendlyMessage);
-
-        // Fallback: Create order directly in database when Edge Function fails
-        console.log("🔄 Attempting fallback order creation...");
-
-        try {
-          const fallbackOrderData = {
-            buyer_email: userData.user.email,
-            seller_id: orderSummary.book.seller_id,
-            amount: Math.round(orderSummary.total_price * 100), // Convert to kobo
-            paystack_ref: paystackResponse.reference,
-            status: "pending",
-            items: [
-              {
-                type: "book",
-                book_id: orderSummary.book.id,
-                book_title: orderSummary.book.title,
-                price: Math.round(orderSummary.book_price * 100),
-                condition: orderSummary.book.condition,
-                seller_id: orderSummary.book.seller_id,
-                quantity: 1,
-              },
-            ],
-            shipping_address: orderSummary.buyer_address,
-            delivery_data: {
-              method: orderSummary.delivery.service_name,
-              courier: orderSummary.delivery.courier,
-              price: orderSummary.delivery_price,
-              estimated_days: orderSummary.delivery.estimated_days,
-            },
-            metadata: {
-              buyer_id: userId,
-              fallback_creation: true,
-              edge_function_error: error.message,
-              platform_fee: 2000,
-              seller_amount: Math.round(orderSummary.book_price * 100) - 2000,
-            },
-          };
-
-          const { data: fallbackOrder, error: fallbackError } = await supabase
-            .from("orders")
-            .insert(fallbackOrderData)
-            .select()
-            .single();
-
-          if (fallbackError) {
-            throw new Error(`Fallback order creation failed: ${fallbackError.message}`);
-          }
-
-          console.log("✅ Fallback order created successfully:", fallbackOrder);
-
-          // Mark book as sold (non-blocking - order is already created)
-          try {
-            const { error: bookUpdateError } = await supabase
-              .from("books")
-              .update({
-                sold: true,
-                sold_at: new Date().toISOString(),
-                availability: "sold",
-              })
-              .eq("id", orderSummary.book.id);
-
-            if (bookUpdateError) {
-              console.warn("⚠️ Book update failed (non-critical):", bookUpdateError.message);
-              // Don't throw - order is already created successfully
-            } else {
-              console.log("✅ Book marked as sold");
-            }
-          } catch (bookError) {
-            console.warn("⚠️ Book update error (non-critical):", bookError);
-            // Don't throw - order is already created successfully
-          }
-
-          // Use fallback order data for success handler
-          const fallbackData = {
-            order_id: fallbackOrder.id,
-            success: true,
-            details: {
-              order: fallbackOrder,
-              fallback_used: true,
-            },
-          };
-
-          console.log("✅ Using fallback order data:", fallbackData);
-
-          // Continue with success flow using fallback data
-          onPaymentSuccess({
-            order_id: fallbackOrder.id,
-            payment_reference: paystackResponse.reference,
-            book_id: orderSummary.book.id,
-            seller_id: orderSummary.book.seller_id,
-            buyer_id: userId,
-            book_title: orderSummary.book.title,
-            book_price: orderSummary.book_price,
-            delivery_method: orderSummary.delivery.service_name,
-            delivery_price: orderSummary.delivery_price,
-            total_paid: orderSummary.total_price,
-            created_at: fallbackOrder.created_at,
-            status: "completed",
-          });
-
-          toast.success("Payment completed successfully! (Fallback mode)");
-          return; // Exit early on fallback success
-
-                } catch (fallbackError) {
-          logError("Fallback order creation failed", fallbackError);
-          // Fall through to original error throwing
-        }
-
-                        // Final safety check and throw
-        // BULLETPROOF ERROR MESSAGE CONSTRUCTION
-        let finalMessage: string;
-
-        try {
-          // Convert to string safely
-          const messageStr = String(userFriendlyMessage || 'Unknown error');
-
-          // Check for [object Object] pattern
-          if (messageStr === '[object Object]' || messageStr.includes('[object Object]')) {
-            console.error('🚨 [object Object] detected! Using immediate error instead');
-
-            // Use the immediate error we captured earlier
-            const immediateError = (window as any).lastEdgeFunctionError;
-            if (immediateError && typeof immediateError === 'string') {
-              finalMessage = immediateError;
-            } else {
-              finalMessage = 'Edge function failed with unreadable error format';
-            }
-          } else {
-            finalMessage = messageStr;
-          }
-        } catch (stringError) {
-          console.error('🚨 Error stringification failed:', stringError);
-          finalMessage = 'Edge function error stringification failed';
-        }
-
-        // Final safety check - ensure it's a proper string
-        if (typeof finalMessage !== 'string') {
-          finalMessage = 'Edge function returned non-string error';
-        }
-
-        // One more check for [object Object]
-        if (finalMessage.includes('[object Object]')) {
-          finalMessage = 'Edge function returned unprocessable error object';
-        }
-
-        // Add context if needed
-        const contextualMessage = finalMessage.includes('Edge function')
-          ? finalMessage
-          : `Edge function (process-book-purchase) error: ${finalMessage}`;
-
-        console.log("🔍 BULLETPROOF FINAL MESSAGE:", contextualMessage);
-
-        // Instead of throwing, show toast and continue with fallback
-        toast.error(contextualMessage, { duration: 10000 });
-        console.error("🚨 Edge function error handled:", contextualMessage);
-      }
-
-      // Already handled via onPaymentSuccess above.
     } catch (error) {
       console.error("Post-payment handler error:", error);
       toast.error('Payment captured but there was a client error. Check your orders.');
@@ -1094,7 +856,7 @@ Time: ${new Date().toISOString()}
             return;
           }
 
-          console.log("��� Paystack payment successful:", result);
+          console.log("✅ Paystack payment successful:", result);
 
           // Extract book item data for processing
           const bookItem = createdOrder.items[0]; // Get the book item
@@ -1136,7 +898,7 @@ Time: ${new Date().toISOString()}
 
           // Call the success handler to show Step4Confirmation
           onPaymentSuccess(orderConfirmation);
-          toast.success("Payment completed successfully! ����");
+          toast.success("Payment completed successfully! 🎉");
         } catch (paymentError) {
           console.error("Payment processing error:", paymentError);
 
@@ -1210,7 +972,7 @@ Time: ${new Date().toISOString()}
           "Payment setup error. Please refresh the page and try again.",
         );
       } else {
-                const safeErrorMessage = typeof errorMessage === 'string' ? errorMessage : String(errorMessage || 'Unknown error');
+        const safeErrorMessage = typeof errorMessage === 'string' ? errorMessage : String(errorMessage || 'Unknown error');
         const finalSafeMessage = safeErrorMessage === '[object Object]' ? 'Payment processing failed' : safeErrorMessage;
         toast.error(`Payment failed: ${finalSafeMessage}`);
       }
@@ -1384,21 +1146,6 @@ Time: ${new Date().toISOString()}
         <Button variant="outline" onClick={onBack} disabled={processing}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
-        </Button>
-
-        <Button
-          onClick={handleBobPayPayment}
-          disabled={processing}
-          className="w-full px-8 py-3 text-lg"
-        >
-          {processing ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Processing...
-            </>
-          ) : (
-            `Pay Now - R${orderSummary.total_price.toFixed(2)}`
-          )}
         </Button>
       </div>
     </div>
