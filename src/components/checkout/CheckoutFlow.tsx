@@ -511,6 +511,8 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
       delivery_price: delivery.price,
       platform_fee: PLATFORM_FEE,
       total_price: checkoutState.book!.price + delivery.price + PLATFORM_FEE,
+      delivery_method: checkoutState.delivery_method,
+      selected_locker: checkoutState.selected_locker,
     };
 
     setCheckoutState((prev) => ({
