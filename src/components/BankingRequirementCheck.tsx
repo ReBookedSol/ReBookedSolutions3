@@ -11,11 +11,16 @@ import {
   MapPin,
   Clock,
   ArrowRight,
+  Loader2,
+  Info,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { BankingService } from "@/services/bankingService";
 import type { BankingRequirementsStatus } from "@/types/banking";
 import { useAuth } from "@/contexts/AuthContext";
+import BobGoLockerSelector from "@/components/checkout/BobGoLockerSelector";
+import { BobGoLocation } from "@/services/bobgoLocationsService";
+import { toast } from "sonner";
 
 interface BankingRequirementCheckProps {
   onCanProceed: (canProceed: boolean) => void;
@@ -31,12 +36,76 @@ const BankingRequirementCheck: React.FC<BankingRequirementCheckProps> = ({
   const [bankingStatus, setBankingStatus] =
     useState<BankingRequirementsStatus | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedLocker, setSelectedLocker] = useState<BobGoLocation | null>(null);
+  const [isSavingLocker, setIsSavingLocker] = useState(false);
 
   useEffect(() => {
     if (user) {
       checkRequirements();
     }
   }, [user]);
+
+  const handleSaveLocker = async (locker: BobGoLocation) => {
+    if (!user) {
+      toast.error("You must be logged in to save a locker");
+      return;
+    }
+
+    try {
+      setIsSavingLocker(true);
+
+      // Check if a locker is already saved
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("preferred_delivery_locker_data")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError && profileError.code !== "PGRST116") {
+        throw profileError;
+      }
+
+      const hasSavedLocker = profile?.preferred_delivery_locker_data;
+
+      // If a locker is already saved, show confirmation
+      if (hasSavedLocker) {
+        const oldLockerName = (hasSavedLocker as any)?.name || "your saved locker";
+        const proceed = window.confirm(
+          `You already have "${oldLockerName}" saved as your locker.\n\nDo you want to replace it with "${locker.name}"?`
+        );
+        if (!proceed) {
+          setIsSavingLocker(false);
+          return;
+        }
+      }
+
+      // Update user profile with full locker data
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          preferred_delivery_locker_data: locker,
+          preferred_delivery_locker_saved_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      setSelectedLocker(null);
+      toast.success("Locker saved! 🎉", {
+        description: `${locker.name} is now saved to your profile`,
+      });
+
+      // Refresh requirements to allow listing
+      await checkRequirements(true);
+    } catch (error) {
+      console.error("Error saving locker:", error);
+      toast.error("Failed to save locker to profile");
+    } finally {
+      setIsSavingLocker(false);
+    }
+  };
 
   const checkRequirements = async (forceRefresh = false) => {
     if (!user) return;
@@ -194,6 +263,27 @@ const BankingRequirementCheck: React.FC<BankingRequirementCheckProps> = ({
                 </Badge>
               </div>
             </div>
+
+            {/* Locker Search Section */}
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h4 className="font-medium text-blue-900 mb-3 flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                Search for a BobGo Locker
+              </h4>
+              <BobGoLockerSelector
+                onLockerSelect={handleSaveLocker}
+                selectedLockerId={selectedLocker?.id}
+                title="Find a Locker Location"
+                description="Search for an address and select a nearby locker location to save to your profile."
+                showCardLayout={false}
+              />
+              {isSavingLocker && (
+                <div className="mt-3 flex items-center gap-2 text-blue-700 text-sm">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving locker to your profile...
+                </div>
+              )}
+            </div>
           </div>
 
           {bankingStatus.missingRequirements.length > 0 && (
@@ -213,7 +303,7 @@ const BankingRequirementCheck: React.FC<BankingRequirementCheckProps> = ({
               className="bg-book-600 hover:bg-book-700 flex-1 btn-mobile"
             >
               <MapPin className="btn-mobile-icon" />
-              <span className="btn-mobile-text">Add Address or Locker</span>
+              <span className="btn-mobile-text">Add Address (Alternative)</span>
               <ArrowRight className="btn-mobile-icon" />
             </Button>
             <Button
