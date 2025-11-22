@@ -248,6 +248,15 @@ const BookFilters = ({
                 <GraduationCap className="mr-1 h-4 w-4" />
                 University
               </Button>
+              <Button
+                variant={bookType === "reader" ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleBookTypeChange("reader")}
+                className="flex items-center"
+              >
+                <BookOpen className="mr-1 h-4 w-4" />
+                Readers
+              </Button>
             </div>
           </div>
 
