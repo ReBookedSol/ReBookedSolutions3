@@ -355,7 +355,7 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
         console.log("🔍 DIRECT ERROR LOG - Type:", typeof error);
         console.log("🔍 DIRECT ERROR LOG - Constructor:", error?.constructor?.name);
         console.log("🔍 DIRECT ERROR LOG - Raw:", error);
-        console.log("🔍 DIRECT ERROR LOG - Message:", error?.message);
+        console.log("�� DIRECT ERROR LOG - Message:", error?.message);
         console.log("�� DIRECT ERROR LOG - Details:", error?.details);
         console.log("🔍 DIRECT ERROR LOG - Code:", error?.code);
         console.log("🔍 DIRECT ERROR LOG - Hint:", error?.hint);
@@ -1388,17 +1388,10 @@ Time: ${new Date().toISOString()}
 
         <Button
           onClick={handleBobPayPayment}
-          disabled={processing}
-          className="w-full px-8 py-3 text-lg"
+          disabled={true}
+          className="w-full px-8 py-3 text-lg opacity-50 cursor-not-allowed"
         >
-          {processing ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Processing...
-            </>
-          ) : (
-            `Pay Now - R${orderSummary.total_price.toFixed(2)}`
-          )}
+          Checkout Temporarily Blocked
         </Button>
       </div>
     </div>
