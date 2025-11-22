@@ -446,17 +446,6 @@ serve(async (req) => {
 
       if (seller?.id && sellerEmail) {
         console.log("👤 Seller found:", sellerName, sellerEmail);
-
-        // Get updated wallet balance
-        const { data: walletData } = await supabase
-          .from("user_wallets")
-          .select("available_balance")
-          .eq("user_id", seller_id)
-          .single();
-
-        const newBalance = walletData?.available_balance || creditAmount;
-        const newBalanceRands = newBalance / 100;
-
         console.log("💰 New wallet balance:", newBalanceRands);
 
         // Create in-app notification for seller (using only valid columns)
