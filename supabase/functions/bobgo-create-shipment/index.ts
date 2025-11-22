@@ -106,6 +106,20 @@ serve(async (req) => {
       timeout: timeout || 20000,
     };
 
+    // Validate and format address for BobGo
+    const formatAddressForBobGo = (addr: any) => {
+      if (!addr) return null;
+      return {
+        street_address: (addr.street_address || addr.streetAddress || addr.street || "").toString().trim(),
+        local_area: (addr.local_area || addr.suburb || addr.city || "").toString().trim(),
+        city: (addr.city || addr.local_area || addr.suburb || "").toString().trim(),
+        zone: (addr.zone || addr.province || "ZA").toString().trim(),
+        code: (addr.code || addr.postalCode || addr.postal_code || "").toString().trim(),
+        country: (addr.country || "ZA").toString().trim(),
+        ...(addr.company && { company: addr.company.toString().trim() }),
+      };
+    };
+
     // Add collection (pickup) information
     if (pickup_locker_location_id) {
       // Pickup from locker
@@ -113,11 +127,19 @@ serve(async (req) => {
       console.log(`[bobgo-create-shipment] Collection: Locker ${pickup_locker_location_id}`);
     } else if (pickup_address) {
       // Pickup from door
-      bobgoPayload.collection_address = pickup_address;
-      if (pickup_contact_name) bobgoPayload.collection_contact_name = pickup_contact_name;
-      if (pickup_contact_phone) bobgoPayload.collection_contact_mobile_number = pickup_contact_phone;
-      if (pickup_contact_email) bobgoPayload.collection_contact_email = pickup_contact_email;
-      console.log(`[bobgo-create-shipment] Collection: Door address ${pickup_address.city || pickup_address.local_area}`);
+      const formattedPickupAddress = formatAddressForBobGo(pickup_address);
+
+      // Validate that we have required address fields
+      if (!formattedPickupAddress.street_address && !formattedPickupAddress.local_area) {
+        throw new Error("Pickup address must have at least street_address or local_area (suburb/city)");
+      }
+
+      bobgoPayload.collection_address = formattedPickupAddress;
+      if (pickup_contact_name) bobgoPayload.collection_contact_name = pickup_contact_name.toString().trim();
+      if (pickup_contact_phone) bobgoPayload.collection_contact_mobile_number = pickup_contact_phone.toString().trim();
+      if (pickup_contact_email) bobgoPayload.collection_contact_email = pickup_contact_email.toString().trim();
+
+      console.log(`[bobgo-create-shipment] Collection: Door address - ${formattedPickupAddress.local_area}, ${formattedPickupAddress.city}`);
     } else {
       throw new Error("Either pickup address or locker location required");
     }
@@ -129,11 +151,19 @@ serve(async (req) => {
       console.log(`[bobgo-create-shipment] Delivery: Locker ${delivery_locker_location_id}`);
     } else if (delivery_address) {
       // Delivery to door
-      bobgoPayload.delivery_address = delivery_address;
-      if (delivery_contact_name) bobgoPayload.delivery_contact_name = delivery_contact_name;
-      if (delivery_contact_phone) bobgoPayload.delivery_contact_mobile_number = delivery_contact_phone;
-      if (delivery_contact_email) bobgoPayload.delivery_contact_email = delivery_contact_email;
-      console.log(`[bobgo-create-shipment] Delivery: Door address ${delivery_address.city || delivery_address.local_area}`);
+      const formattedDeliveryAddress = formatAddressForBobGo(delivery_address);
+
+      // Validate that we have required address fields
+      if (!formattedDeliveryAddress.street_address && !formattedDeliveryAddress.local_area) {
+        throw new Error("Delivery address must have at least street_address or local_area (suburb/city)");
+      }
+
+      bobgoPayload.delivery_address = formattedDeliveryAddress;
+      if (delivery_contact_name) bobgoPayload.delivery_contact_name = delivery_contact_name.toString().trim();
+      if (delivery_contact_phone) bobgoPayload.delivery_contact_mobile_number = delivery_contact_phone.toString().trim();
+      if (delivery_contact_email) bobgoPayload.delivery_contact_email = delivery_contact_email.toString().trim();
+
+      console.log(`[bobgo-create-shipment] Delivery: Door address - ${formattedDeliveryAddress.local_area}, ${formattedDeliveryAddress.city}`);
     } else {
       throw new Error("Either delivery address or locker location required");
     }
