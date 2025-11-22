@@ -419,7 +419,7 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
       </Alert>
 
       {/* BobGo Locker Selection - Show when BobGo delivery is selected */}
-      {selectedDelivery && selectedDelivery.courier === "bobgo" && (
+      {localSelectedDelivery && localSelectedDelivery.courier === "bobgo" && (
         <Card className="border-purple-200 bg-purple-50">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
@@ -468,7 +468,7 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
         </Card>
       )}
 
-      {!selectedDelivery && (
+      {!localSelectedDelivery && (
         <Alert>
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
@@ -493,8 +493,8 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
         </div>
 
         <Button
-          onClick={() => selectedDelivery && onSelectDelivery(selectedDelivery)}
-          disabled={!selectedDelivery}
+          onClick={() => localSelectedDelivery && onSelectDelivery(localSelectedDelivery)}
+          disabled={!localSelectedDelivery}
         >
           Next: Payment
           <ArrowRight className="w-4 h-4 ml-2" />
