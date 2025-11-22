@@ -52,6 +52,8 @@ export interface OrderSummary {
   delivery_price: number;
   platform_fee?: number;
   total_price: number;
+  delivery_method?: "home" | "locker";
+  selected_locker?: BobGoLocker | null;
 }
 
 export interface OrderConfirmation {
