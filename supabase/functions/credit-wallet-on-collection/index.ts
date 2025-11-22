@@ -242,10 +242,10 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-    // Get order details
+    // Get order details with seller info - much simpler!
     const { data: order, error: orderError } = await supabase
       .from("orders")
-      .select("id, total_amount, book_id, status, delivery_status")
+      .select("id, total_amount, book_id, status, delivery_status, seller_email, seller_full_name")
       .eq("id", order_id)
       .single();
 
@@ -262,7 +262,12 @@ serve(async (req) => {
       );
     }
 
-    console.log("📦 Order found:", { order_id, book_id: order.book_id, delivery_status: order.delivery_status, status: order.status });
+    console.log("📦 Order found:", {
+      order_id,
+      book_id: order.book_id,
+      seller_email: order.seller_email,
+      seller_name: order.seller_full_name
+    });
 
     // Check if book_id exists
     if (!order.book_id) {
@@ -278,7 +283,7 @@ serve(async (req) => {
       );
     }
 
-    // Fetch the book details separately to ensure we get the correct book price
+    // Fetch the book details to get the correct price
     const { data: book, error: bookError } = await supabase
       .from("books")
       .select("id, price, title")
@@ -300,8 +305,7 @@ serve(async (req) => {
 
     console.log("📚 Book found:", { book_id: book.id, title: book.title, price: book.price });
 
-    // CRITICAL: Use the book's price directly (not order total_amount)
-    // This ensures we calculate 90% of the BOOK VALUE
+    // Use the book's price directly
     const bookPrice = book.price;
 
     if (!bookPrice || bookPrice <= 0) {
@@ -319,27 +323,6 @@ serve(async (req) => {
 
     console.log("💰 Calculating credit: Book price =", bookPrice, "(90% =", (bookPrice * 0.9), ")");
 
-    // Check if payment has already been processed for this order
-    const { data: existingTransaction } = await supabase
-      .from("wallet_transactions")
-      .select("id")
-      .eq("reference_order_id", order_id)
-      .eq("type", "credit")
-      .single();
-
-    if (existingTransaction) {
-      console.log("⚠️ Payment already processed for order:", order_id);
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: "Payment already processed for this order",
-          order_id,
-          seller_id
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     // Check if seller has active banking details
     const { data: bankingDetails } = await supabase
       .from("banking_subaccounts")
@@ -348,7 +331,7 @@ serve(async (req) => {
       .eq("status", "active")
       .single();
 
-    // If seller has active banking details, payment will be sent directly to their bank account
+    // If seller has active banking details, payment will be sent directly
     if (bankingDetails) {
       console.log("🏦 Seller has banking details - payment via direct transfer");
       return new Response(
@@ -364,8 +347,7 @@ serve(async (req) => {
       );
     }
 
-    // No banking details - credit wallet as fallback payment method
-    // Pass the BOOK PRICE (not total_amount) to ensure 90% calculation is correct
+    // No banking details - credit wallet
     console.log("💳 Crediting wallet with book price:", bookPrice);
 
     const { data: creditResult, error: creditError } = await supabase
@@ -393,7 +375,7 @@ serve(async (req) => {
       );
     }
 
-    // Check RPC response - it now returns a table with success flag
+    // Check RPC response
     if (!creditResult || !Array.isArray(creditResult) || creditResult.length === 0) {
       console.error("❌ Invalid RPC response:", creditResult);
       return new Response(
@@ -427,73 +409,66 @@ serve(async (req) => {
 
     console.log("✅ Wallet credited successfully");
 
-    // Use amounts from RPC result (already calculated by the function)
+    // Get amounts from RPC result
     const creditAmount = rpcResult.credit_amount;
     const newBalance = rpcResult.new_balance;
     const bookPriceRands = bookPrice / 100;
     const creditAmountRands = creditAmount / 100;
     const newBalanceRands = newBalance / 100;
 
-    // Get seller details for notifications
-    const { data: { users }, error: userError } = await supabase.auth.admin.listUsers();
+    // Get seller details - now directly from order!
+    const sellerEmail = order.seller_email;
+    const sellerName = order.seller_full_name || "Seller";
 
-    if (userError) {
-      console.error("⚠️ Error fetching seller details:", userError);
-    } else {
-      const seller = users?.find(u => u.id === seller_id);
-      const sellerEmail = seller?.email;
-      const sellerName = seller?.user_metadata?.first_name || seller?.user_metadata?.name || "Seller";
+    if (sellerEmail) {
+      console.log("👤 Seller found:", sellerName, sellerEmail);
+      console.log("💰 New wallet balance:", newBalanceRands);
 
-      if (seller?.id && sellerEmail) {
-        console.log("👤 Seller found:", sellerName, sellerEmail);
-        console.log("💰 New wallet balance:", newBalanceRands);
+      // Create in-app notification
+      try {
+        const { error: notifError } = await supabase.from("notifications").insert({
+          user_id: seller_id,
+          type: "success",
+          title: "💰 Payment Received!",
+          message: `Credit of R${creditAmountRands.toFixed(2)} has been added to your wallet for "${book.title}". New balance: R${newBalanceRands.toFixed(2)}`
+        });
 
-        // Create in-app notification for seller (using only valid columns)
-        try {
-          const { error: notifError } = await supabase.from("notifications").insert({
-            user_id: seller_id,
-            type: "success",
-            title: "💰 Payment Received!",
-            message: `Credit of R${creditAmountRands.toFixed(2)} has been added to your wallet for "${book.title}". New balance: R${newBalanceRands.toFixed(2)}`
-          });
-
-          if (notifError) {
-            console.error("❌ Error creating in-app notification:", notifError);
-          } else {
-            console.log("✅ In-app notification created successfully");
-          }
-        } catch (notificationError) {
-          console.error("❌ Exception creating in-app notification:", notificationError);
+        if (notifError) {
+          console.error("❌ Error creating in-app notification:", notifError);
+        } else {
+          console.log("✅ In-app notification created successfully");
         }
-
-        // Send email notification
-        try {
-          const emailResult = await supabase.functions.invoke("send-email", {
-            body: {
-              to: sellerEmail,
-              subject: '💰 Payment Received - Credit Added to Your Account - ReBooked Solutions',
-              html: generateSellerCreditEmailHTML({
-                sellerName,
-                bookTitle: book.title,
-                bookPrice: bookPriceRands,
-                creditAmount: creditAmountRands,
-                orderId: order_id,
-                newBalance: newBalanceRands,
-              }),
-            },
-          });
-
-          if (emailResult.error) {
-            console.error("❌ Error sending email:", emailResult.error);
-          } else {
-            console.log("✅ Credit notification email sent successfully");
-          }
-        } catch (emailError) {
-          console.error("❌ Exception sending email:", emailError);
-        }
-      } else {
-        console.log("⚠️ Seller email not found");
+      } catch (notificationError) {
+        console.error("❌ Exception creating in-app notification:", notificationError);
       }
+
+      // Send email notification
+      try {
+        const emailResult = await supabase.functions.invoke("send-email", {
+          body: {
+            to: sellerEmail,
+            subject: '💰 Payment Received - Credit Added to Your Account - ReBooked Solutions',
+            html: generateSellerCreditEmailHTML({
+              sellerName,
+              bookTitle: book.title,
+              bookPrice: bookPriceRands,
+              creditAmount: creditAmountRands,
+              orderId: order_id,
+              newBalance: newBalanceRands,
+            }),
+          },
+        });
+
+        if (emailResult.error) {
+          console.error("❌ Error sending email:", emailResult.error);
+        } else {
+          console.log("✅ Credit notification email sent successfully");
+        }
+      } catch (emailError) {
+        console.error("❌ Exception sending email:", emailError);
+      }
+    } else {
+      console.log("⚠️ Seller email not found in order");
     }
 
     return new Response(
