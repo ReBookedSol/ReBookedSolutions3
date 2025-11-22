@@ -200,15 +200,9 @@ const BankingRequirementCheck: React.FC<BankingRequirementCheckProps> = ({
             <Alert>
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                <ul className="list-disc pl-4 space-y-1">
-                  {bankingStatus.missingRequirements.map(
-                    (requirement, index) => (
-                      <li key={index} className="text-sm">
-                        {requirement}
-                      </li>
-                    ),
-                  )}
-                </ul>
+                <p className="text-sm">
+                  Please save either a BobGo locker or a pickup address in your profile to start listing books.
+                </p>
               </AlertDescription>
             </Alert>
           )}
@@ -219,7 +213,7 @@ const BankingRequirementCheck: React.FC<BankingRequirementCheckProps> = ({
               className="bg-book-600 hover:bg-book-700 flex-1 btn-mobile"
             >
               <MapPin className="btn-mobile-icon" />
-              <span className="btn-mobile-text">Add Pickup Address</span>
+              <span className="btn-mobile-text">Add Address or Locker</span>
               <ArrowRight className="btn-mobile-icon" />
             </Button>
             <Button
@@ -233,12 +227,13 @@ const BankingRequirementCheck: React.FC<BankingRequirementCheckProps> = ({
 
           <div className="bg-blue-50 p-4 rounded-lg">
             <h4 className="font-medium text-blue-900 mb-2">
-              Payment Methods
+              Delivery Options at Checkout
             </h4>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• <strong>With Banking:</strong> Direct bank transfers when buyers confirm delivery</li>
-              <li>• <strong>Without Banking:</strong> Payments added to your wallet (viewable in Settings → Banking Information)</li>
-              <li>• All payments are 90% of sale price (10% platform fee)</li>
+              <li>• <strong>With Address:</strong> Buyer can choose pickup or delivery</li>
+              <li>• <strong>With Locker Only:</strong> Buyer can only use locker delivery</li>
+              <li>• <strong>With Both:</strong> Buyer can choose between all options</li>
+              <li>• All payments go to your wallet (10% platform fee applied)</li>
             </ul>
           </div>
         </CardContent>
