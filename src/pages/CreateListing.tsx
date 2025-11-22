@@ -381,15 +381,6 @@ const CreateListing = () => {
         className="container mx-auto px-4 md:px-8 py-4 md:py-8 max-w-5xl"
       >
         {/* Loading Address Check */}
-        {isCheckingAddress && (
-          <Alert className="mb-6">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <AlertDescription>
-              Checking address requirements...
-            </AlertDescription>
-          </Alert>
-        )}
-
         <BackButton
           fallbackPath="/books"
           className={`mb-4 md:mb-6 text-book-600 hover:text-book-700 ${isMobile ? "h-10" : ""}`}
