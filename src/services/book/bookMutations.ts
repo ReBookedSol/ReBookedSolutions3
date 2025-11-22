@@ -86,6 +86,7 @@ export const createBook = async (bookData: BookFormData): Promise<Book> => {
       grade: bookData.grade,
       university_year: bookData.universityYear,
       curriculum: (bookData as any).curriculum || null,
+      genre: (bookData as any).genre || null,
       province: province,
       affiliate_ref_id: affiliateRefId,
       // Quantity fields at creation
