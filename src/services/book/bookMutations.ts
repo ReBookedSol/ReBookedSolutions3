@@ -223,6 +223,8 @@ export const updateBook = async (
       updateData.condition = bookData.condition;
     if ((bookData as any).curriculum !== undefined)
       updateData.curriculum = (bookData as any).curriculum;
+    if ((bookData as any).genre !== undefined)
+      updateData.genre = (bookData as any).genre;
     if (bookData.imageUrl !== undefined)
       updateData.image_url = bookData.imageUrl;
     if (bookData.frontCover !== undefined)
