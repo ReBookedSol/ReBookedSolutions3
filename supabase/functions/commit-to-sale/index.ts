@@ -442,31 +442,31 @@ serve(async (req) => {
       const shippingAddress = deliveryData.address;
       if (shippingAddress) {
         shipmentPayload.delivery_address = {
-          company: "",
-          streetAddress: shippingAddress.streetAddress || shippingAddress.street_address || "",
-          suburb: shippingAddress.local_area || shippingAddress.suburb || shippingAddress.city || "",
+          street_address: shippingAddress.streetAddress || shippingAddress.street_address || "",
+          local_area: shippingAddress.local_area || shippingAddress.suburb || shippingAddress.city || "",
           city: shippingAddress.city || shippingAddress.local_area || shippingAddress.suburb || "",
-          province: shippingAddress.province || shippingAddress.zone || "",
-          postalCode: shippingAddress.postalCode || shippingAddress.postal_code || shippingAddress.code || "",
-          contact_name: buyerName,
-          contact_phone: buyerPhone,
-          contact_email: buyerEmail
+          zone: shippingAddress.province || shippingAddress.zone || "ZA",
+          code: shippingAddress.postalCode || shippingAddress.postal_code || shippingAddress.code || "",
+          country: shippingAddress.country || "ZA"
         };
       }
+      shipmentPayload.delivery_contact_name = buyerName;
+      shipmentPayload.delivery_contact_phone = buyerPhone;
+      shipmentPayload.delivery_contact_email = buyerEmail;
       console.log(`[commit-to-sale] Delivery: Locker ${deliveryData.location_id} (${deliveryData.provider_slug})`);
     } else {
       const shippingAddress = deliveryData.address;
       shipmentPayload.delivery_address = {
-        company: "",
-        streetAddress: shippingAddress.streetAddress || shippingAddress.street_address || "",
-        suburb: shippingAddress.local_area || shippingAddress.suburb || shippingAddress.city || "",
+        street_address: shippingAddress.streetAddress || shippingAddress.street_address || "",
+        local_area: shippingAddress.local_area || shippingAddress.suburb || shippingAddress.city || "",
         city: shippingAddress.city || shippingAddress.local_area || shippingAddress.suburb || "",
-        province: shippingAddress.province || shippingAddress.zone || "",
-        postalCode: shippingAddress.postalCode || shippingAddress.postal_code || shippingAddress.code || "",
-        contact_name: buyerName,
-        contact_phone: buyerPhone,
-        contact_email: buyerEmail
+        zone: shippingAddress.province || shippingAddress.zone || "ZA",
+        code: shippingAddress.postalCode || shippingAddress.postal_code || shippingAddress.code || "",
+        country: shippingAddress.country || "ZA"
       };
+      shipmentPayload.delivery_contact_name = buyerName;
+      shipmentPayload.delivery_contact_phone = buyerPhone;
+      shipmentPayload.delivery_contact_email = buyerEmail;
       console.log(`[commit-to-sale] Delivery: Door address ${shippingAddress.city}`);
     }
 
