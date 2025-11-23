@@ -248,7 +248,7 @@ export const getBooks = async (filters?: BookFilters): Promise<Book[]> => {
           try {
             const { data: profilesData, error: profilesError } = await supabase
               .from("profiles")
-              .select("id, first_name, last_name, email")
+              .select("id, first_name, last_name, email, preferred_delivery_locker_data, pickup_address_encrypted")
               .in("id", sellerIds);
 
             if (profilesError) {
@@ -301,7 +301,13 @@ export const getBooks = async (filters?: BookFilters): Promise<Book[]> => {
             } else if (profilesData) {
               profilesData.forEach((profile: any) => {
                 const displayName = [profile.first_name, profile.last_name].filter(Boolean).join(" ") || profile.name || (profile.email ? profile.email.split("@")[0] : "Anonymous");
-                profilesMap.set(profile.id, { id: profile.id, name: displayName, email: profile.email || "" });
+                profilesMap.set(profile.id, {
+                  id: profile.id,
+                  name: displayName,
+                  email: profile.email || "",
+                  preferred_delivery_locker_data: profile.preferred_delivery_locker_data,
+                  has_pickup_address: !!profile.pickup_address_encrypted
+                });
               });
               console.log(`Successfully fetched ${profilesData.length} profiles`);
             }
@@ -340,6 +346,8 @@ export const getBooks = async (filters?: BookFilters): Promise<Book[]> => {
                 id: profile.id,
                 name: profile.name,
                 email: profile.email,
+                preferred_delivery_locker_data: profile.preferred_delivery_locker_data,
+                has_pickup_address: profile.has_pickup_address
               }
             : null,
         };
@@ -441,7 +449,7 @@ export const getBookById = async (id: string): Promise<Book | null> => {
       try {
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
-          .select("id, first_name, last_name, email")
+          .select("id, first_name, last_name, email, preferred_delivery_locker_data, pickup_address_encrypted")
           .eq("id", bookData.seller_id)
           .maybeSingle();
 
@@ -478,6 +486,8 @@ export const getBookById = async (id: string): Promise<Book | null> => {
               id: profileData.id,
               name: [profileData.first_name, profileData.last_name].filter(Boolean).join(" ") || (profileData as any).name || (profileData.email ? profileData.email.split("@")[0] : ""),
               email: profileData.email,
+              preferred_delivery_locker_data: (profileData as any).preferred_delivery_locker_data,
+              has_pickup_address: !!(profileData as any).pickup_address_encrypted
             }
           : null,
       };
@@ -597,7 +607,7 @@ const getUserBooksWithFallback = async (userId: string): Promise<Book[]> => {
     try {
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("id, first_name, last_name, email")
+        .select("id, first_name, last_name, email, preferred_delivery_locker_data, pickup_address_encrypted")
         .eq("id", userId)
         .maybeSingle();
 
@@ -618,7 +628,13 @@ const getUserBooksWithFallback = async (userId: string): Promise<Book[]> => {
     const mappedBooks = booksData.map((book: any) => {
       const bookData: BookQueryResult = {
         ...book,
-        profiles: profileData ? { id: userId, name: displayName, email: profileData.email || "" } : {
+        profiles: profileData ? {
+          id: userId,
+          name: displayName,
+          email: profileData.email || "",
+          preferred_delivery_locker_data: (profileData as any).preferred_delivery_locker_data,
+          has_pickup_address: !!(profileData as any).pickup_address_encrypted
+        } : {
           id: userId,
           name: "Anonymous",
           email: "",

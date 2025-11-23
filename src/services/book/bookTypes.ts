@@ -17,6 +17,8 @@ export interface ProfileData {
   id: string;
   name: string;
   email: string;
+  preferred_delivery_locker_data?: any;
+  has_pickup_address?: boolean;
 }
 
 export interface BookQueryResult {

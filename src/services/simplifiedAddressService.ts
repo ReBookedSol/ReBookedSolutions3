@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { CheckoutAddress } from "@/types/checkout";
+import { getProvinceFromLocker } from "@/utils/provinceExtractorUtils";
 
 interface SimpleAddress {
   streetAddress: string;
@@ -256,11 +257,13 @@ export const getSellerDeliveryAddress = async (
         const lockerData = profile.preferred_delivery_locker_data as any;
         if (lockerData.id && lockerData.name) {
           console.log("✅ Using seller's saved locker as pickup location:", lockerData.name);
+          // Extract province from locker address if not explicitly set
+          const province = lockerData.province || getProvinceFromLocker(lockerData);
           // Return locker address as checkout address
           const address = {
             street: lockerData.full_address || lockerData.address || "",
             city: lockerData.city || lockerData.suburb || "Locker Location",
-            province: lockerData.province || "",
+            province: province || "",
             postal_code: lockerData.postal_code || lockerData.postalCode || "",
             country: "South Africa",
             additional_info: `Pickup at: ${lockerData.name}`,
