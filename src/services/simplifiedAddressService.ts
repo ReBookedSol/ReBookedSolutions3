@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { CheckoutAddress } from "@/types/checkout";
+import { getProvinceFromLocker } from "@/utils/provinceExtractorUtils";
 
 interface SimpleAddress {
   streetAddress: string;
