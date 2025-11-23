@@ -317,23 +317,23 @@ const UnifiedTrackingComponent: React.FC<UnifiedTrackingComponentProps> = ({
               </div>
 
               {/* Delivery Info Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="bg-gray-50 rounded-lg p-3 sm:p-4 border border-gray-200">
                   <div className="flex items-start space-x-2 mb-2">
-                    <Calendar className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <Calendar className="h-4 sm:h-5 w-4 sm:w-5 text-blue-600 flex-shrink-0 mt-0.5" />
                     <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Estimated Delivery</p>
                   </div>
-                  <p className="font-bold text-gray-900 text-sm">
+                  <p className="font-bold text-gray-900 text-xs sm:text-sm break-words">
                     {trackingData.estimated_delivery && trackingData.estimated_delivery.trim() ? formatDateTime(trackingData.estimated_delivery) : "Not specified"}
                   </p>
                 </div>
                 {trackingData.actual_delivery && trackingData.actual_delivery.trim() && (
-                  <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                  <div className="bg-green-50 rounded-lg p-3 sm:p-4 border border-green-200">
                     <div className="flex items-start space-x-2 mb-2">
-                      <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="h-4 sm:h-5 w-4 sm:w-5 text-green-600 flex-shrink-0 mt-0.5" />
                       <p className="text-xs font-semibold text-green-700 uppercase tracking-wide">Delivered</p>
                     </div>
-                    <p className="font-bold text-gray-900 text-sm">
+                    <p className="font-bold text-gray-900 text-xs sm:text-sm break-words">
                       {formatDateTime(trackingData.actual_delivery)}
                     </p>
                   </div>
