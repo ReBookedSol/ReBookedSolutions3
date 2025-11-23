@@ -53,6 +53,7 @@ export interface UnifiedQuoteRequest {
   height?: number;
   service_type?: "standard" | "express" | "overnight";
   deliveryLocker?: UnifiedPickupPoint;
+  sellerCollectionPickupPoint?: UnifiedPickupPoint;
   user_id?: string;
 }
 
@@ -140,18 +141,7 @@ export const getAllDeliveryQuotes = async (
   request: UnifiedQuoteRequest,
 ): Promise<UnifiedQuote[]> => {
   try {
-    const provinceCode = toProvinceCode(request.from.province);
-
     const body: any = {
-      fromAddress: {
-        street_address: request.from.streetAddress || "",
-        company: request.from.company || "",
-        local_area: request.from.suburb || request.from.city,
-        city: request.from.city,
-        zone: provinceCode,
-        country: "ZA",
-        code: request.from.postalCode,
-      },
       parcels: [
         {
           weight: request.weight || 1,
@@ -163,6 +153,27 @@ export const getAllDeliveryQuotes = async (
       ],
       serviceType: request.service_type || "standard",
     };
+
+    // If seller collection pickup point is specified, use it as origin instead of from address
+    if (request.sellerCollectionPickupPoint) {
+      body.collectionPickupPoint = {
+        locationId: request.sellerCollectionPickupPoint.locationId,
+        providerSlug: request.sellerCollectionPickupPoint.providerSlug,
+      };
+      console.log("🚀 Calculating rates from locker pickup point:", request.sellerCollectionPickupPoint);
+    } else {
+      const provinceCode = toProvinceCode(request.from.province);
+      body.fromAddress = {
+        street_address: request.from.streetAddress || "",
+        company: request.from.company || "",
+        local_area: request.from.suburb || request.from.city,
+        city: request.from.city,
+        zone: provinceCode,
+        country: "ZA",
+        code: request.from.postalCode,
+      };
+      console.log("🚀 Calculating rates from address:", request.from.city);
+    }
 
     // If delivery locker is specified, use it instead of toAddress
     if (request.deliveryLocker) {

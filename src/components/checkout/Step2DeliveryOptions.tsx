@@ -25,7 +25,8 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface Step2DeliveryOptionsProps {
   buyerAddress: CheckoutAddress;
-  sellerAddress: CheckoutAddress;
+  sellerAddress: CheckoutAddress | null;
+  sellerLockerData?: BobGoLocation | null;
   onSelectDelivery: (option: DeliveryOption) => void;
   onBack: () => void;
   onCancel?: () => void;
@@ -37,6 +38,7 @@ interface Step2DeliveryOptionsProps {
 const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
   buyerAddress,
   sellerAddress,
+  sellerLockerData,
   onSelectDelivery,
   onBack,
   onCancel,
@@ -61,7 +63,7 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
     } else {
       fetchDeliveryOptions();
     }
-  }, [buyerAddress, sellerAddress, preSelectedLocker]);
+  }, [buyerAddress, sellerAddress, sellerLockerData, preSelectedLocker]);
 
   useEffect(() => {
     // Recalculate rates when a locker is selected
@@ -95,20 +97,26 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
         throw new Error("Locker is missing required information (ID or provider slug)");
       }
 
+      // Determine if seller has only locker (no physical address)
+      const sellerHasOnlyLocker = !sellerAddress && sellerLockerData;
+
+      // Validate provider slug for locker-to-locker shipments
+      if (sellerHasOnlyLocker && locker.provider_slug && sellerLockerData?.provider_slug) {
+        if (locker.provider_slug !== sellerLockerData.provider_slug) {
+          throw new Error(
+            `Locker provider mismatch: Seller's locker uses "${sellerLockerData.provider_slug}" but you selected a "${locker.provider_slug}" locker. For locker-to-locker delivery, both must use the same provider.`
+          );
+        }
+      }
+
       console.log("📍 Calculating rates to locker:", {
         locker_name: locker.name,
         location_id: locker.id,
         provider_slug: locker.provider_slug,
+        sellerHasOnlyLocker,
       });
 
-      const quotesResp = await getAllDeliveryQuotes({
-        from: {
-          streetAddress: sellerAddress.street,
-          suburb: sellerAddress.city,
-          city: sellerAddress.city,
-          province: sellerAddress.province,
-          postalCode: sellerAddress.postal_code,
-        },
+      const quoteRequest: any = {
         to: {
           streetAddress: buyerAddress.street,
           suburb: buyerAddress.city,
@@ -122,7 +130,33 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
           providerSlug: locker.provider_slug || "",
         },
         user_id: user?.id,
-      });
+      };
+
+      // If seller has only locker, use it as the collection point; otherwise use address
+      if (sellerHasOnlyLocker && sellerLockerData?.id && sellerLockerData?.provider_slug) {
+        quoteRequest.from = {
+          streetAddress: "",
+          city: "",
+          province: "",
+          postalCode: "",
+        };
+        quoteRequest.sellerCollectionPickupPoint = {
+          locationId: sellerLockerData.id,
+          providerSlug: sellerLockerData.provider_slug,
+        };
+      } else if (sellerAddress) {
+        quoteRequest.from = {
+          streetAddress: sellerAddress.street,
+          suburb: sellerAddress.city,
+          city: sellerAddress.city,
+          province: sellerAddress.province,
+          postalCode: sellerAddress.postal_code,
+        };
+      } else {
+        throw new Error("No seller address or locker location available for rate calculation");
+      }
+
+      const quotesResp = await getAllDeliveryQuotes(quoteRequest);
 
       setQuotes(quotesResp);
 
@@ -158,56 +192,127 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
     setError(null);
 
     try {
-      console.log("🚚 Fetching Bob Go delivery options...", {
-        from: sellerAddress,
-        to: buyerAddress,
-      });
+      // Determine if seller has only locker (no physical address)
+      const sellerHasOnlyLocker = !sellerAddress && sellerLockerData;
 
-      const quotesResp = await getAllDeliveryQuotes({
-        from: {
-          streetAddress: sellerAddress.street,
-          suburb: sellerAddress.city,
-          city: sellerAddress.city,
-          province: sellerAddress.province,
-          postalCode: sellerAddress.postal_code,
-        },
-        to: {
-          streetAddress: buyerAddress.street,
-          suburb: buyerAddress.city,
-          city: buyerAddress.city,
-          province: buyerAddress.province,
-          postalCode: buyerAddress.postal_code,
-        },
-        weight: 1,
-        user_id: user?.id,
-      });
+      if (sellerHasOnlyLocker && sellerLockerData?.id && sellerLockerData?.provider_slug) {
+        console.log("🚚 Fetching Bob Go delivery options from seller's locker...", {
+          sellerLocker: {
+            name: sellerLockerData.name,
+            id: sellerLockerData.id,
+            provider_slug: sellerLockerData.provider_slug,
+          },
+          to: buyerAddress,
+        });
 
-      setQuotes(quotesResp);
+        const quotesResp = await getAllDeliveryQuotes({
+          from: {
+            streetAddress: "",
+            city: "",
+            province: "",
+            postalCode: "",
+          },
+          to: {
+            streetAddress: buyerAddress.street,
+            suburb: buyerAddress.city,
+            city: buyerAddress.city,
+            province: buyerAddress.province,
+            postalCode: buyerAddress.postal_code,
+          },
+          weight: 1,
+          sellerCollectionPickupPoint: {
+            locationId: sellerLockerData.id,
+            providerSlug: sellerLockerData.provider_slug,
+          },
+          user_id: user?.id,
+        });
 
-      const DELIVERY_MARKUP = 15; // R15 markup on all BobGo rates
-      const options: DeliveryOption[] = quotesResp.map((q) => ({
-        courier: "bobgo",
-        service_name: q.service_name,
-        price: q.cost + DELIVERY_MARKUP,
-        estimated_days: q.transit_days,
-        description: `${q.provider_name} - ${q.features?.join(", ") || "Tracked"}`,
-        zone_type: buyerAddress.province === sellerAddress.province
-          ? (buyerAddress.city === sellerAddress.city ? "local" : "provincial")
-          : "national",
-        provider_name: q.provider_name,
-        provider_slug: q.provider_slug,
-        service_level_code: q.service_level_code,
-      }));
+        setQuotes(quotesResp);
 
-      if (options.length === 0) {
-        throw new Error("No quotes available");
+        const DELIVERY_MARKUP = 15;
+        const options: DeliveryOption[] = quotesResp.map((q) => ({
+          courier: "bobgo",
+          service_name: q.service_name,
+          price: q.cost + DELIVERY_MARKUP,
+          estimated_days: q.transit_days,
+          description: `${q.provider_name} - ${q.features?.join(", ") || "Tracked"}`,
+          zone_type: "locker",
+          provider_name: q.provider_name,
+          provider_slug: q.provider_slug,
+          service_level_code: q.service_level_code,
+        }));
+
+        if (options.length === 0) {
+          throw new Error("No quotes available");
+        }
+
+        console.log("✅ Bob Go options from seller locker:", options);
+        setDeliveryOptions(options);
+      } else if (sellerAddress) {
+        console.log("🚚 Fetching Bob Go delivery options from seller address...", {
+          from: sellerAddress,
+          to: buyerAddress,
+        });
+
+        const quotesResp = await getAllDeliveryQuotes({
+          from: {
+            streetAddress: sellerAddress.street,
+            suburb: sellerAddress.city,
+            city: sellerAddress.city,
+            province: sellerAddress.province,
+            postalCode: sellerAddress.postal_code,
+          },
+          to: {
+            streetAddress: buyerAddress.street,
+            suburb: buyerAddress.city,
+            city: buyerAddress.city,
+            province: buyerAddress.province,
+            postalCode: buyerAddress.postal_code,
+          },
+          weight: 1,
+          user_id: user?.id,
+        });
+
+        setQuotes(quotesResp);
+
+        const DELIVERY_MARKUP = 15;
+        const options: DeliveryOption[] = quotesResp.map((q) => ({
+          courier: "bobgo",
+          service_name: q.service_name,
+          price: q.cost + DELIVERY_MARKUP,
+          estimated_days: q.transit_days,
+          description: `${q.provider_name} - ${q.features?.join(", ") || "Tracked"}`,
+          zone_type: buyerAddress.province === sellerAddress.province
+            ? (buyerAddress.city === sellerAddress.city ? "local" : "provincial")
+            : "national",
+          provider_name: q.provider_name,
+          provider_slug: q.provider_slug,
+          service_level_code: q.service_level_code,
+        }));
+
+        if (options.length === 0) {
+          throw new Error("No quotes available");
+        }
+
+        console.log("✅ Bob Go options:", options);
+        setDeliveryOptions(options);
+      } else {
+        throw new Error("No seller address or locker location available");
       }
-
-      console.log("✅ Bob Go options:", options);
-      setDeliveryOptions(options);
     } catch (err) {
       console.error("Error fetching Bob Go options:", err);
       setError("Failed to load delivery options");
+
+      // Determine zone for fallback
+      let fallbackZoneType: "local" | "provincial" | "national" | "locker" = "national";
+      if (sellerAddress && buyerAddress) {
+        fallbackZoneType = buyerAddress.province === sellerAddress.province
+          ? (buyerAddress.city === sellerAddress.city ? "local" : "provincial")
+          : "national";
+      } else if (!sellerAddress && sellerLockerData) {
+        fallbackZoneType = "locker";
+      }
+
       setDeliveryOptions([
         {
           courier: "bobgo",
@@ -215,9 +320,7 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
           price: 107,
           estimated_days: 3,
           description: "Estimated rate - tracking included",
-          zone_type: buyerAddress.province === sellerAddress.province
-            ? (buyerAddress.city === sellerAddress.city ? "local" : "provincial")
-            : "national",
+          zone_type: fallbackZoneType,
         },
       ]);
       toast.warning("Using estimated delivery rate");
@@ -303,9 +406,28 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
           <div className="space-y-3">
             <div>
               <p className="text-sm font-medium text-gray-600">From (Seller)</p>
-              <p className="text-sm">
-                {sellerAddress.province}
-              </p>
+              {sellerAddress ? (
+                <p className="text-sm">
+                  {sellerAddress.street}, {sellerAddress.city},{" "}
+                  {sellerAddress.province} {sellerAddress.postal_code}
+                </p>
+              ) : sellerLockerData ? (
+                <>
+                  <p className="text-sm font-semibold text-purple-700">
+                    📍 {sellerLockerData.name}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    {sellerLockerData.address || sellerLockerData.full_address}
+                  </p>
+                  {sellerLockerData.provider_slug && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Provider: {sellerLockerData.pickup_point_provider_name || sellerLockerData.provider_slug}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-gray-500">No seller location available</p>
+              )}
             </div>
             <div className="border-t pt-3">
               <div className="flex items-center justify-between mb-1">
@@ -432,6 +554,15 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
             <p className="text-sm text-gray-700">
               If you'd like the seller to drop off at a BobGo locker instead of home delivery, search below to find and select a nearby location. Rates will be updated to reflect the locker location.
             </p>
+
+            {!sellerAddress && sellerLockerData?.provider_slug && (
+              <Alert className="bg-blue-50 border-blue-200">
+                <AlertTriangle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800">
+                  <span className="font-medium">Provider Required:</span> The seller is using a <span className="font-semibold">{sellerLockerData.pickup_point_provider_name || sellerLockerData.provider_slug}</span> locker. You must select a locker from the same provider.
+                </AlertDescription>
+              </Alert>
+            )}
 
             {lockerRatesLoading && (
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">

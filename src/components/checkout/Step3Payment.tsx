@@ -171,6 +171,7 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
               courier: orderSummary.delivery.courier,
               estimated_days: orderSummary.delivery.estimated_days,
               pickup_address: orderSummary.seller_address,
+              pickup_locker_data: orderSummary.seller_locker_data || null,
               delivery_quote: orderSummary.delivery,
               delivery_type: deliveryType,
             },
