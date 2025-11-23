@@ -43,10 +43,14 @@ serve(async (req) => {
       );
     }
 
-    const { order_id } = body || {};
+    const { order_id, delivery_method, locker_id, locker_name, locker_address } = body || {};
     if (!order_id) throw new Error("Order ID is required");
 
     console.log(`[commit-to-sale] Processing commitment for order ${order_id} by user ${user.id}`);
+    console.log(`[commit-to-sale] Seller chosen delivery method: ${delivery_method}`);
+    if (delivery_method === 'locker') {
+      console.log(`[commit-to-sale] Seller selected locker: ${locker_name} (${locker_id})`);
+    }
 
     // Fetch the order
     const { data: order, error: orderError } = await supabase
