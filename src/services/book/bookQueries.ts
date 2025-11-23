@@ -248,7 +248,7 @@ export const getBooks = async (filters?: BookFilters): Promise<Book[]> => {
           try {
             const { data: profilesData, error: profilesError } = await supabase
               .from("profiles")
-              .select("id, first_name, last_name, email")
+              .select("id, first_name, last_name, email, preferred_delivery_locker_data, pickup_address_encrypted")
               .in("id", sellerIds);
 
             if (profilesError) {
