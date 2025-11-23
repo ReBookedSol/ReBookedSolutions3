@@ -52,6 +52,34 @@ const BookListing = () => {
     "all",
   );
 
+  // Helper function to filter books based on book type requirements
+  const filterBooksByType = (booksToFilter: Book[], type: "all" | "school" | "university" | "reader"): Book[] => {
+    if (type === "all") {
+      return booksToFilter;
+    }
+
+    return booksToFilter.filter((book) => {
+      if (type === "school") {
+        // School books: must have a grade OR be a study guide/course book
+        const hasGrade = book.grade && book.grade.trim() !== "";
+        const isSchoolTextType = book.universityBookType === "Study Guide" || book.universityBookType === "Course Book";
+        return hasGrade || isSchoolTextType;
+      }
+
+      if (type === "university") {
+        // University books: must have a university year
+        return book.universityYear && book.universityYear.trim() !== "";
+      }
+
+      if (type === "reader") {
+        // Reader books: must have a genre
+        return book.genre && book.genre.trim() !== "";
+      }
+
+      return true;
+    });
+  };
+
   // Memoize loadBooks function to prevent infinite loops
   const loadBooks = useCallback(async () => {
     console.log("🔍 BookListing: Starting to load books...");
