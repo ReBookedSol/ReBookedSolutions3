@@ -98,6 +98,51 @@ const Shipping = () => {
             </CardContent>
           </Card>
 
+          {/* BobBox Section */}
+          <Card className="border-0 shadow-sm ring-1 ring-black/5 bg-gradient-to-br from-purple-50 to-white">
+            <CardHeader>
+              <SectionTitle subtitle="The smarter way to receive your books">Pickup with BobBox</SectionTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="group rounded-xl border border-purple-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+                <div className="flex items-start gap-3">
+                  <Clock className="h-5 w-5 text-purple-600" />
+                  <div>
+                    <p className="font-medium text-gray-900">Faster deliveries</p>
+                    <p className="text-gray-600 text-sm">Pick up within a convenient time window instead of waiting for home delivery.</p>
+                  </div>
+                </div>
+              </div>
+              <div className="group rounded-xl border border-purple-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+                <div className="flex items-start gap-3">
+                  <Wallet className="h-5 w-5 text-purple-600" />
+                  <div>
+                    <p className="font-medium text-gray-900">Lower shipping costs</p>
+                    <p className="text-gray-600 text-sm">BobBox pickup points are our most affordable delivery option.</p>
+                  </div>
+                </div>
+              </div>
+              <div className="group rounded-xl border border-purple-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+                <div className="flex items-start gap-3">
+                  <ShieldCheck className="h-5 w-5 text-purple-600" />
+                  <div>
+                    <p className="font-medium text-gray-900">Safe and secure</p>
+                    <p className="text-gray-600 text-sm">Your books are held safely at the pickup point with real-time notifications.</p>
+                  </div>
+                </div>
+              </div>
+              <div className="group rounded-xl border border-purple-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+                <div className="flex items-start gap-3">
+                  <Truck className="h-5 w-5 text-purple-600" />
+                  <div>
+                    <p className="font-medium text-gray-900">Nationwide network</p>
+                    <p className="text-gray-600 text-sm">Hundreds of convenient pickup locations across South Africa.</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Couriers */}
           <Card className="border-0 shadow-sm ring-1 ring-black/5">
             <CardHeader>
