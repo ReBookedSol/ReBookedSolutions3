@@ -405,15 +405,6 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
         <CardContent>
           <div className="space-y-3">
             <div>
-              <p className="text-sm font-medium text-gray-600">From Seller</p>
-              {sellerAddress && (
-                <p className="text-sm">
-                  {sellerAddress.street}, {sellerAddress.city},{" "}
-                  {sellerAddress.province} {sellerAddress.postal_code}
-                </p>
-              )}
-            </div>
-            <div className="border-t pt-3">
               <div className="flex items-center justify-between mb-1">
                 <p className="text-sm font-medium text-gray-600">To (You)</p>
                 {onEditAddress && !preSelectedLocker && (
