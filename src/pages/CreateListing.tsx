@@ -49,7 +49,6 @@ const CreateListing = () => {
     price: 0,
     condition: "Good",
     category: "",
-    curriculum: undefined,
     itemType: "textbook",
     grade: "",
     universityYear: "",
