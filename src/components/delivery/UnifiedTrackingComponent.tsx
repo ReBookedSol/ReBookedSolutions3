@@ -341,28 +341,28 @@ const UnifiedTrackingComponent: React.FC<UnifiedTrackingComponentProps> = ({
               </div>
 
               {/* Courier & Service Info */}
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-4 border border-gray-200">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 sm:p-4 border border-gray-200">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
                   {trackingData.courier_name && (
-                    <div className="bg-white rounded p-3 text-center border border-gray-200">
+                    <div className="bg-white rounded p-2 sm:p-3 text-center border border-gray-200">
                       <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Courier</p>
-                      <p className="text-sm font-bold text-gray-900">{trackingData.courier_name}</p>
+                      <p className="text-xs sm:text-sm font-bold text-gray-900 break-words">{trackingData.courier_name}</p>
                     </div>
                   )}
                   {trackingData.service_level && (
-                    <div className="bg-white rounded p-3 text-center border border-gray-200">
+                    <div className="bg-white rounded p-2 sm:p-3 text-center border border-gray-200">
                       <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Service</p>
-                      <p className="text-xs font-bold text-gray-900">{trackingData.service_level}</p>
+                      <p className="text-xs font-bold text-gray-900 break-words">{trackingData.service_level}</p>
                     </div>
                   )}
                   {trackingData.created_at && (
-                    <div className="bg-white rounded p-3 text-center border border-gray-200">
+                    <div className="bg-white rounded p-2 sm:p-3 text-center border border-gray-200">
                       <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Created</p>
                       <p className="text-xs font-bold text-gray-900">{formatDateTime(trackingData.created_at)}</p>
                     </div>
                   )}
                   {trackingData.last_updated && (
-                    <div className="bg-white rounded p-3 text-center border border-gray-200">
+                    <div className="bg-white rounded p-2 sm:p-3 text-center border border-gray-200">
                       <p className="text-xs font-semibold text-gray-600 uppercase mb-1">Updated</p>
                       <p className="text-xs font-bold text-gray-900">{formatDateTime(trackingData.last_updated)}</p>
                     </div>
