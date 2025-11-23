@@ -77,45 +77,29 @@ const OrderActionsPanel: React.FC<OrderActionsPanelProps> = ({
   const handleBuyerCancel = async () => {
     setIsLoading(true);
     try {
-      // If order has NOT been committed yet, use BobPayRefund for uncommitted orders
-      if (order.status !== "committed") {
-        const { data: refundData, error: refundError } = await supabase.functions.invoke("bobpay-refund", {
-          body: {
-            order_id: order.id,
-            reason: cancelReason || "Cancelled by Buyer",
-          },
-        });
+      // Use the unified cancel-order-with-refund function for ALL orders (committed or pending)
+      // This ensures both shipment cancellation AND refund are processed
+      const { data, error } = await supabase.functions.invoke("cancel-order-with-refund", {
+        body: {
+          order_id: order.id,
+          reason: cancelReason || "Cancelled by Buyer",
+        },
+      });
 
-        if (refundError || !refundData?.success) {
-          throw new Error(refundError?.message || refundData?.error || "Refund failed");
-        }
-
-        const { error: updateError } = await supabase
-          .from("orders")
-          .update({ status: "cancelled" })
-          .eq("id", order.id);
-
-        if (updateError) throw updateError;
-
-        toast.success("Order cancelled and refunded");
-        setShowCancelDialog(false);
-        onOrderUpdate();
-        return;
+      if (error) {
+        console.error("Cancel order error:", error);
+        throw new Error(error.message || "Failed to cancel order");
       }
 
-      // For committed orders with tracking, use cancel-order-with-refund to cancel the shipment
-      const result = await OrderCancellationService.cancelDeliveryByBuyer(
-        order.id,
-        cancelReason || "Cancelled by Buyer",
-      );
-      if (result.success) {
-        toast.success(result.message);
-        setShowCancelDialog(false);
-        onOrderUpdate();
-      } else {
-        toast.error(result.message);
+      if (!data?.success) {
+        throw new Error(data?.error || "Cancellation failed");
       }
+
+      toast.success(data.message || "Order cancelled and refund processed");
+      setShowCancelDialog(false);
+      onOrderUpdate();
     } catch (error: any) {
+      console.error("Cancel error:", error);
       toast.error(error?.message || "Failed to cancel order. Please try again.");
     } finally {
       setIsLoading(false);
