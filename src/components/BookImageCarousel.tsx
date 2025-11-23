@@ -116,7 +116,7 @@ const BookImageCarousel = ({ images }: BookImageCarouselProps) => {
 
       {/* Lightbox Modal */}
       <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
-        <DialogContent className="max-w-4xl w-full max-h-[90vh] sm:max-h-[95vh] p-0 border-0 bg-black/80 flex flex-col gap-0 rounded-lg sm:rounded-lg">
+        <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] sm:max-h-[95vh] p-0 border-0 bg-black/80 flex flex-col gap-0 rounded-lg sm:rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           <DialogClose className="absolute right-2 top-2 sm:right-4 sm:top-4 text-white hover:bg-white/20 z-10 rounded-md p-2" asChild>
             <button>
               <X className="h-6 w-6" />
@@ -125,7 +125,7 @@ const BookImageCarousel = ({ images }: BookImageCarouselProps) => {
           </DialogClose>
 
           {/* Image container */}
-          <div className="flex-1 flex items-center justify-center w-full overflow-hidden min-h-[400px] sm:min-h-[500px]">
+          <div className="flex-1 flex items-center justify-center w-full h-full overflow-hidden min-h-[300px] sm:min-h-[500px]">
             <img
               src={images[currentImageIndex]}
               alt={`Book image ${currentImageIndex + 1}`}
