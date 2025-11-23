@@ -52,6 +52,34 @@ const BookListing = () => {
     "all",
   );
 
+  // Helper function to filter books based on book type requirements
+  const filterBooksByType = (booksToFilter: Book[], type: "all" | "school" | "university" | "reader"): Book[] => {
+    if (type === "all") {
+      return booksToFilter;
+    }
+
+    return booksToFilter.filter((book) => {
+      if (type === "school") {
+        // School books: must have a grade OR be a study guide/course book
+        const hasGrade = book.grade && book.grade.trim() !== "";
+        const isSchoolTextType = book.universityBookType === "Study Guide" || book.universityBookType === "Course Book";
+        return hasGrade || isSchoolTextType;
+      }
+
+      if (type === "university") {
+        // University books: must have a university year
+        return book.universityYear && book.universityYear.trim() !== "";
+      }
+
+      if (type === "reader") {
+        // Reader books: must have a genre
+        return book.genre && book.genre.trim() !== "";
+      }
+
+      return true;
+    });
+  };
+
   // Memoize loadBooks function to prevent infinite loops
   const loadBooks = useCallback(async () => {
     console.log("🔍 BookListing: Starting to load books...");
@@ -94,9 +122,6 @@ const BookListing = () => {
 
       if (priceRange[0] > 0) filters.minPrice = priceRange[0];
       if (priceRange[1] < 1000) filters.maxPrice = priceRange[1];
-      if (bookType !== "all") {
-        filters.itemType = bookType === "school" || bookType === "university" ? "textbook" : bookType;
-      }
 
       console.log("📋 BookListing: Applying filters:", filters);
 
@@ -104,7 +129,15 @@ const BookListing = () => {
       console.log("📚 BookListing: Received books from service:", loadedBooks?.length || 0);
 
       // Ensure we have an array
-      const booksArray = Array.isArray(loadedBooks) ? loadedBooks : [];
+      let booksArray = Array.isArray(loadedBooks) ? loadedBooks : [];
+
+      // Apply book type specific filtering
+      if (bookType !== "all") {
+        console.log(`🔍 BookListing: Filtering ${bookType} books (before: ${booksArray.length})`);
+        booksArray = filterBooksByType(booksArray, bookType);
+        console.log(`🔍 BookListing: Filtered ${bookType} books (after: ${booksArray.length})`);
+      }
+
       setTotalBooks(booksArray.length);
       console.log("📊 BookListing: Total books set to:", booksArray.length);
 

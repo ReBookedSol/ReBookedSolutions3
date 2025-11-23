@@ -3,7 +3,7 @@ import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
-import { Search, BookOpen, Laptop, Sigma, Dna, FlaskConical, Telescope, TrendingUp, GraduationCap, School } from "lucide-react";
+import { Search, BookOpen, Laptop, Sigma, Dna, FlaskConical, Telescope, TrendingUp } from "lucide-react";
 import FeaturedBooks from "@/components/home/FeaturedBooks";
 import HowItWorks from "@/components/home/HowItWorks";
 import ReadyToGetStarted from "@/components/home/ReadyToGetStarted";
@@ -154,66 +154,6 @@ const Index = () => {
       <FeaturedBooks />
 
 
-      {/* ReBooked Campus Promotion Section */}
-      <section className="py-8 sm:py-12 bg-gradient-to-r from-book-600 to-book-700">
-        <div className="container mx-auto px-4">
-          <div className="text-center text-white space-y-4 sm:space-y-6">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="p-3 bg-white/20 rounded-full">
-                <BookOpen className="h-8 w-8 text-white" />
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-bold">
-                Introducing ReBooked Campus
-              </h2>
-            </div>
-
-            <p className="text-lg sm:text-xl max-w-2xl mx-auto text-white/90">
-              Your complete university guide! Calculate your APS score, explore
-              degree programs, find bursaries, and buy textbooks from students
-              at your campus.
-            </p>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 max-w-4xl mx-auto text-sm sm:text-base">
-              <div className="bg-white/10 rounded-lg p-3 sm:p-4">
-                <GraduationCap className="h-6 w-6 sm:h-7 sm:w-7 mb-2 text-white" />
-                <div className="font-semibold">APS Calculator</div>
-                <div className="text-white/80 text-xs sm:text-sm">Calculate your score</div>
-              </div>
-              <div className="bg-white/10 rounded-lg p-3 sm:p-4">
-                <School className="h-6 w-6 sm:h-7 sm:w-7 mb-2 text-white" />
-                <div className="font-semibold">26 universities</div>
-                <div className="text-white/80 text-xs sm:text-sm">Explore programs</div>
-              </div>
-              <div className="bg-white/10 rounded-lg p-3 sm:p-4">
-                <TrendingUp className="h-6 w-6 sm:h-7 sm:w-7 mb-2 text-white" />
-                <div className="font-semibold">Find Bursaries</div>
-                <div className="text-white/80 text-xs sm:text-sm">Get funding</div>
-              </div>
-              <div className="bg-white/10 rounded-lg p-3 sm:p-4">
-                <BookOpen className="h-6 w-6 sm:h-7 sm:w-7 mb-2 text-white" />
-                <div className="font-semibold">Campus Books</div>
-                <div className="text-white/80 text-xs sm:text-sm">From your university</div>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
-              <Button
-                onClick={() => navigate("/university-info")}
-                size="lg"
-                className="bg-white text-book-600 hover:bg-gray-100 font-semibold"
-              >
-                Explore ReBooked Campus →
-              </Button>
-              <Link
-                to="/university-info"
-                className="text-white/90 hover:text-white text-sm underline"
-              >
-                Calculate your APS score now
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* How It Works Section */}
       <HowItWorks />

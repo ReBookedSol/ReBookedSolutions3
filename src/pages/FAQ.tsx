@@ -44,10 +44,6 @@ const FAQ = () => {
       answer: "No. Listing is completely free. We only charge a 10% service fee on completed sales, which is included in the price buyers see."
     },
     {
-      question: "What is ReBooked Campus?",
-      answer: "ReBooked Campus is our student resource hub offering bursary listings, university info, APS calculators, blog articles, and more — all free and tailored for South African students."
-    },
-    {
       question: "Can I remove or change my book listing?",
       answer: "Yes. Log in to your dashboard to update, pause, or delete any of your active book listings."
     },
