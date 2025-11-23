@@ -209,7 +209,7 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
   const isFormValid =
     isPackagedSecurely &&
     canFulfillOrder &&
-    (deliveryMethod === "home" || (deliveryMethod === "locker" && (selectedLocker || (savedLocker && !wantToChangeLocker))));
+    ((deliveryMethod === "home" && sellerHasPickupAddress) || (deliveryMethod === "locker" && (selectedLocker || (savedLocker && !wantToChangeLocker))));
 
   const handleCommit = async () => {
     setIsCommitting(true);
