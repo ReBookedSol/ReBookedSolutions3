@@ -301,7 +301,13 @@ export const getBooks = async (filters?: BookFilters): Promise<Book[]> => {
             } else if (profilesData) {
               profilesData.forEach((profile: any) => {
                 const displayName = [profile.first_name, profile.last_name].filter(Boolean).join(" ") || profile.name || (profile.email ? profile.email.split("@")[0] : "Anonymous");
-                profilesMap.set(profile.id, { id: profile.id, name: displayName, email: profile.email || "" });
+                profilesMap.set(profile.id, {
+                  id: profile.id,
+                  name: displayName,
+                  email: profile.email || "",
+                  preferred_delivery_locker_data: profile.preferred_delivery_locker_data,
+                  has_pickup_address: !!profile.pickup_address_encrypted
+                });
               });
               console.log(`Successfully fetched ${profilesData.length} profiles`);
             }
