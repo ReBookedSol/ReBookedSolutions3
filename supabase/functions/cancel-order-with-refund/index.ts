@@ -77,11 +77,11 @@ Deno.serve(async (req) => {
 
     console.log('Authorization check passed');
 
-    // Step 1: Cancel shipment if tracking number exists
+    // Step 1: Cancel shipment if tracking number exists or use order_id as fallback
     if (order.tracking_number) {
       console.log('Cancelling shipment with tracking number:', order.tracking_number);
       try {
-        const { error: cancelShipmentError } = await supabaseClient.functions.invoke(
+        const { data: shipmentCancelResult, error: cancelShipmentError } = await supabaseClient.functions.invoke(
           'bobgo-cancel-shipment',
           {
             body: { tracking_number: order.tracking_number },
@@ -92,12 +92,35 @@ Deno.serve(async (req) => {
           console.error('Error cancelling shipment:', cancelShipmentError);
           // Continue with refund even if shipment cancellation fails
         } else {
-          console.log('Shipment cancelled successfully');
+          console.log('Shipment cancelled successfully:', shipmentCancelResult);
         }
       } catch (shipmentError) {
         console.error('Failed to cancel shipment:', shipmentError);
         // Continue with refund
       }
+    } else if (order.id) {
+      // Fallback: Try cancelling using order_id if tracking_number is not available
+      console.log('No tracking number found, attempting cancellation using order_id:', order.id);
+      try {
+        const { data: shipmentCancelResult, error: cancelShipmentError } = await supabaseClient.functions.invoke(
+          'bobgo-cancel-shipment',
+          {
+            body: { order_id: order.id },
+          }
+        );
+
+        if (cancelShipmentError) {
+          console.error('Error cancelling shipment via order_id:', cancelShipmentError);
+          // Continue with refund even if shipment cancellation fails
+        } else {
+          console.log('Shipment cancelled successfully via order_id:', shipmentCancelResult);
+        }
+      } catch (shipmentError) {
+        console.error('Failed to cancel shipment via order_id:', shipmentError);
+        // Continue with refund
+      }
+    } else {
+      console.log('No tracking number or order_id found - skipping shipment cancellation');
     }
 
     // Step 2: Process refund
