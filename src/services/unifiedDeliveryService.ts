@@ -112,6 +112,13 @@ export interface UnifiedTrackingResponse {
   recipient_signature?: string;
   proof_of_delivery?: string;
   tracking_url?: string;
+  courier_name?: string;
+  courier_slug?: string;
+  service_level?: string;
+  shipment_id?: string;
+  merchant_name?: string;
+  created_at?: string;
+  last_updated?: string;
 }
 
 const PROVINCE_CODE_MAP: Record<string, string> = {
