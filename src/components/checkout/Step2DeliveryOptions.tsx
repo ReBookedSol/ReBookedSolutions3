@@ -555,6 +555,15 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
               If you'd like the seller to drop off at a BobGo locker instead of home delivery, search below to find and select a nearby location. Rates will be updated to reflect the locker location.
             </p>
 
+            {!sellerAddress && sellerLockerData?.provider_slug && (
+              <Alert className="bg-blue-50 border-blue-200">
+                <AlertTriangle className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800">
+                  <span className="font-medium">Provider Required:</span> The seller is using a <span className="font-semibold">{sellerLockerData.pickup_point_provider_name || sellerLockerData.provider_slug}</span> locker. You must select a locker from the same provider.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {lockerRatesLoading && (
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
