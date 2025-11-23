@@ -349,33 +349,35 @@ export const trackUnifiedShipment = async (
   if (error) throw new Error(error.message);
   const t = data?.tracking || {};
 
-  // Map checkpoints to events
+  console.log("Tracking response:", JSON.stringify(t, null, 2));
+
+  // Map checkpoints/events to events array
   const events = (t.checkpoints || t.events || []).map((e: any) => ({
     timestamp: e.time || e.timestamp,
-    status: (e.status || "").toLowerCase(),
-    location: e.location || e.zone,
-    description: e.message || e.status_friendly || e.status,
+    status: (e.status || "").toLowerCase().replace(/_/g, "-"),
+    location: e.location || e.zone || e.city,
+    description: e.message || e.description || e.status_friendly || e.status,
     signature: e.signature,
   }));
 
   return {
     provider: "bobgo",
-    tracking_number: trackingNumber,
-    status: (t.status || "pending").toLowerCase(),
-    current_location: t.current_location || t.zone,
+    tracking_number: t.tracking_number || t.shipment_tracking_reference || trackingNumber,
+    status: (t.status || "pending").toLowerCase().replace(/_/g, "-"),
+    current_location: t.current_location || t.zone || "Unknown",
     estimated_delivery: t.estimated_delivery || t.shipment_estimated_delivery_date_to,
     actual_delivery: t.delivered_at || t.shipment_movement_events?.delivered_time,
     events,
     recipient_signature: t.recipient_signature,
     proof_of_delivery: undefined,
-    tracking_url: `https://track.bobgo.co.za/${encodeURIComponent(trackingNumber)}`,
+    tracking_url: t.tracking_url || `https://track.bobgo.co.za/${encodeURIComponent(trackingNumber)}`,
     courier_name: t.courier_name,
     courier_slug: t.courier_slug,
     service_level: t.service_level,
-    shipment_id: t.id || t.shipment_id,
+    shipment_id: t.shipment_id || t.id,
     merchant_name: t.merchant_name,
-    created_at: t.shipment_time_created,
-    last_updated: t.last_checkpoint_time,
+    created_at: t.created_at,
+    last_updated: t.updated_at,
   };
 };
 
