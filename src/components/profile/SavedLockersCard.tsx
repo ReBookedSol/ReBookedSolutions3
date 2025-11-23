@@ -174,38 +174,35 @@ const SavedLockersCard = forwardRef<
 
         <CardContent className="p-6">
           <div className="space-y-5">
-            {/* Image and Basic Info Row */}
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-5">
-              {/* Image */}
-              <div className="flex-shrink-0 w-full sm:w-auto">
-                {(locker.image_url || locker.pickup_point_provider_logo_url) ? (
-                  <div
-                    className="cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => onImageSelect(locker.image_url || locker.pickup_point_provider_logo_url || "")}
-                  >
-                    <img
-                      src={locker.image_url || locker.pickup_point_provider_logo_url}
-                      alt={locker.name}
-                      className="w-full h-auto sm:h-24 sm:w-24 object-cover rounded-lg border border-gray-200 shadow-sm"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="w-full h-32 sm:h-24 sm:w-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border border-gray-200 flex items-center justify-center">
-                    <MapPin className="h-6 w-6 text-gray-400" />
-                  </div>
-                )}
-              </div>
+            {/* Address Section */}
+            <div>
+              <p className="text-sm font-semibold text-gray-700 mb-2">Full Address</p>
+              <p className="text-sm text-gray-600 leading-relaxed break-words">
+                {locker.full_address || "—"}
+              </p>
+            </div>
 
-              {/* Address */}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-700 mb-1">Full Address</p>
-                <p className="text-sm text-gray-600 leading-relaxed break-words">
-                  {locker.full_address || "—"}
-                </p>
-              </div>
+            {/* Image Section */}
+            <div className="flex justify-center">
+              {(locker.image_url || locker.pickup_point_provider_logo_url) ? (
+                <div
+                  className="cursor-pointer hover:opacity-80 transition-opacity max-w-xs w-full"
+                  onClick={() => onImageSelect(locker.image_url || locker.pickup_point_provider_logo_url || "")}
+                >
+                  <img
+                    src={locker.image_url || locker.pickup_point_provider_logo_url}
+                    alt={locker.name}
+                    className="w-full h-auto object-cover rounded-lg border border-gray-200 shadow-sm"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="w-full max-w-xs h-48 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border border-gray-200 flex items-center justify-center">
+                  <MapPin className="h-8 w-8 text-gray-400" />
+                </div>
+              )}
             </div>
 
             {/* Details Grid */}
