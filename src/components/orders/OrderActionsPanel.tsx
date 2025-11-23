@@ -283,6 +283,9 @@ const OrderActionsPanel: React.FC<OrderActionsPanelProps> = ({
             {getDeliveryStatusBadge()}
           </div>
         </CardTitle>
+        <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-100 rounded">
+          <p>Status: {order.status} | Delivery: {order.delivery_status || "N/A"} | Can Cancel: {canCancelShipment ? "✓ Yes" : "✗ No"}</p>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-md p-2 flex items-start gap-2">
