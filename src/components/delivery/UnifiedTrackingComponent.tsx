@@ -78,16 +78,24 @@ const UnifiedTrackingComponent: React.FC<UnifiedTrackingComponentProps> = ({
 
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
+    const normalizedStatus = (status || "").toLowerCase().replace(/_/g, "-");
+    switch (normalizedStatus) {
       case "delivered":
+      case "ready-for-pickup":
         return <CheckCircle className="h-5 w-5 text-green-500" />;
+      case "out-for-delivery":
       case "out_for_delivery":
         return <Truck className="h-5 w-5 text-blue-500" />;
+      case "in-transit":
       case "in_transit":
         return <Package className="h-5 w-5 text-orange-500" />;
       case "collected":
+      case "awaiting-dropoff":
         return <CheckCircle className="h-5 w-5 text-yellow-500" />;
       case "failed":
+      case "failed-delivery":
+        return <AlertCircle className="h-5 w-5 text-red-500" />;
+      case "cancelled":
         return <AlertCircle className="h-5 w-5 text-red-500" />;
       default:
         return <Clock className="h-5 w-5 text-gray-500" />;
