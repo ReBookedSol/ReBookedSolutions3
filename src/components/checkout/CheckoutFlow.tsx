@@ -195,7 +195,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
 
       if (!sellerAddress && !sellerLockerData) {
         // Let's check what's in the database directly for debugging
-        console.log("❌ getSellerDeliveryAddress returned null, checking database directly...");
+        console.log("❌ No seller address or locker data found, checking database...");
 
         // First, let's verify the book's seller_id is correct
         const { data: bookCheck, error: bookError } = await supabase
@@ -206,7 +206,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
 
         console.log("📚 Book verification:", { bookCheck, bookError });
 
-        // Check if seller has encrypted address setup
+        // Check if seller profile exists
         const { data: profiles, error: profileError } = await supabase
           .from("profiles")
           .select("id, first_name, last_name, email, encryption_status")
@@ -219,8 +219,6 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
           profile_count: profiles?.length || 0,
           first_profile: profile
         });
-
-        console.log("📊 Direct database check:", { profile, profileError });
 
         // If no profile found, do some additional debugging
         if (!profile && profileError?.code === 'PGRST116') {
@@ -297,19 +295,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
         if (!profile) {
           errorMessage += "The seller's profile setup is incomplete.";
         } else {
-          // Try to get encrypted address to validate it exists
-          try {
-            const sellerAddress = await import("@/services/addressService").then(module =>
-              module.getSellerPickupAddress(bookData.seller_id)
-            );
-            if (!sellerAddress) {
-              errorMessage += "The seller hasn't set up their pickup address yet.";
-            } else {
-              errorMessage += "There was an issue retrieving the seller's address.";
-            }
-          } catch {
-            errorMessage += "The seller hasn't set up their pickup address yet.";
-          }
+          errorMessage += "The seller hasn't set up their pickup address or preferred locker location yet.";
         }
 
         // Mobile-specific guidance
@@ -319,7 +305,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
 
         // If this is the current user's book, give them guidance
         if (user?.id === bookData.seller_id) {
-          errorMessage += " You can fix this by updating your pickup address in your profile settings.";
+          errorMessage += " You can fix this by updating your pickup address or setting a preferred locker in your profile settings.";
         } else {
           if (isMobile) {
             errorMessage += " Mobile users can also try switching to a WiFi connection.";
