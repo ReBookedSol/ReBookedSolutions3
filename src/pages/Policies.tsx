@@ -151,7 +151,7 @@ const Policies = () => {
                       </p>
                       <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
                         By accessing or using any part of the ReBooked platform,
-                        including ReBooked Campus, you consent to the collection
+                        you consent to the collection
                         and processing of your personal information as outlined
                         in this Policy. If you do not agree, please refrain from
                         using the platform.
@@ -166,7 +166,7 @@ const Policies = () => {
                         This Privacy Policy applies to all visitors, users, and
                         account holders of ReBooked Solutions. It covers
                         information collected through our main marketplace,
-                        ReBooked Campus, our communication tools, analytics
+                        our communication tools, analytics
                         systems, and any third-party integrations we use.
                       </p>
                     </section>
@@ -205,8 +205,7 @@ const Policies = () => {
                         </li>
                         <li>
                           Educational data: input used in APS calculators, study
-                          tips submitted, bursary tools used, and program
-                          searches within ReBooked Campus.
+                          tips submitted and program searches.
                         </li>
                         <li>
                           Technical and usage data: IP address, browser type,
@@ -265,8 +264,8 @@ const Policies = () => {
                           To coordinate with courier services for deliveries.
                         </li>
                         <li>
-                          To display and improve ReBooked Campus resources,
-                          including APS tools, bursary data, and university
+                          To display and improve our resources,
+                          including university
                           programs.
                         </li>
                         <li>
