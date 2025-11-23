@@ -122,9 +122,6 @@ const BookListing = () => {
 
       if (priceRange[0] > 0) filters.minPrice = priceRange[0];
       if (priceRange[1] < 1000) filters.maxPrice = priceRange[1];
-      if (bookType !== "all") {
-        filters.itemType = bookType === "school" || bookType === "university" ? "textbook" : bookType;
-      }
 
       console.log("📋 BookListing: Applying filters:", filters);
 
