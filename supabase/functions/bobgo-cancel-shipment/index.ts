@@ -33,10 +33,10 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-    // Get order from database
+    // Get order from database with delivery type information
     let orderQuery = supabase
       .from("orders")
-      .select("id, tracking_number, delivery_data, status");
+      .select("id, tracking_number, delivery_data, status, pickup_type, delivery_type, pickup_locker_data, delivery_locker_data");
 
     if (order_id) {
       orderQuery = orderQuery.eq("id", order_id);
@@ -63,14 +63,43 @@ serve(async (req) => {
       );
     }
 
-    console.log("Found order:", { id: order.id, tracking_number: order.tracking_number, status: order.status });
+    // Log the delivery combination for debugging
+    console.log("Order delivery configuration:", {
+      id: order.id,
+      tracking_number: order.tracking_number,
+      status: order.status,
+      pickup_type: order.pickup_type,
+      delivery_type: order.delivery_type,
+      combination: `${order.pickup_type || 'unknown'}-to-${order.delivery_type || 'unknown'}`
+    });
 
-    // Use tracking_number as the identifier (BobGo uses this, not shipment_id)
+    // Validate cancellation is possible for this order status
+    const cancellableStatuses = [
+      'paid', 'pending_commit', 'committed', 'pickup_scheduled',
+      'in_transit', 'out_for_delivery', 'pickup_attempted'
+    ];
+
+    if (!cancellableStatuses.includes(order.status)) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `Cannot cancel order with status: ${order.status}`,
+          message: "Order can only be cancelled if not yet delivered or already cancelled"
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Use tracking_number as the identifier (BobGo uses this for all shipment types)
     const identifier = order.tracking_number;
 
     if (!identifier) {
       return new Response(
-        JSON.stringify({ success: false, error: "Order has no tracking number - cannot cancel shipment" }),
+        JSON.stringify({
+          success: false,
+          error: "Order has no tracking number - cannot cancel shipment",
+          message: "This order may not have been shipped yet"
+        }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -103,7 +132,8 @@ serve(async (req) => {
           simulated: true,
           message: "Order cancelled in database (API key not configured - shipment not cancelled with courier)",
           order_id: order.id,
-          tracking_number: identifier
+          tracking_number: identifier,
+          delivery_combination: `${order.pickup_type}-to-${order.delivery_type}`
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -122,7 +152,11 @@ serve(async (req) => {
     }
 
     const BOBGO_BASE_URL = resolveBaseUrl();
-    console.log("Cancelling with BobGo:", { url: BOBGO_BASE_URL, tracking_number: identifier });
+    console.log("Cancelling with BobGo:", {
+      url: BOBGO_BASE_URL,
+      tracking_number: identifier,
+      delivery_combination: `${order.pickup_type}-to-${order.delivery_type}`
+    });
 
     try {
       const resp = await fetch(`${BOBGO_BASE_URL}/shipments/cancel`, {
@@ -158,7 +192,8 @@ serve(async (req) => {
             success: false,
             error: `BobGo API error: ${text}`,
             message: "Order marked as cancelled in database, but BobGo API call failed",
-            order_updated: true
+            order_updated: true,
+            delivery_combination: `${order.pickup_type}-to-${order.delivery_type}`
           }),
           { status: resp.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -167,7 +202,7 @@ serve(async (req) => {
       const data = await resp.json();
       console.log("BobGo cancellation response:", data);
 
-      // Update order in database
+      // Update order in database with cancellation metadata
       const { error: updateError } = await supabase
         .from("orders")
         .update({
@@ -176,7 +211,8 @@ serve(async (req) => {
           cancelled_at: new Date().toISOString(),
           delivery_data: {
             ...order.delivery_data,
-            cancellation_response: data
+            cancellation_response: data,
+            cancelled_delivery_type: `${order.pickup_type}-to-${order.delivery_type}`
           },
           updated_at: new Date().toISOString(),
         })
@@ -189,7 +225,8 @@ serve(async (req) => {
             success: true,
             warning: "Shipment cancelled with BobGo but database update failed",
             bobgo_response: data,
-            db_error: updateError.message
+            db_error: updateError.message,
+            delivery_combination: `${order.pickup_type}-to-${order.delivery_type}`
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -201,6 +238,7 @@ serve(async (req) => {
           message: "Shipment cancelled successfully",
           order_id: order.id,
           tracking_number: identifier,
+          delivery_combination: `${order.pickup_type}-to-${order.delivery_type}`,
           bobgo_response: data
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -224,7 +262,8 @@ serve(async (req) => {
           success: false,
           error: err.message || "Cancel failed",
           message: "Order marked as cancelled in database, but API call failed",
-          order_updated: true
+          order_updated: true,
+          delivery_combination: `${order.pickup_type}-to-${order.delivery_type}`
         }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
