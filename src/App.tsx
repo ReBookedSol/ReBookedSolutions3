@@ -31,10 +31,6 @@ import CheckoutSuccess from "./pages/CheckoutSuccess";
 import CheckoutPending from "./pages/CheckoutPending";
 import CheckoutCancel from "./pages/CheckoutCancel";
 
-// University Pages
-import UniversityInfo from "./pages/UniversityInfo";
-import UniversityProfile from "./pages/UniversityProfile";
-import PrivateInstitutionProfile from "./pages/PrivateInstitutionProfile";
 
 // Auth Pages
 import Login from "./pages/Login";
@@ -129,18 +125,6 @@ function App() {
                             <EditBook />
                           </ProtectedRoute>
                         }
-                      />
-                      <Route
-                        path="/university-info"
-                        element={<UniversityInfo />}
-                      />
-                      <Route
-                        path="/university/:id"
-                        element={<UniversityProfile />}
-                      />
-                      <Route
-                        path="/private-institution/:id"
-                        element={<PrivateInstitutionProfile />}
                       />
                       <Route
                         path="/seller/:sellerId"
