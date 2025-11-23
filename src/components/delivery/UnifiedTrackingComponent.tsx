@@ -112,21 +112,29 @@ const UnifiedTrackingComponent: React.FC<UnifiedTrackingComponentProps> = ({
   };
 
   const getStatusText = (status: string) => {
-    switch (status) {
+    const normalizedStatus = (status || "").toLowerCase().replace(/_/g, "-");
+    switch (normalizedStatus) {
       case "pending":
+      case "awaiting-dropoff":
         return "Order Confirmed";
       case "collected":
         return "Collected";
+      case "in-transit":
       case "in_transit":
         return "In Transit";
+      case "out-for-delivery":
       case "out_for_delivery":
         return "Out for Delivery";
       case "delivered":
+      case "ready-for-pickup":
         return "Delivered";
       case "failed":
+      case "failed-delivery":
         return "Delivery Failed";
+      case "cancelled":
+        return "Cancelled";
       default:
-        return "Unknown Status";
+        return status || "Unknown Status";
     }
   };
 
