@@ -374,9 +374,28 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
           <div className="space-y-3">
             <div>
               <p className="text-sm font-medium text-gray-600">From (Seller)</p>
-              <p className="text-sm">
-                {sellerAddress.province}
-              </p>
+              {sellerAddress ? (
+                <p className="text-sm">
+                  {sellerAddress.street}, {sellerAddress.city},{" "}
+                  {sellerAddress.province} {sellerAddress.postal_code}
+                </p>
+              ) : sellerLockerData ? (
+                <>
+                  <p className="text-sm font-semibold text-purple-700">
+                    📍 {sellerLockerData.name}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    {sellerLockerData.address || sellerLockerData.full_address}
+                  </p>
+                  {sellerLockerData.provider_slug && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Provider: {sellerLockerData.pickup_point_provider_name || sellerLockerData.provider_slug}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-gray-500">No seller location available</p>
+              )}
             </div>
             <div className="border-t pt-3">
               <div className="flex items-center justify-between mb-1">
