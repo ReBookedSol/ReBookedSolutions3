@@ -626,7 +626,13 @@ const getUserBooksWithFallback = async (userId: string): Promise<Book[]> => {
     const mappedBooks = booksData.map((book: any) => {
       const bookData: BookQueryResult = {
         ...book,
-        profiles: profileData ? { id: userId, name: displayName, email: profileData.email || "" } : {
+        profiles: profileData ? {
+          id: userId,
+          name: displayName,
+          email: profileData.email || "",
+          preferred_delivery_locker_data: (profileData as any).preferred_delivery_locker_data,
+          has_pickup_address: !!(profileData as any).pickup_address_encrypted
+        } : {
           id: userId,
           name: "Anonymous",
           email: "",
