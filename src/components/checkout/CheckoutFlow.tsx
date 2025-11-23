@@ -345,27 +345,35 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
         throw new Error(errorMessage);
       }
 
-      console.log("✅ Seller address retrieved:", {
-        streetAddress: sellerAddress.streetAddress || sellerAddress.street,
-        city: sellerAddress.city,
-        province: sellerAddress.province,
-        postalCode: sellerAddress.postalCode || sellerAddress.postal_code
-      });
+      if (sellerAddress) {
+        console.log("✅ Seller address retrieved:", {
+          streetAddress: sellerAddress.streetAddress || sellerAddress.street,
+          city: sellerAddress.city,
+          province: sellerAddress.province,
+          postalCode: sellerAddress.postalCode || sellerAddress.postal_code
+        });
 
-      if (
-        !(sellerAddress.streetAddress || sellerAddress.street) ||
-        !sellerAddress.city ||
-        !sellerAddress.province ||
-        !(sellerAddress.postalCode || sellerAddress.postal_code)
-      ) {
-        throw new Error(
-          `Seller address is incomplete. Missing fields: ${[
-            !(sellerAddress.streetAddress || sellerAddress.street) && 'streetAddress',
-            !sellerAddress.city && 'city',
-            !sellerAddress.province && 'province',
-            !(sellerAddress.postalCode || sellerAddress.postal_code) && 'postalCode'
-          ].filter(Boolean).join(', ')}. Raw address: ${JSON.stringify(sellerAddress)}`,
-        );
+        if (
+          !(sellerAddress.streetAddress || sellerAddress.street) ||
+          !sellerAddress.city ||
+          !sellerAddress.province ||
+          !(sellerAddress.postalCode || sellerAddress.postal_code)
+        ) {
+          throw new Error(
+            `Seller address is incomplete. Missing fields: ${[
+              !(sellerAddress.streetAddress || sellerAddress.street) && 'streetAddress',
+              !sellerAddress.city && 'city',
+              !sellerAddress.province && 'province',
+              !(sellerAddress.postalCode || sellerAddress.postal_code) && 'postalCode'
+            ].filter(Boolean).join(', ')}. Raw address: ${JSON.stringify(sellerAddress)}`,
+          );
+        }
+      } else if (sellerLockerData) {
+        console.log("✅ Seller locker data retrieved:", {
+          name: sellerLockerData.name,
+          address: sellerLockerData.address || sellerLockerData.full_address,
+          provider_slug: sellerLockerData.provider_slug
+        });
       }
 
       // Update book with complete seller data
