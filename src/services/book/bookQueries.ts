@@ -346,6 +346,8 @@ export const getBooks = async (filters?: BookFilters): Promise<Book[]> => {
                 id: profile.id,
                 name: profile.name,
                 email: profile.email,
+                preferred_delivery_locker_data: profile.preferred_delivery_locker_data,
+                has_pickup_address: profile.has_pickup_address
               }
             : null,
         };
