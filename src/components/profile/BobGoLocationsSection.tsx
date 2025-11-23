@@ -250,8 +250,27 @@ const BobGoLocationsSection: React.FC<BobGoLocationsSectionProps> = ({ onLockerS
                   return (
                     <div
                       key={location.id || index}
-                      className="p-4 bg-white border border-purple-200 rounded-lg hover:shadow-md transition-all"
+                      className="p-4 bg-white border border-purple-200 rounded-lg hover:shadow-md transition-all flex flex-col sm:flex-row gap-4 items-start"
                     >
+                      {/* Image on Left - Desktop Only, Centered Mobile */}
+                      {(location.image_url || location.pickup_point_provider_logo_url) && (
+                        <div
+                          className="flex justify-center sm:justify-start flex-shrink-0 w-full sm:w-auto"
+                          onClick={() => setSelectedImage(location.image_url || location.pickup_point_provider_logo_url || null)}
+                        >
+                          <img
+                            src={location.image_url || location.pickup_point_provider_logo_url}
+                            alt={location.name || "Location image"}
+                            className="w-full sm:w-32 sm:h-32 h-auto object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
+
+                      {/* Content Section */}
+                      <div className="flex-1 w-full">
                       {/* Header Section with Name and Badge */}
                       <div className="mb-4">
                         {/* Location Name */}
@@ -266,23 +285,6 @@ const BobGoLocationsSection: React.FC<BobGoLocationsSectionProps> = ({ onLockerS
                           </Badge>
                         )}
                       </div>
-
-                      {/* Image Below Name - Clickable and Centered */}
-                      {(location.image_url || location.pickup_point_provider_logo_url) && (
-                        <div
-                          className="flex justify-center mb-4"
-                          onClick={() => setSelectedImage(location.image_url || location.pickup_point_provider_logo_url || null)}
-                        >
-                          <img
-                            src={location.image_url || location.pickup_point_provider_logo_url}
-                            alt={location.name || "Location image"}
-                            className="max-w-xs w-full h-auto object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        </div>
-                      )}
 
                       {/* Main Content Grid */}
                       <div className="space-y-3">
@@ -442,6 +444,7 @@ const BobGoLocationsSection: React.FC<BobGoLocationsSectionProps> = ({ onLockerS
                             )}
                           </Button>
                         </div>
+                      </div>
                       </div>
                     </div>
                   );
