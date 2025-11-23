@@ -100,6 +100,15 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
       // Determine if seller has only locker (no physical address)
       const sellerHasOnlyLocker = !sellerAddress && sellerLockerData;
 
+      // Validate provider slug for locker-to-locker shipments
+      if (sellerHasOnlyLocker && locker.provider_slug && sellerLockerData?.provider_slug) {
+        if (locker.provider_slug !== sellerLockerData.provider_slug) {
+          throw new Error(
+            `Locker provider mismatch: Seller's locker uses "${sellerLockerData.provider_slug}" but you selected a "${locker.provider_slug}" locker. For locker-to-locker delivery, both must use the same provider.`
+          );
+        }
+      }
+
       console.log("📍 Calculating rates to locker:", {
         locker_name: locker.name,
         location_id: locker.id,
