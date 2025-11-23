@@ -199,16 +199,10 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
       try {
         console.log("📞 Using commit-to-sale function...");
 
-        // Use basic commit data for the original function
-        const basicCommitData = {
-          order_id: orderId,
-          seller_id: sellerId,
-        };
-
         const result = await supabase.functions.invoke(
           "commit-to-sale",
           {
-            body: basicCommitData,
+            body: commitData,
           },
         );
         data = result.data;
