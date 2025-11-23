@@ -141,6 +141,7 @@ export async function getUserOrdersWithDetails(
 
 /**
  * Check if user can cancel an order
+ * Aligned with server-side blocked statuses: ['collected', 'in transit', 'out for delivery', 'delivered']
  */
 export function canCancelOrder(order: OrderWithDetails, userId: string): {
   canCancel: boolean;
@@ -151,14 +152,17 @@ export function canCancelOrder(order: OrderWithDetails, userId: string): {
     return { canCancel: false, reason: "Only buyers can cancel orders" };
   }
 
-  // Check order status
-  const cancellableStatuses = ["pending_commit", "committed", "pending_delivery"];
-  if (!cancellableStatuses.includes(order.status)) {
-    return { canCancel: false, reason: `Cannot cancel order with status: ${order.status}` };
+  // Check order status - block only the statuses that the server blocks
+  const blockedOrderStatuses = ["collected", "in transit", "out for delivery", "delivered"];
+  const orderStatusLower = (order.status || "").toLowerCase();
+  if (blockedOrderStatuses.includes(orderStatusLower)) {
+    return { canCancel: false, reason: `Cannot cancel - your order is "${order.status}"` };
   }
 
-  // Check if already delivered/collected
-  if (order.delivery_status === "delivered" || order.delivery_status === "collected") {
+  // Check delivery status - block only the statuses that the server blocks
+  const blockedDeliveryStatuses = ["collected", "in transit", "out for delivery", "delivered"];
+  const deliveryStatusLower = (order.delivery_status || "").toLowerCase();
+  if (blockedDeliveryStatuses.includes(deliveryStatusLower)) {
     return { canCancel: false, reason: "Cannot cancel - book has already been collected/delivered" };
   }
 
