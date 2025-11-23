@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Package, User, MapPin, ArrowRight, X } from "lucide-react";
 import { CheckoutBook, CheckoutAddress } from "@/types/checkout";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Step1OrderSummaryProps {
   book: CheckoutBook;
@@ -22,6 +23,8 @@ const Step1OrderSummary: React.FC<Step1OrderSummaryProps> = ({
 }) => {
   // Use useState to make cart data reactive
   const [cartData, setCartData] = useState(null);
+  const [sellerFullName, setSellerFullName] = useState<string | null>(null);
+  const [sellerCartFullNames, setSellerCartFullNames] = useState<{ [key: string]: string }>({});
 
   // Function to load cart data from localStorage
   const loadCartData = () => {
