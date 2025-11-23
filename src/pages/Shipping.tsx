@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Truck, Clock, ShieldCheck, Wallet, ArrowRight, PackageSearch, Sparkles } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import UnifiedTrackingComponent from "@/components/delivery/UnifiedTrackingComponent";
 
 const Pill = ({ children }: { children: React.ReactNode }) => (
   <span className="inline-flex items-center gap-2 rounded-full bg-white/70 backdrop-blur px-3 py-1 text-xs font-medium text-gray-700 shadow-sm ring-1 ring-black/5">
