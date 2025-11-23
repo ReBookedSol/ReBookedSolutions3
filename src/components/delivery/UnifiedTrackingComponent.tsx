@@ -402,56 +402,56 @@ const UnifiedTrackingComponent: React.FC<UnifiedTrackingComponentProps> = ({
           {/* Tracking History */}
           <Card className="border-0 shadow-lg">
             <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-b border-orange-100">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-3 text-xl font-bold text-gray-900">
-                  <div className="bg-white rounded-full p-2 shadow-md">
-                    <Clock className="h-5 w-5 text-orange-600" />
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center space-x-2 sm:space-x-3 text-lg sm:text-xl font-bold text-gray-900">
+                  <div className="bg-white rounded-full p-1.5 sm:p-2 shadow-md flex-shrink-0">
+                    <Clock className="h-4 sm:h-5 w-4 sm:w-5 text-orange-600" />
                   </div>
                   <span>Tracking History</span>
                 </CardTitle>
               </CardHeader>
             </div>
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               {trackingData.events.length > 0 ? (
                 <div className="space-y-0">
                   {trackingData.events.map((event, index) => (
                     <div key={index} className="relative">
-                      {/* Timeline line */}
+                      {/* Timeline line - hidden on mobile for cleaner look */}
                       {index < trackingData.events.length - 1 && (
-                        <div className="absolute left-8 top-16 bottom-0 w-0.5 bg-gradient-to-b from-blue-300 to-gray-200"></div>
+                        <div className="absolute left-4 sm:left-8 top-14 sm:top-16 bottom-0 w-0.5 bg-gradient-to-b from-blue-300 to-gray-200"></div>
                       )}
 
                       {/* Event item */}
-                      <div className="flex gap-4 pb-6">
+                      <div className="flex gap-2 sm:gap-4 pb-6">
                         {/* Icon circle */}
                         <div className="relative flex-shrink-0 mt-1">
-                          <div className="flex items-center justify-center h-12 w-12 rounded-full bg-white border-3 border-blue-500 shadow-md relative z-10">
+                          <div className="flex items-center justify-center h-8 sm:h-12 w-8 sm:w-12 rounded-full bg-white border-2 sm:border-3 border-blue-500 shadow-md relative z-10">
                             {getStatusIcon(event.status)}
                           </div>
                         </div>
 
                         {/* Content */}
-                        <div className="flex-1 bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition hover:border-blue-300">
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-                            <h4 className="font-bold text-gray-900 text-sm">
+                        <div className="flex-1 bg-white rounded-lg border border-gray-200 p-3 sm:p-4 hover:shadow-md transition hover:border-blue-300 min-w-0">
+                          <div className="flex flex-col gap-1 mb-2">
+                            <h4 className="font-bold text-gray-900 text-xs sm:text-sm break-words">
                               {event.description}
                             </h4>
-                            <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full whitespace-nowrap">
+                            <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full w-fit">
                               {formatDateTime(event.timestamp)}
                             </span>
                           </div>
 
                           {event.location && (
-                            <div className="flex items-center text-sm text-gray-600 mt-2">
-                              <MapPin className="h-4 w-4 mr-2 flex-shrink-0 text-gray-400" />
-                              <span className="font-medium">{event.location}</span>
+                            <div className="flex items-start text-xs sm:text-sm text-gray-600 mt-2 gap-1">
+                              <MapPin className="h-3 sm:h-4 w-3 sm:w-4 mr-1 flex-shrink-0 text-gray-400 mt-0.5" />
+                              <span className="font-medium break-words">{event.location}</span>
                             </div>
                           )}
 
                           {event.signature && (
-                            <div className="flex items-center text-sm text-green-700 bg-green-50 rounded p-2 mt-3 border border-green-200">
-                              <CheckCircle className="h-4 w-4 mr-2 flex-shrink-0" />
-                              <span className="font-medium">Signed by: {event.signature}</span>
+                            <div className="flex items-center text-xs sm:text-sm text-green-700 bg-green-50 rounded p-2 mt-2 border border-green-200 gap-1">
+                              <CheckCircle className="h-3 sm:h-4 w-3 sm:w-4 mr-1 flex-shrink-0" />
+                              <span className="font-medium break-words">Signed by: {event.signature}</span>
                             </div>
                           )}
                         </div>
@@ -460,12 +460,12 @@ const UnifiedTrackingComponent: React.FC<UnifiedTrackingComponentProps> = ({
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <Package className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600 font-medium">
+                <div className="text-center py-8 sm:py-12">
+                  <Package className="h-12 sm:h-16 w-12 sm:w-16 text-gray-300 mx-auto mb-3 sm:mb-4" />
+                  <p className="text-gray-600 font-medium text-sm sm:text-base">
                     No tracking events available yet
                   </p>
-                  <p className="text-gray-500 text-sm mt-1">
+                  <p className="text-gray-500 text-xs sm:text-sm mt-1">
                     Check back soon for updates
                   </p>
                 </div>
