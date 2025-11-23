@@ -53,6 +53,7 @@ export interface UnifiedQuoteRequest {
   height?: number;
   service_type?: "standard" | "express" | "overnight";
   deliveryLocker?: UnifiedPickupPoint;
+  sellerCollectionPickupPoint?: UnifiedPickupPoint;
   user_id?: string;
 }
 
