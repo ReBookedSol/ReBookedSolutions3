@@ -79,9 +79,15 @@ serve(async (req) => {
       items = [];
     }
 
-    // Determine pickup and delivery types from order
-    const pickupType = order.pickup_type || 'door';
+    // Determine pickup type - use seller's choice if provided, otherwise use order's setting
+    let pickupType = order.pickup_type || 'door';
     const deliveryType = order.delivery_type || 'door';
+
+    // If seller selected locker delivery method, override pickup_type
+    if (delivery_method === 'locker' && locker_id) {
+      pickupType = 'locker';
+      console.log(`[commit-to-sale] Seller override: using locker pickup instead of ${order.pickup_type || 'door'}`);
+    }
 
     console.log(`[commit-to-sale] Shipment type: ${pickupType} → ${deliveryType}`);
 
