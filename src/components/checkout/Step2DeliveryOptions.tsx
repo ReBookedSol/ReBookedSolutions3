@@ -404,8 +404,7 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <div>
-              <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between mb-1">
                 <p className="text-sm font-medium text-gray-600">To (You)</p>
                 {onEditAddress && !preSelectedLocker && (
                   <Button
@@ -439,7 +438,6 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
                   {buyerAddress.province} {buyerAddress.postal_code}
                 </p>
               )}
-            </div>
           </div>
         </CardContent>
       </Card>
