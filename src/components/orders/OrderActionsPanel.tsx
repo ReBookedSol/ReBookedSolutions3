@@ -88,18 +88,31 @@ const OrderActionsPanel: React.FC<OrderActionsPanelProps> = ({
         },
       });
 
+      console.log("Cancel order response:", { data, error });
+
       if (error) {
         console.error("Cancel order error:", error);
         throw new Error(error.message || "Failed to cancel order");
       }
 
-      if (!data?.success) {
-        throw new Error(data?.error || "Cancellation failed");
+      if (!data) {
+        console.error("No data returned from cancel-order-with-refund");
+        throw new Error("No response from server");
       }
 
+      if (!data.success) {
+        console.error("Cancellation failed - server returned success: false", data);
+        throw new Error(data.error || "Cancellation failed");
+      }
+
+      console.log("✓ Cancellation successful:", data);
       toast.success(data.message || "Order cancelled and refund processed");
       setShowCancelDialog(false);
-      onOrderUpdate();
+
+      // Refresh order data after successful cancellation
+      setTimeout(() => {
+        onOrderUpdate();
+      }, 500);
     } catch (error: any) {
       console.error("Cancel error:", error);
       toast.error(error?.message || "Failed to cancel order. Please try again.");
