@@ -418,6 +418,7 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
                   </Button>
                 )}
               </div>
+            <div>
               {preSelectedLocker ? (
                 <>
                   <p className="text-sm font-semibold text-purple-700">
@@ -438,6 +439,7 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
                   {buyerAddress.province} {buyerAddress.postal_code}
                 </p>
               )}
+            </div>
           </div>
         </CardContent>
       </Card>
