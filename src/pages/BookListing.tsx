@@ -132,7 +132,15 @@ const BookListing = () => {
       console.log("📚 BookListing: Received books from service:", loadedBooks?.length || 0);
 
       // Ensure we have an array
-      const booksArray = Array.isArray(loadedBooks) ? loadedBooks : [];
+      let booksArray = Array.isArray(loadedBooks) ? loadedBooks : [];
+
+      // Apply book type specific filtering
+      if (bookType !== "all") {
+        console.log(`🔍 BookListing: Filtering ${bookType} books (before: ${booksArray.length})`);
+        booksArray = filterBooksByType(booksArray, bookType);
+        console.log(`🔍 BookListing: Filtered ${bookType} books (after: ${booksArray.length})`);
+      }
+
       setTotalBooks(booksArray.length);
       console.log("📊 BookListing: Total books set to:", booksArray.length);
 
