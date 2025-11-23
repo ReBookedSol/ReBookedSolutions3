@@ -160,56 +160,127 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
     setError(null);
 
     try {
-      console.log("🚚 Fetching Bob Go delivery options...", {
-        from: sellerAddress,
-        to: buyerAddress,
-      });
+      // Determine if seller has only locker (no physical address)
+      const sellerHasOnlyLocker = !sellerAddress && sellerLockerData;
 
-      const quotesResp = await getAllDeliveryQuotes({
-        from: {
-          streetAddress: sellerAddress.street,
-          suburb: sellerAddress.city,
-          city: sellerAddress.city,
-          province: sellerAddress.province,
-          postalCode: sellerAddress.postal_code,
-        },
-        to: {
-          streetAddress: buyerAddress.street,
-          suburb: buyerAddress.city,
-          city: buyerAddress.city,
-          province: buyerAddress.province,
-          postalCode: buyerAddress.postal_code,
-        },
-        weight: 1,
-        user_id: user?.id,
-      });
+      if (sellerHasOnlyLocker && sellerLockerData?.id && sellerLockerData?.provider_slug) {
+        console.log("🚚 Fetching Bob Go delivery options from seller's locker...", {
+          sellerLocker: {
+            name: sellerLockerData.name,
+            id: sellerLockerData.id,
+            provider_slug: sellerLockerData.provider_slug,
+          },
+          to: buyerAddress,
+        });
 
-      setQuotes(quotesResp);
+        const quotesResp = await getAllDeliveryQuotes({
+          from: {
+            streetAddress: "",
+            city: "",
+            province: "",
+            postalCode: "",
+          },
+          to: {
+            streetAddress: buyerAddress.street,
+            suburb: buyerAddress.city,
+            city: buyerAddress.city,
+            province: buyerAddress.province,
+            postalCode: buyerAddress.postal_code,
+          },
+          weight: 1,
+          sellerCollectionPickupPoint: {
+            locationId: sellerLockerData.id,
+            providerSlug: sellerLockerData.provider_slug,
+          },
+          user_id: user?.id,
+        });
 
-      const DELIVERY_MARKUP = 15; // R15 markup on all BobGo rates
-      const options: DeliveryOption[] = quotesResp.map((q) => ({
-        courier: "bobgo",
-        service_name: q.service_name,
-        price: q.cost + DELIVERY_MARKUP,
-        estimated_days: q.transit_days,
-        description: `${q.provider_name} - ${q.features?.join(", ") || "Tracked"}`,
-        zone_type: buyerAddress.province === sellerAddress.province
-          ? (buyerAddress.city === sellerAddress.city ? "local" : "provincial")
-          : "national",
-        provider_name: q.provider_name,
-        provider_slug: q.provider_slug,
-        service_level_code: q.service_level_code,
-      }));
+        setQuotes(quotesResp);
 
-      if (options.length === 0) {
-        throw new Error("No quotes available");
+        const DELIVERY_MARKUP = 15;
+        const options: DeliveryOption[] = quotesResp.map((q) => ({
+          courier: "bobgo",
+          service_name: q.service_name,
+          price: q.cost + DELIVERY_MARKUP,
+          estimated_days: q.transit_days,
+          description: `${q.provider_name} - ${q.features?.join(", ") || "Tracked"}`,
+          zone_type: "locker",
+          provider_name: q.provider_name,
+          provider_slug: q.provider_slug,
+          service_level_code: q.service_level_code,
+        }));
+
+        if (options.length === 0) {
+          throw new Error("No quotes available");
+        }
+
+        console.log("✅ Bob Go options from seller locker:", options);
+        setDeliveryOptions(options);
+      } else if (sellerAddress) {
+        console.log("🚚 Fetching Bob Go delivery options from seller address...", {
+          from: sellerAddress,
+          to: buyerAddress,
+        });
+
+        const quotesResp = await getAllDeliveryQuotes({
+          from: {
+            streetAddress: sellerAddress.street,
+            suburb: sellerAddress.city,
+            city: sellerAddress.city,
+            province: sellerAddress.province,
+            postalCode: sellerAddress.postal_code,
+          },
+          to: {
+            streetAddress: buyerAddress.street,
+            suburb: buyerAddress.city,
+            city: buyerAddress.city,
+            province: buyerAddress.province,
+            postalCode: buyerAddress.postal_code,
+          },
+          weight: 1,
+          user_id: user?.id,
+        });
+
+        setQuotes(quotesResp);
+
+        const DELIVERY_MARKUP = 15;
+        const options: DeliveryOption[] = quotesResp.map((q) => ({
+          courier: "bobgo",
+          service_name: q.service_name,
+          price: q.cost + DELIVERY_MARKUP,
+          estimated_days: q.transit_days,
+          description: `${q.provider_name} - ${q.features?.join(", ") || "Tracked"}`,
+          zone_type: buyerAddress.province === sellerAddress.province
+            ? (buyerAddress.city === sellerAddress.city ? "local" : "provincial")
+            : "national",
+          provider_name: q.provider_name,
+          provider_slug: q.provider_slug,
+          service_level_code: q.service_level_code,
+        }));
+
+        if (options.length === 0) {
+          throw new Error("No quotes available");
+        }
+
+        console.log("✅ Bob Go options:", options);
+        setDeliveryOptions(options);
+      } else {
+        throw new Error("No seller address or locker location available");
       }
-
-      console.log("✅ Bob Go options:", options);
-      setDeliveryOptions(options);
     } catch (err) {
       console.error("Error fetching Bob Go options:", err);
       setError("Failed to load delivery options");
+
+      // Determine zone for fallback
+      let fallbackZoneType: "local" | "provincial" | "national" | "locker" = "national";
+      if (sellerAddress && buyerAddress) {
+        fallbackZoneType = buyerAddress.province === sellerAddress.province
+          ? (buyerAddress.city === sellerAddress.city ? "local" : "provincial")
+          : "national";
+      } else if (!sellerAddress && sellerLockerData) {
+        fallbackZoneType = "locker";
+      }
+
       setDeliveryOptions([
         {
           courier: "bobgo",
@@ -217,9 +288,7 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
           price: 107,
           estimated_days: 3,
           description: "Estimated rate - tracking included",
-          zone_type: buyerAddress.province === sellerAddress.province
-            ? (buyerAddress.city === sellerAddress.city ? "local" : "provincial")
-            : "national",
+          zone_type: fallbackZoneType,
         },
       ]);
       toast.warning("Using estimated delivery rate");
