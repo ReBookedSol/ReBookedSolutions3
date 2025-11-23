@@ -190,6 +190,7 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
           locker_id: lockerToUse.id,
           locker_name: lockerToUse.name,
           locker_address: lockerToUse.address || lockerToUse.full_address,
+          locker_data: lockerToUse,
         } : {}),
       };
 
