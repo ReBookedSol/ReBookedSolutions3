@@ -78,6 +78,8 @@ Deno.serve(async (req) => {
     console.log('Authorization check passed');
 
     // Step 1: Cancel shipment if tracking number exists or use order_id as fallback
+    let shipmentCancelledSuccessfully = false;
+
     if (order.tracking_number) {
       console.log('Cancelling shipment with tracking number:', order.tracking_number);
       try {
@@ -90,13 +92,17 @@ Deno.serve(async (req) => {
 
         if (cancelShipmentError) {
           console.error('Error cancelling shipment:', cancelShipmentError);
-          // Continue with refund even if shipment cancellation fails
+          console.warn('Shipment cancellation failed, but will continue with refund');
+        } else if (shipmentCancelResult?.success === false) {
+          console.error('Shipment cancellation returned error:', shipmentCancelResult.error);
+          console.warn('Shipment cancellation failed, but will continue with refund');
         } else {
           console.log('Shipment cancelled successfully:', shipmentCancelResult);
+          shipmentCancelledSuccessfully = true;
         }
       } catch (shipmentError) {
         console.error('Failed to cancel shipment:', shipmentError);
-        // Continue with refund
+        console.warn('Shipment cancellation exception, but will continue with refund');
       }
     } else if (order.id) {
       // Fallback: Try cancelling using order_id if tracking_number is not available
@@ -111,17 +117,23 @@ Deno.serve(async (req) => {
 
         if (cancelShipmentError) {
           console.error('Error cancelling shipment via order_id:', cancelShipmentError);
-          // Continue with refund even if shipment cancellation fails
+          console.warn('Shipment cancellation via order_id failed, but will continue with refund');
+        } else if (shipmentCancelResult?.success === false) {
+          console.error('Shipment cancellation via order_id returned error:', shipmentCancelResult.error);
+          console.warn('Shipment cancellation via order_id failed, but will continue with refund');
         } else {
           console.log('Shipment cancelled successfully via order_id:', shipmentCancelResult);
+          shipmentCancelledSuccessfully = true;
         }
       } catch (shipmentError) {
         console.error('Failed to cancel shipment via order_id:', shipmentError);
-        // Continue with refund
+        console.warn('Shipment cancellation via order_id exception, but will continue with refund');
       }
     } else {
       console.log('No tracking number or order_id found - skipping shipment cancellation');
     }
+
+    console.log('Shipment cancellation result:', shipmentCancelledSuccessfully ? 'Success' : 'Failed/Skipped');
 
     // Step 2: Process refund
     console.log('Processing refund...');
