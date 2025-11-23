@@ -291,25 +291,25 @@ const UnifiedTrackingComponent: React.FC<UnifiedTrackingComponentProps> = ({
                 </div>
               </CardHeader>
             </div>
-            <CardContent className="space-y-5 p-6">
+            <CardContent className="space-y-4 sm:space-y-5 p-4 sm:p-6">
               {/* Current Status */}
-              <div className={`flex items-center space-x-4 p-5 rounded-xl border-2 ${
+              <div className={`flex items-start sm:items-center space-x-3 sm:space-x-4 p-3 sm:p-5 rounded-xl border-2 ${
                 trackingData.status === "delivered" || trackingData.status === "ready-for-pickup"
                   ? "bg-green-50 border-green-200"
                   : trackingData.status === "cancelled"
                   ? "bg-red-50 border-red-200"
                   : "bg-blue-50 border-blue-200"
               }`}>
-                <div className="flex-shrink-0 text-3xl">
+                <div className="flex-shrink-0">
                   {getStatusIcon(trackingData.status)}
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-bold text-gray-900 text-lg">
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-bold text-gray-900 text-base sm:text-lg">
                     {getStatusText(trackingData.status)}
                   </h4>
                   {trackingData.current_location && (
-                    <p className="text-sm text-gray-700 mt-1 flex items-center">
-                      <MapPin className="h-4 w-4 mr-2 text-gray-600" />
+                    <p className="text-xs sm:text-sm text-gray-700 mt-1 flex items-center break-words">
+                      <MapPin className="h-3 sm:h-4 w-3 sm:w-4 mr-2 text-gray-600 flex-shrink-0" />
                       {trackingData.current_location}
                     </p>
                   )}
