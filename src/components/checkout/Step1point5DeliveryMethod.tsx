@@ -289,7 +289,7 @@ const Step1point5DeliveryMethod: React.FC<Step1point5DeliveryMethodProps> = ({
                 <div className="flex items-center gap-2 font-medium text-base">
                   <MapPin className="w-5 h-5 flex-shrink-0" />
                   <span>BobGo Locker Drop-Off</span>
-                  <Badge className="bg-amber-100 text-amber-800">Cheapest</Badge>
+                  <Badge className="bg-amber-100 text-amber-800">Recommended</Badge>
                 </div>
                 <p className="text-sm text-gray-600 mt-2">
                   Our courier will drop the book at your chosen BobGo pickup location. You'll collect it from there.
