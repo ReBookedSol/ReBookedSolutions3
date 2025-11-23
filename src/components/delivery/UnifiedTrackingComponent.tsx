@@ -230,14 +230,14 @@ const UnifiedTrackingComponent: React.FC<UnifiedTrackingComponentProps> = ({
       {loading && (
         <Card className="border-0 shadow-lg">
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-center gap-4">
-                <div className="relative">
-                  <div className="h-12 w-12 rounded-full border-4 border-gray-200 border-t-blue-600 animate-spin"></div>
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-center gap-3 sm:gap-4">
+                <div className="relative flex-shrink-0">
+                  <div className="h-8 sm:h-12 w-8 sm:w-12 rounded-full border-3 sm:border-4 border-gray-200 border-t-blue-600 animate-spin"></div>
                 </div>
-                <div>
-                  <p className="font-semibold text-gray-900 text-lg">Tracking your package...</p>
-                  <p className="text-sm text-gray-600 mt-1">Please wait a moment</p>
+                <div className="min-w-0">
+                  <p className="font-semibold text-gray-900 text-sm sm:text-lg">Tracking your package...</p>
+                  <p className="text-xs sm:text-sm text-gray-600 mt-1">Please wait a moment</p>
                 </div>
               </div>
             </CardContent>
