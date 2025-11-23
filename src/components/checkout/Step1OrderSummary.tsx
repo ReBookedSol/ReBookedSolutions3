@@ -84,6 +84,59 @@ const Step1OrderSummary: React.FC<Step1OrderSummaryProps> = ({
     };
   }, []);
 
+  // Fetch seller full name from profiles table
+  useEffect(() => {
+    const fetchSellerFullName = async () => {
+      try {
+        if (book.seller_id) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', book.seller_id)
+            .single();
+
+          if (error) {
+            console.warn('Failed to fetch seller full name:', error);
+          } else if (data?.full_name) {
+            setSellerFullName(data.full_name);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching seller full name:', error);
+      }
+    };
+
+    fetchSellerFullName();
+  }, [book.seller_id]);
+
+  // Fetch cart seller full name if cart has a seller ID
+  useEffect(() => {
+    const fetchCartSellerFullName = async () => {
+      if (cartData && cartData.sellerId) {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', cartData.sellerId)
+            .single();
+
+          if (error) {
+            console.warn('Failed to fetch cart seller full name:', error);
+          } else if (data?.full_name) {
+            setSellerCartFullNames((prev) => ({
+              ...prev,
+              [cartData.sellerId]: data.full_name,
+            }));
+          }
+        } catch (error) {
+          console.error('Error fetching cart seller full name:', error);
+        }
+      }
+    };
+
+    fetchCartSellerFullName();
+  }, [cartData?.sellerId]);
+
   // For debugging: show cart checkout if cart data exists (even for single item)
   const isCartCheckout = cartData && cartData.items && cartData.items.length >= 1;
 
