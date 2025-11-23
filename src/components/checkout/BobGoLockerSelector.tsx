@@ -254,13 +254,35 @@ const BobGoLockerSelector: React.FC<BobGoLockerSelectorProps> = ({
               return (
                 <div
                   key={location.id || index}
-                  className={`p-4 bg-white border-2 rounded-lg hover:shadow-md transition-all cursor-pointer ${
+                  className={`p-4 bg-white border-2 rounded-lg hover:shadow-md transition-all cursor-pointer flex flex-col sm:flex-row gap-4 items-start ${
                     isSelected
                       ? "border-purple-500 bg-purple-50"
                       : "border-purple-200"
                   }`}
                   onClick={() => onLockerSelect(location)}
                 >
+                  {/* Image on Left - Desktop Only, Centered Mobile */}
+                  {(location.image_url || location.pickup_point_provider_logo_url) && (
+                    <div
+                      className="flex justify-center sm:justify-start flex-shrink-0 w-full sm:w-auto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedImage(location.image_url || location.pickup_point_provider_logo_url || null);
+                      }}
+                    >
+                      <img
+                        src={location.image_url || location.pickup_point_provider_logo_url}
+                        alt={location.name || "Location image"}
+                        className="w-full sm:w-32 sm:h-32 h-auto object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Content Section */}
+                  <div className="flex-1 w-full">
                   {/* Header Section with Name and Badge */}
                   <div className="mb-4">
                     {/* Location Name */}
@@ -282,26 +304,6 @@ const BobGoLockerSelector: React.FC<BobGoLockerSelectorProps> = ({
                       </div>
                     )}
                   </div>
-
-                  {/* Image Below Name - Clickable and Centered */}
-                  {(location.image_url || location.pickup_point_provider_logo_url) && (
-                    <div
-                      className="flex justify-center mb-4"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedImage(location.image_url || location.pickup_point_provider_logo_url || null);
-                      }}
-                    >
-                      <img
-                        src={location.image_url || location.pickup_point_provider_logo_url}
-                        alt={location.name || "Location image"}
-                        className="max-w-xs w-full h-auto object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
 
                   {/* Main Content Grid */}
                   <div className="space-y-3">
@@ -462,6 +464,7 @@ const BobGoLockerSelector: React.FC<BobGoLockerSelectorProps> = ({
                         )}
                       </Button>
                     </div>
+                  </div>
                   </div>
                 </div>
               );
