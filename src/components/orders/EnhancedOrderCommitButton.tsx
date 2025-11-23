@@ -544,6 +544,16 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
                     </div>
                   </div>
 
+                  {/* Alert when seller doesn't have a pickup address */}
+                  {sellerHasPickupAddress === false && (
+                    <Alert className="bg-amber-50 border-amber-200">
+                      <AlertCircle className="h-4 w-4 text-amber-600" />
+                      <AlertDescription className="text-amber-800">
+                        You haven't set up a pickup address in your profile. Home pick-up is disabled. Please add your pickup address in your profile settings, or use locker drop-off for this order.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
                   {/* Alert when buyer chose door delivery */}
                   {buyerDeliveryType === "door" && (
                     <Alert className="bg-blue-50 border-blue-200">
