@@ -67,6 +67,39 @@ const ModernAddressTab = ({
     }
   }, [addressData]);
 
+  // Load preferred pickup method and locker status
+  useEffect(() => {
+    const loadPreferenceAndLockerStatus = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          setIsLoadingPreference(false);
+          return;
+        }
+
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("preferred_pickup_method, preferred_delivery_locker_data")
+          .eq("id", user.id)
+          .single();
+
+        if (!error && profile) {
+          setPreferredPickupMethod(profile.preferred_pickup_method);
+          setHasSavedLocker(!!profile.preferred_delivery_locker_data);
+        }
+      } catch (error) {
+        console.error("Error loading preference:", error);
+      } finally {
+        setIsLoadingPreference(false);
+      }
+    };
+
+    loadPreferenceAndLockerStatus();
+  }, []);
+
   // Small optimization: prefill addresses quickly without awaiting heavy decrypt flows elsewhere
   useEffect(() => {
     // if no address data yet, attempt a lightweight cached fetch (non-blocking)
