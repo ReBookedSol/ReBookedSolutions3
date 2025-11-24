@@ -50,6 +50,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
     buyer_address: null,
     seller_address: null,
     seller_locker_data: null,
+    seller_preferred_pickup_method: null,
     delivery_options: [],
     selected_delivery: null,
     order_summary: null,
