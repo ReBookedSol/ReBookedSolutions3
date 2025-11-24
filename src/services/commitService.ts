@@ -493,6 +493,31 @@ export const declineBookSale = async (orderIdOrBookId: string): Promise<void> =>
       }
     }
 
+    // Now update the order status to declined (AFTER book has been fixed)
+    if (order) {
+      const { error: updateOrderError } = await supabase
+        .from("orders")
+        .update({
+          status: "declined",
+          declined_at: new Date().toISOString(),
+          decline_reason: "Declined by seller"
+        })
+        .eq("id", order.id)
+        .eq("seller_id", user.id);
+
+      if (updateOrderError) {
+        console.error("[CommitService] Error updating order status:", {
+          message: updateOrderError.message || 'Unknown error',
+          code: updateOrderError.code,
+          details: updateOrderError.details,
+          orderId: order.id
+        });
+        throw new Error(
+          `Failed to decline order: ${updateOrderError.message || "Database update failed"}`,
+        );
+      }
+    }
+
     // Log the decline action
     console.log("[CommitService] Decline action completed:", {
       userId: user.id,
