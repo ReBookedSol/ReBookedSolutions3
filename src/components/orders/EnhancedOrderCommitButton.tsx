@@ -63,11 +63,10 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
   const [selectedLocker, setSelectedLocker] = useState<BobGoLocation | null>(null);
   const [savedLocker, setSavedLocker] = useState<BobGoLocation | null>(null);
   const [isLoadingSavedLocker, setIsLoadingSavedLocker] = useState(false);
-  const [wantToChangeLocker, setWantToChangeLocker] = useState(false);
   const [buyerDeliveryType, setBuyerDeliveryType] = useState<string | null>(null);
   const [isLoadingOrder, setIsLoadingOrder] = useState(false);
-  const [sellerHasPickupAddress, setSellerHasPickupAddress] = useState<boolean | null>(null);
-  const [isCheckingPickupAddress, setIsCheckingPickupAddress] = useState(false);
+  const [preferredPickupMethod, setPreferredPickupMethod] = useState<"locker" | "pickup" | null>(null);
+  const [isLoadingPreference, setIsLoadingPreference] = useState(false);
 
   // Pre-commit checklist states
   const [isPackagedSecurely, setIsPackagedSecurely] = useState(false);
