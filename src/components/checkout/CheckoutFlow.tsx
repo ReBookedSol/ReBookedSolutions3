@@ -470,6 +470,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
         book: updatedBook,
         seller_address: sellerAddress,
         seller_locker_data: sellerLockerData,
+        seller_preferred_pickup_method: sellerPreferredPickupMethod,
         buyer_address: buyerAddress,
         loading: false,
       }));
