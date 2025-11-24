@@ -402,30 +402,9 @@ export const declineBookSale = async (orderIdOrBookId: string): Promise<void> =>
     const targetName = order ? `order ${order.id}` : `book ${book?.title || orderIdOrBookId}`;
     console.log("[CommitService] Processing decline for", targetName);
 
-    // If we have an order, update the order status to declined
-    if (order) {
-      const { error: updateOrderError } = await supabase
-        .from("orders")
-        .update({
-          status: "declined",
-          declined_at: new Date().toISOString(),
-          decline_reason: "Declined by seller"
-        })
-        .eq("id", order.id)
-        .eq("seller_id", user.id);
-
-      if (updateOrderError) {
-        console.error("[CommitService] Error updating order status:", {
-          message: updateOrderError.message || 'Unknown error',
-          code: updateOrderError.code,
-          details: updateOrderError.details,
-          orderId: order.id
-        });
-        throw new Error(
-          `Failed to decline order: ${updateOrderError.message || "Database update failed"}`,
-        );
-      }
-    }
+    // IMPORTANT: Update book FIRST before updating order status
+    // This is because changing order status to "declined" might trigger a database trigger
+    // that tries to update book quantities. By fixing quantities first, we avoid constraint violations.
 
     // If we have book info, update book to mark as available again and restore quantities
     if (book) {
