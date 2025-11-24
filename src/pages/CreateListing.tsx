@@ -152,24 +152,20 @@ const CreateListing = () => {
 
   const handleBookTypeChange = (type: "school" | "university" | "reader") => {
     setBookType(type);
-    // Clear category when book type changes since categories are different for each type
-    setFormData((prev) => ({
-      ...prev,
+    const newItemType: "textbook" | "reader" = type === "reader" ? "reader" : "textbook";
+
+    // Clear category and type-specific fields when book type changes since categories are different for each type
+    let updatedFormData = {
+      ...formData,
       category: "",
+      itemType: newItemType,
       grade: "",
       universityYear: "",
       university: "",
       genre: "",
-    }));
-    let newItemType: "textbook" | "reader" = type === "reader" ? "reader" : "textbook";
+    };
 
-    if (type === "school") {
-      setFormData({ ...formData, universityYear: "", university: "", genre: "", itemType: newItemType });
-    } else if (type === "university") {
-      setFormData({ ...formData, grade: "", genre: "", itemType: newItemType });
-    } else if (type === "reader") {
-      setFormData({ ...formData, grade: "", universityYear: "", university: "", itemType: newItemType });
-    }
+    setFormData(updatedFormData);
   };
 
   const validateForm = () => {
