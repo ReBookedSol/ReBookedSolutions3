@@ -171,13 +171,11 @@ serve(async (req) => {
     // Update order status
     const updateData: any = {
       status: 'committed',
-      delivery_method: delivery_method,
       committed_at: new Date().toISOString(),
     };
 
-    // Add locker-specific data
-    if (delivery_method === "locker") {
-      updateData.locker_id = locker_id;
+    // Add locker-specific data if the original order pickup_type is locker
+    if (actualPickupType === "locker") {
       if (shipmentResult) {
         updateData.tracking_number = shipmentResult.trackingNumber;
         updateData.qr_code_url = shipmentResult.qrCodeUrl;
