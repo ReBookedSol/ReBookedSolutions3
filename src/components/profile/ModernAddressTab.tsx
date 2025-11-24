@@ -54,6 +54,10 @@ const ModernAddressTab = ({
   const [sameAsPickup, setSameAsPickup] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<"pickup" | "shipping" | null>(null);
+  const [preferredPickupMethod, setPreferredPickupMethod] = useState<"locker" | "pickup" | null>(null);
+  const [isLoadingPreference, setIsLoadingPreference] = useState(true);
+  const [hasSavedLocker, setHasSavedLocker] = useState(false);
+  const [isSavingPreference, setIsSavingPreference] = useState(false);
 
   useEffect(() => {
     if (addressData) {
