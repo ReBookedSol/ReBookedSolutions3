@@ -317,7 +317,15 @@ export const getCommitPendingBooks = async (): Promise<any[]> => {
 
 /**
  * Declines an order within the 48-hour window
- * Updates the order status and triggers refund process
+ * Calls the decline-commit edge function which handles:
+ * - Order status update to "declined"
+ * - Automatic stock release via database trigger
+ * - Refund processing
+ * - Email notifications
+ *
+ * IMPORTANT: The frontend should NOT manually restore stock.
+ * The database trigger handle_order_decline_stock_release automatically
+ * handles stock release when order status changes to 'declined'.
  */
 export const declineBookSale = async (orderIdOrBookId: string): Promise<void> => {
   try {
@@ -348,12 +356,11 @@ export const declineBookSale = async (orderIdOrBookId: string): Promise<void> =>
 
     // Try to find the order first (since we're now passing order IDs)
     let order = null;
-    let book = null;
 
     // First, try to get the order (check both pending_commit and pending statuses)
     const { data: orderData, error: orderError } = await supabase
       .from("orders")
-      .select("*")
+      .select("id, seller_id, status")
       .eq("id", orderIdOrBookId)
       .eq("seller_id", user.id)
       .in("status", ["pending_commit", "pending"])
@@ -362,176 +369,50 @@ export const declineBookSale = async (orderIdOrBookId: string): Promise<void> =>
     if (!orderError && orderData) {
       order = orderData;
       console.log("[CommitService] Found order:", order.id);
-
-      // Get book info from items
-      const items = Array.isArray(order.items) ? order.items : [];
-      const firstItem = items[0] || {};
-
-      if (firstItem.book_id) {
-        // Try to get book details (include ALL fields needed for decline operation)
-        const { data: bookData } = await supabase
-          .from("books")
-          .select("*")
-          .eq("id", firstItem.book_id)
-          .single();
-        book = bookData;
-      }
     } else {
-      // Fallback: try as book ID
-      const { data: bookData, error: bookError } = await supabase
-        .from("books")
-        .select("*")
-        .eq("id", orderIdOrBookId)
-        .eq("seller_id", user.id)
-        .single();
-
-      if (!bookError && bookData) {
-        book = bookData;
-        console.log("[CommitService] Found book:", book.title);
-      } else {
-        console.error("[CommitService] Could not find order or book:", {
-          orderError: orderError?.message,
-          bookError: bookError?.message,
-          id: orderIdOrBookId,
-          userId: user.id
-        });
-        throw new Error("Order or book not found, or you don't have permission to decline this sale");
-      }
+      console.error("[CommitService] Order not found:", {
+        orderError: orderError?.message,
+        id: orderIdOrBookId,
+        userId: user.id
+      });
+      throw new Error("Order not found or not in pending status");
     }
 
-    const targetName = order ? `order ${order.id}` : `book ${book?.title || orderIdOrBookId}`;
-    console.log("[CommitService] Processing decline for", targetName);
+    // Call the decline-commit edge function to handle the decline process
+    // This function will:
+    // 1. Update order status to "declined"
+    // 2. Trigger database trigger to automatically release stock
+    // 3. Process refund
+    // 4. Send notifications
+    console.log("[CommitService] Calling decline-commit edge function...");
 
-    // IMPORTANT: Update book FIRST before updating order status
-    // This is because changing order status to "declined" might trigger a database trigger
-    // that tries to update book quantities. By fixing quantities first, we avoid constraint violations.
-
-    // If we have book info, update book to mark as available again and restore quantities
-    if (book) {
-      // When declining, we need to:
-      // 1. Set sold: false (since only one item was sold and we're restoring it)
-      // 2. Restore quantities: decrement sold_quantity by 1, increment available_quantity by 1
-      // 3. Ensure: available_quantity + sold_quantity ≤ initial_quantity
-
-      const currentSoldQuantity = (book.sold_quantity || 0);
-      const currentAvailableQuantity = (book.available_quantity || 0);
-      const initialQuantity = (book.initial_quantity || 1);
-
-      const newSoldQuantity = Math.max(0, currentSoldQuantity - 1);
-      const newAvailableQuantity = Math.min(
-        currentAvailableQuantity + 1,
-        initialQuantity // Ensure we don't exceed initial_quantity
-      );
-
-      // Validate the constraint: available_quantity + sold_quantity <= initial_quantity
-      const totalAfterRestore = newAvailableQuantity + newSoldQuantity;
-      if (totalAfterRestore > initialQuantity) {
-        console.warn("[CommitService] Quantity restore would violate constraint, using fallback", {
-          bookId: book.id,
-          currentSoldQuantity,
-          currentAvailableQuantity,
-          initialQuantity,
-          newSoldQuantity,
-          newAvailableQuantity,
-          totalAfterRestore,
-        });
-        // Fallback: just mark as not sold without changing quantities
-        const { error: updateBookError } = await supabase
-          .from("books")
-          .update({
-            sold: false,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", book.id)
-          .eq("seller_id", user.id);
-
-        if (updateBookError) {
-          console.error("[CommitService] Error updating book sold status:", {
-            message: updateBookError.message || 'Unknown error',
-            code: updateBookError.code,
-            details: updateBookError.details,
-            bookId: book.id,
-          });
-          // Don't throw here as the order decline is more important
-          console.warn("Book sold status update failed, but order was declined successfully");
-        }
-      } else {
-        const updateData: any = {
-          sold: false,
-          sold_quantity: newSoldQuantity,
-          available_quantity: newAvailableQuantity,
-          updated_at: new Date().toISOString(),
-        };
-
-        console.log("[CommitService] Restoring book quantities:", {
-          bookId: book.id,
-          currentSoldQuantity,
-          currentAvailableQuantity,
-          initialQuantity,
-          newSoldQuantity,
-          newAvailableQuantity,
-          totalAfterRestore,
-        });
-
-        const { error: updateBookError } = await supabase
-          .from("books")
-          .update(updateData)
-          .eq("id", book.id)
-          .eq("seller_id", user.id);
-
-        if (updateBookError) {
-          console.error("[CommitService] Error updating book status:", {
-            message: updateBookError.message || 'Unknown error',
-            code: updateBookError.code,
-            details: updateBookError.details,
-            bookId: book.id,
-            updateData,
-          });
-          // Don't throw here as the order decline is more important
-          console.warn("Book status update failed, but order was declined successfully");
-        }
+    const { data, error } = await supabase.functions.invoke("decline-commit", {
+      body: {
+        order_id: order.id,
+        seller_id: user.id,
+        reason: "Declined by seller"
       }
+    });
+
+    if (error) {
+      console.error("[CommitService] Edge function error:", error);
+      throw new Error(error.message || "Failed to call decline-commit function");
     }
 
-    // Now update the order status to declined (AFTER book has been fixed)
-    if (order) {
-      const { error: updateOrderError } = await supabase
-        .from("orders")
-        .update({
-          status: "declined",
-          declined_at: new Date().toISOString(),
-          decline_reason: "Declined by seller"
-        })
-        .eq("id", order.id)
-        .eq("seller_id", user.id);
-
-      if (updateOrderError) {
-        console.error("[CommitService] Error updating order status:", {
-          message: updateOrderError.message || 'Unknown error',
-          code: updateOrderError.code,
-          details: updateOrderError.details,
-          orderId: order.id
-        });
-        throw new Error(
-          `Failed to decline order: ${updateOrderError.message || "Database update failed"}`,
-        );
-      }
+    if (!data?.success) {
+      console.error("[CommitService] Decline function returned error:", data);
+      throw new Error(data?.error || "Failed to decline order");
     }
 
     // Log the decline action
-    console.log("[CommitService] Decline action completed:", {
+    console.log("[CommitService] Decline action completed via edge function:", {
       userId: user.id,
       action: "decline_sale",
-      orderId: order?.id,
-      bookId: book?.id,
-      bookTitle: book?.title,
+      orderId: order.id,
       timestamp: new Date().toISOString(),
     });
 
-    // For now, skip refund process as it needs to be implemented properly
-    // await processRefund(order?.id || book?.id, "declined_by_seller");
-
-    console.log("[CommitService] Sale declined successfully:", targetName);
+    console.log("[CommitService] Sale declined successfully");
   } catch (error) {
     console.error("[CommitService] Error declining book sale:", {
       message: error instanceof Error ? error.message : 'Unknown error',
