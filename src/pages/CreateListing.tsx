@@ -152,6 +152,15 @@ const CreateListing = () => {
 
   const handleBookTypeChange = (type: "school" | "university" | "reader") => {
     setBookType(type);
+    // Clear category when book type changes since categories are different for each type
+    setFormData((prev) => ({
+      ...prev,
+      category: "",
+      grade: "",
+      universityYear: "",
+      university: "",
+      genre: "",
+    }));
     let newItemType: "textbook" | "reader" = type === "reader" ? "reader" : "textbook";
 
     if (type === "school") {
