@@ -49,13 +49,13 @@ serve(async (req) => {
 
     console.log("🔄 Processing decline for order:", order_id);
 
-    // Get order details with buyer and seller info - using maybeSingle() instead of single()
+    // Get order details with buyer and seller info - must be in pending status
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .select("id, buyer_id, seller_id, buyer_email, seller_email, buyer_full_name, seller_full_name, payment_reference, amount, total_amount, selected_shipping_cost, status, tracking_number, book_id, items")
       .eq("id", order_id)
       .eq("seller_id", seller_id)
-      .eq("status", "pending_commit")
+      .eq("status", "pending")
       .maybeSingle();
 
     if (orderError) {
@@ -88,7 +88,7 @@ serve(async (req) => {
       if (existingOrder) {
         if (existingOrder.seller_id !== seller_id) {
           errorMessage = "You are not authorized to decline this order";
-        } else if (existingOrder.status !== "pending_commit") {
+        } else if (existingOrder.status !== "pending") {
           errorMessage = `Order is in ${existingOrder.status} status and cannot be declined`;
         }
       }
