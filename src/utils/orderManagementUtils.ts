@@ -152,9 +152,14 @@ export function canCancelOrder(order: OrderWithDetails, userId: string): {
     return { canCancel: false, reason: "Only buyers can cancel orders" };
   }
 
+  // Block cancellation for committed orders - user must contact support
+  const orderStatusLower = (order.status || "").toLowerCase();
+  if (orderStatusLower === "committed") {
+    return { canCancel: false, reason: "Once confirmed by the seller, please contact support if you need to cancel this order." };
+  }
+
   // Check order status - block only the statuses that the server blocks
   const blockedOrderStatuses = ["collected", "in transit", "out for delivery", "delivered"];
-  const orderStatusLower = (order.status || "").toLowerCase();
   if (blockedOrderStatuses.includes(orderStatusLower)) {
     return { canCancel: false, reason: `Cannot cancel - your order is "${order.status}"` };
   }

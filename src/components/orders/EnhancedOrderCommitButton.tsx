@@ -63,26 +63,56 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
   const [selectedLocker, setSelectedLocker] = useState<BobGoLocation | null>(null);
   const [savedLocker, setSavedLocker] = useState<BobGoLocation | null>(null);
   const [isLoadingSavedLocker, setIsLoadingSavedLocker] = useState(false);
-  const [wantToChangeLocker, setWantToChangeLocker] = useState(false);
   const [buyerDeliveryType, setBuyerDeliveryType] = useState<string | null>(null);
   const [isLoadingOrder, setIsLoadingOrder] = useState(false);
-  const [sellerHasPickupAddress, setSellerHasPickupAddress] = useState<boolean | null>(null);
-  const [isCheckingPickupAddress, setIsCheckingPickupAddress] = useState(false);
+  const [preferredPickupMethod, setPreferredPickupMethod] = useState<"locker" | "pickup" | null>(null);
+  const [isLoadingPreference, setIsLoadingPreference] = useState(false);
 
   // Pre-commit checklist states
   const [isPackagedSecurely, setIsPackagedSecurely] = useState(false);
   const [canFulfillOrder, setCanFulfillOrder] = useState(false);
 
-  // Load saved locker, buyer's delivery type, and check seller's pickup address when dialog opens
+  // Load seller's preferred pickup method, buyer's delivery type, and saved locker when dialog opens
   useEffect(() => {
     if (isDialogOpen) {
-      loadSavedLocker();
+      loadPreferredPickupMethod();
       fetchBuyerDeliveryType();
-      checkSellerPickupAddress();
-      setWantToChangeLocker(false);
-      setSelectedLocker(null);
+      loadSavedLocker();
     }
   }, [isDialogOpen]);
+
+  const loadPreferredPickupMethod = async () => {
+    try {
+      setIsLoadingPreference(true);
+
+      // Fetch seller's preferred pickup method
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("preferred_pickup_method")
+        .eq("id", sellerId)
+        .single();
+
+      if (error) {
+        console.warn("Failed to load seller's preferred pickup method:", error);
+        // Default to locker if not set
+        setPreferredPickupMethod("locker");
+        return;
+      }
+
+      if (profile?.preferred_pickup_method) {
+        setPreferredPickupMethod(profile.preferred_pickup_method);
+        console.log("✅ Seller's preferred pickup method:", profile.preferred_pickup_method);
+      } else {
+        // Default to locker if not set
+        setPreferredPickupMethod("locker");
+      }
+    } catch (error) {
+      console.error("Error loading preferred pickup method:", error);
+      setPreferredPickupMethod("locker");
+    } finally {
+      setIsLoadingPreference(false);
+    }
+  };
 
   const fetchBuyerDeliveryType = async () => {
     try {
@@ -149,55 +179,21 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
     }
   };
 
-  const checkSellerPickupAddress = async () => {
-    try {
-      setIsCheckingPickupAddress(true);
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        setSellerHasPickupAddress(false);
-        return;
-      }
-
-      // Check if seller has pickup address in their profile
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("pickup_address_encrypted")
-        .eq("id", user.id)
-        .single();
-
-      if (error) {
-        console.warn("Failed to check pickup address:", error);
-        setSellerHasPickupAddress(false);
-        return;
-      }
-
-      const hasAddress = !!profile?.pickup_address_encrypted;
-      setSellerHasPickupAddress(hasAddress);
-      console.log("✅ Seller pickup address check:", hasAddress ? "Has address" : "No address");
-
-      // If seller doesn't have a home address, force locker selection
-      if (!hasAddress && deliveryMethod === "home") {
+  // Set delivery method based on preferred pickup method
+  useEffect(() => {
+    if (preferredPickupMethod) {
+      if (preferredPickupMethod === "locker") {
         setDeliveryMethod("locker");
+        // Auto-select saved locker if available
+        if (savedLocker) {
+          setSelectedLocker(savedLocker);
+        }
+      } else if (preferredPickupMethod === "pickup") {
+        setDeliveryMethod("home");
+        setSelectedLocker(null);
       }
-    } catch (error) {
-      console.error("Error checking seller pickup address:", error);
-      setSellerHasPickupAddress(false);
-    } finally {
-      setIsCheckingPickupAddress(false);
     }
-  };
-
-  // Auto-select locker method with saved locker
-  const handleSelectLockerMethod = (currentSavedLocker: BobGoLocation | null) => {
-    setDeliveryMethod("locker");
-    // Automatically select the saved locker if it exists
-    if (currentSavedLocker) {
-      setSelectedLocker(currentSavedLocker);
-    }
-  };
+  }, [preferredPickupMethod, savedLocker]);
 
   // Check if order is already committed
   const isAlreadyCommitted =
@@ -205,11 +201,13 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
     orderStatus === "courier_scheduled" ||
     orderStatus === "shipped";
 
-  // Check if form is valid
+  // Check if form is valid based on preferred method
   const isFormValid =
     isPackagedSecurely &&
     canFulfillOrder &&
-    ((deliveryMethod === "home" && sellerHasPickupAddress) || (deliveryMethod === "locker" && (selectedLocker || (savedLocker && !wantToChangeLocker))));
+    preferredPickupMethod &&
+    ((preferredPickupMethod === "pickup" && deliveryMethod === "home") ||
+      (preferredPickupMethod === "locker" && deliveryMethod === "locker" && (selectedLocker || savedLocker)));
 
   const handleCommit = async () => {
     setIsCommitting(true);
@@ -451,185 +449,80 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
             </CardContent>
           </Card>
 
-          {/* Delivery Method Selection */}
+          {/* Delivery Method Display - Shows only the preferred method */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base sm:text-lg flex items-center gap-2">
                 <MapPin className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                <span className="text-sm sm:text-base">Choose Delivery Method</span>
+                <span className="text-sm sm:text-base">Delivery Method</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <RadioGroup value={deliveryMethod} onValueChange={(value) => {
-                if (buyerDeliveryType === "door" && value === "locker") {
-                  toast.error("Locker drop-off is not available. Buyer selected home delivery.");
-                  return;
-                }
-                setDeliveryMethod(value as "home" | "locker");
-                if (value === "home") {
-                  setSelectedLocker(null);
-                }
-              }}>
-                <div className="space-y-4">
-                  {/* Home Pick-Up Option */}
-                  <div
-                    className={`flex items-start space-x-3 p-3 sm:p-4 border-2 rounded-lg transition-all ${
-                      !sellerHasPickupAddress
-                        ? "cursor-not-allowed opacity-60 bg-gray-100 border-gray-300"
-                        : `cursor-pointer ${
-                            deliveryMethod === "home"
-                              ? "bg-blue-50 border-blue-500"
-                              : "bg-gray-50 border-gray-200 hover:border-blue-300"
-                          }`
-                    }`}
-                    onClick={() => {
-                      if (sellerHasPickupAddress) {
-                        setDeliveryMethod("home");
-                        setSelectedLocker(null);
-                      }
-                    }}
-                  >
-                    <RadioGroupItem value="home" className="mt-1 flex-shrink-0" disabled={!sellerHasPickupAddress} />
-                    <div className="flex-1">
-                      <Label className={`flex items-center gap-2 font-medium text-sm sm:text-base ${
-                        sellerHasPickupAddress ? "cursor-pointer" : "text-gray-500"
-                      }`}>
-                        <Home className="w-4 h-4 flex-shrink-0" />
-                        <span>Home Pick-Up (Courier Collection)</span>
-                      </Label>
-                      <p className={`text-xs sm:text-sm mt-1 ${
-                        sellerHasPickupAddress ? "text-gray-600" : "text-gray-500"
-                      }`}>
-                        {sellerHasPickupAddress
-                          ? "Our courier will collect the book from your address at a scheduled time."
-                          : "You haven't set up a pickup address in your profile."
-                        }
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Locker Drop-Off Option */}
-                  <div
-                    className={`flex items-start space-x-3 p-3 sm:p-4 border-2 rounded-lg transition-all ${
-                      buyerDeliveryType === "door"
-                        ? "cursor-not-allowed opacity-60 bg-gray-100 border-gray-300"
-                        : `cursor-pointer ${
-                            deliveryMethod === "locker"
-                              ? "bg-purple-50 border-purple-500"
-                              : "bg-gray-50 border-gray-200 hover:border-purple-300"
-                          }`
-                    }`}
-                    onClick={() => {
-                      if (buyerDeliveryType !== "door") {
-                        handleSelectLockerMethod(savedLocker);
-                      }
-                    }}
-                  >
-                    <RadioGroupItem value="locker" className="mt-1 flex-shrink-0" disabled={buyerDeliveryType === "door"} />
-                    <div className="flex-1">
-                      <Label className={`flex items-center gap-2 font-medium text-sm sm:text-base ${
-                        buyerDeliveryType === "door" ? "text-gray-500" : "cursor-pointer"
-                      }`}>
-                        <MapPin className="w-4 h-4 flex-shrink-0" />
-                        <span>BobGo Locker Drop-Off</span>
-                      </Label>
-                      <p className={`text-xs sm:text-sm mt-1 ${
-                        buyerDeliveryType === "door" ? "text-gray-500" : "text-gray-600"
-                      }`}>
-                        {buyerDeliveryType === "door"
-                          ? "The buyer has chosen home delivery, so locker drop-off is not available for this order."
-                          : "Drop the book at a nearby BobGo location. Buyer will collect from there."
-                        }
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Alert when seller doesn't have a pickup address */}
-                  {sellerHasPickupAddress === false && (
-                    <Alert className="bg-amber-50 border-amber-200">
-                      <AlertCircle className="h-4 w-4 text-amber-600" />
-                      <AlertDescription className="text-amber-800">
-                        You haven't set up a pickup address in your profile. Home pick-up is disabled. Please add your pickup address in your profile settings, or use locker drop-off for this order.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-
-                  {/* Alert when buyer chose door delivery */}
-                  {buyerDeliveryType === "door" && (
-                    <Alert className="bg-blue-50 border-blue-200">
-                      <Info className="h-4 w-4 text-blue-600" />
-                      <AlertDescription className="text-blue-800">
-                        The buyer has selected home delivery. As the seller, you must arrange courier pickup from your address. Locker drop-off is not available for this order.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-
-                  {/* Locker Selection UI - Only show if locker method is selected */}
-                  {deliveryMethod === "locker" && buyerDeliveryType !== "door" && (
-                  <div className="mt-4 pt-4 border-t border-gray-200 space-y-4">
-                    {isLoadingSavedLocker ? (
-                      <div className="flex items-center justify-center py-4">
-                        <Loader2 className="h-6 w-6 animate-spin text-purple-600" />
-                      </div>
-                    ) : (
-                      <>
-                        {/* Show saved locker if available and not changing */}
-                        {savedLocker && !wantToChangeLocker && (
-                          <div className="p-4 bg-white border-2 border-green-300 rounded-lg">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex-1">
-                                <p className="font-semibold text-gray-900 flex items-center gap-2 text-sm">
-                                  <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
-                                  Your Saved Locker
-                                </p>
-                                <p className="text-sm text-gray-700 mt-2">{savedLocker.name}</p>
-                                <p className="text-xs text-gray-500 mt-1">{savedLocker.address || savedLocker.full_address}</p>
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => setWantToChangeLocker(true)}
-                              className="mt-3 w-full px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                            >
-                              Change Locker
-                            </button>
-                          </div>
-                        )}
-
-                        {/* Search for lockers if no saved locker or user wants to change */}
-                        {!savedLocker || wantToChangeLocker ? (
-                          <div className="space-y-2">
-                            <p className="text-sm font-medium text-gray-700">
-                              {savedLocker && wantToChangeLocker ? "Search for a different locker:" : "Search for a locker near you:"}
-                            </p>
-                            <BobGoLockerSelector
-                              onLockerSelect={setSelectedLocker}
-                              selectedLockerId={selectedLocker?.id}
-                              title="Select a Locker Location"
-                              description="Search for an address and select a nearby locker location for drop-off"
-                              showCardLayout={false}
-                            />
-                          </div>
-                        ) : null}
-
-                        {/* Selected Locker Summary - Only show if searching for different locker */}
-                        {selectedLocker && selectedLocker.id !== savedLocker?.id && (
-                          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                            <p className="text-sm font-medium text-blue-800 flex items-center gap-2">
-                              <CheckCircle className="w-4 h-4" />
-                              Selected: {selectedLocker.name}
-                            </p>
-                            <p className="text-xs text-blue-700 mt-1">
-                              {selectedLocker.address || selectedLocker.full_address}
-                            </p>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                  )}
+            <CardContent className="space-y-4">
+              {isLoadingPreference ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
                 </div>
-              </RadioGroup>
+              ) : preferredPickupMethod === "locker" ? (
+                // Show Locker Drop-Off (Preferred)
+                <div className="p-4 border-2 border-purple-500 bg-purple-50 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <Badge className="bg-purple-600 text-white flex-shrink-0 mt-1">Preferred</Badge>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900 flex items-center gap-2 text-sm sm:text-base">
+                        <MapPin className="w-4 h-4 flex-shrink-0" />
+                        BobGo Locker Drop-Off
+                      </h4>
+                      <p className="text-xs sm:text-sm text-gray-600 mt-2">
+                        Drop the book at your preferred BobGo locker location. This is the method we used to calculate your rates.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Locker Selection Section */}
+                  {isLoadingSavedLocker ? (
+                    <div className="flex items-center justify-center py-4 mt-4">
+                      <Loader2 className="h-6 w-6 animate-spin text-purple-600" />
+                    </div>
+                  ) : savedLocker ? (
+                    <div className="mt-4 pt-4 border-t border-purple-200">
+                      <div className="p-3 bg-white border border-green-300 rounded-lg">
+                        <p className="font-semibold text-gray-900 flex items-center gap-2 text-sm">
+                          <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                          Your Locker
+                        </p>
+                        <p className="text-sm text-gray-700 mt-2">{savedLocker.name}</p>
+                        <p className="text-xs text-gray-500 mt-1">{savedLocker.address || savedLocker.full_address}</p>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              ) : preferredPickupMethod === "pickup" ? (
+                // Show Home Pick-Up (Preferred)
+                <div className="p-4 border-2 border-blue-500 bg-blue-50 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <Badge className="bg-blue-600 text-white flex-shrink-0 mt-1">Preferred</Badge>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900 flex items-center gap-2 text-sm sm:text-base">
+                        <Home className="w-4 h-4 flex-shrink-0" />
+                        Home Pick-Up (Courier Collection)
+                      </h4>
+                      <p className="text-xs sm:text-sm text-gray-600 mt-2">
+                        Our courier will collect the book from your address at a scheduled time. This is the method we used to calculate your rates.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Alert for incompatible buyer delivery type */}
+              {buyerDeliveryType === "door" && preferredPickupMethod === "locker" && (
+                <Alert className="bg-amber-50 border-amber-200">
+                  <AlertCircle className="h-4 w-4 text-amber-600 flex-shrink-0" />
+                  <AlertDescription className="text-amber-800 text-xs sm:text-sm">
+                    Note: The buyer selected home delivery, but your preference is locker drop-off. You'll need to use your preferred locker location for this order.
+                  </AlertDescription>
+                </Alert>
+              )}
             </CardContent>
           </Card>
 
@@ -663,7 +556,7 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleCommit}
-            disabled={isCommitting || !isFormValid}
+            disabled={isCommitting || !isFormValid || isLoadingPreference}
             className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-sm sm:text-base min-h-[44px]"
           >
             {isCommitting ? (
@@ -675,7 +568,7 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
               <>
                 <CheckCircle className="w-4 h-4 mr-2 flex-shrink-0" />
                 <span className="truncate">
-                  {deliveryMethod === "home"
+                  {preferredPickupMethod === "pickup"
                     ? "Commit with Home Pick-Up"
                     : "Commit with Locker Drop-Off"}
                 </span>

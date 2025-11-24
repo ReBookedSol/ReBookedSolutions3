@@ -69,7 +69,8 @@ const OrderActionsPanel: React.FC<OrderActionsPanelProps> = ({
   const [paymentProcessing, setPaymentProcessing] = useState(false);
 
   // Align with server-side blocked statuses: ['collected', 'in transit', 'out for delivery', 'delivered']
-  const blockedStatuses = ["collected", "in transit", "out for delivery", "delivered"];
+  // Also block committed orders - users must contact support for those
+  const blockedStatuses = ["collected", "in transit", "out for delivery", "delivered", "committed"];
   const orderStatusLower = (order.status || "").toLowerCase();
   const deliveryStatusLower = (order.delivery_status || "").toLowerCase();
   const canCancelShipment = !blockedStatuses.includes(orderStatusLower) && !blockedStatuses.includes(deliveryStatusLower);
@@ -283,14 +284,14 @@ const OrderActionsPanel: React.FC<OrderActionsPanelProps> = ({
             {getDeliveryStatusBadge()}
           </div>
         </CardTitle>
-        <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-100 rounded">
-          <p>Status: {order.status} | Delivery: {order.delivery_status || "N/A"} | Can Cancel: {canCancelShipment ? "✓ Yes" : "✗ No"}</p>
-        </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-md p-2 flex items-start gap-2">
-          <Info className="w-4 h-4 text-gray-500 mt-0.5" />
-          <span>We also email the waybill to you for records.</span>
+        <div className="text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded-md p-3 flex items-start gap-2">
+          <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="font-medium text-blue-900 mb-1">Need Help?</p>
+            <p className="text-blue-700">If you have any issues with this order, please contact our support team for assistance.</p>
+          </div>
         </div>
 
         {/* Unified Cancel for Buyer and Seller when not collected/in transit */}

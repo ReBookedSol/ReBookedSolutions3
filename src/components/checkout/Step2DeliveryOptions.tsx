@@ -27,6 +27,7 @@ interface Step2DeliveryOptionsProps {
   buyerAddress: CheckoutAddress;
   sellerAddress: CheckoutAddress | null;
   sellerLockerData?: BobGoLocation | null;
+  sellerPreferredPickupMethod?: "locker" | "pickup" | null;
   onSelectDelivery: (option: DeliveryOption) => void;
   onBack: () => void;
   onCancel?: () => void;
@@ -39,6 +40,7 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
   buyerAddress,
   sellerAddress,
   sellerLockerData,
+  sellerPreferredPickupMethod,
   onSelectDelivery,
   onBack,
   onCancel,
@@ -192,10 +194,16 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
     setError(null);
 
     try {
-      // Determine if seller has only locker (no physical address)
+      // Use seller's preferred pickup method to determine which address to use for rates
+      const useLockerForRates =
+        sellerPreferredPickupMethod === "locker" && sellerLockerData?.id && sellerLockerData?.provider_slug;
+      const useAddressForRates =
+        sellerPreferredPickupMethod === "pickup" && sellerAddress;
+
+      // Fallback if no preference: use locker if available, otherwise use address
       const sellerHasOnlyLocker = !sellerAddress && sellerLockerData;
 
-      if (sellerHasOnlyLocker && sellerLockerData?.id && sellerLockerData?.provider_slug) {
+      if ((useLockerForRates || sellerHasOnlyLocker) && sellerLockerData?.id && sellerLockerData?.provider_slug) {
         console.log("🚚 Fetching Bob Go delivery options from seller's locker...", {
           sellerLocker: {
             name: sellerLockerData.name,
@@ -248,7 +256,7 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
 
         console.log("✅ Bob Go options from seller locker:", options);
         setDeliveryOptions(options);
-      } else if (sellerAddress) {
+      } else if (useAddressForRates || (sellerAddress && !sellerHasOnlyLocker)) {
         console.log("🚚 Fetching Bob Go delivery options from seller address...", {
           from: sellerAddress,
           to: buyerAddress,

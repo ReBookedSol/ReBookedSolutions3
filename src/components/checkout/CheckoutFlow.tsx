@@ -50,6 +50,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
     buyer_address: null,
     seller_address: null,
     seller_locker_data: null,
+    seller_preferred_pickup_method: null,
     delivery_options: [],
     selected_delivery: null,
     order_summary: null,
@@ -170,26 +171,50 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
 
       console.log("🔍 Raw seller address result:", sellerAddress);
 
-      // Fetch seller's preferred locker data separately if no physical address
+      // Fetch seller's preferred pickup method and locker data
       let sellerLockerData = null;
-      if (!sellerAddress) {
-        console.log("📍 No physical address found, checking for seller's preferred locker...");
-        try {
-          const { data: profile, error: profileError } = await supabase
-            .from("profiles")
-            .select("preferred_delivery_locker_data")
-            .eq("id", bookData.seller_id)
-            .maybeSingle();
+      let sellerPreferredPickupMethod: "locker" | "pickup" | null = null;
 
-          if (!profileError && profile?.preferred_delivery_locker_data) {
+      try {
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("preferred_delivery_locker_data, preferred_pickup_method")
+          .eq("id", bookData.seller_id)
+          .maybeSingle();
+
+        if (!profileError && profile) {
+          // Load preferred pickup method
+          if (profile.preferred_pickup_method) {
+            sellerPreferredPickupMethod = profile.preferred_pickup_method;
+            console.log("✅ Seller's preferred pickup method:", sellerPreferredPickupMethod);
+          }
+
+          // Only load locker if preferred method is locker
+          if (profile.preferred_pickup_method === "locker" && profile.preferred_delivery_locker_data) {
             const lockerData = profile.preferred_delivery_locker_data as any;
             if (lockerData.id && lockerData.name && lockerData.provider_slug) {
               sellerLockerData = lockerData;
               console.log("✅ Found seller's preferred locker:", lockerData.name);
             }
           }
-        } catch (lockerError) {
-          console.warn("Failed to fetch seller's preferred locker:", lockerError);
+
+          // Fallback: if no preferred method set but has locker, use locker as preference
+          if (!sellerPreferredPickupMethod && profile.preferred_delivery_locker_data) {
+            const lockerData = profile.preferred_delivery_locker_data as any;
+            if (lockerData.id && lockerData.name && lockerData.provider_slug) {
+              sellerLockerData = lockerData;
+              sellerPreferredPickupMethod = "locker";
+              console.log("�� Using locker as default preference");
+            }
+          }
+        }
+      } catch (error) {
+        console.warn("Failed to fetch seller's preferred pickup method:", error);
+        // Default to pickup method if we have an address, otherwise locker
+        if (sellerAddress) {
+          sellerPreferredPickupMethod = "pickup";
+        } else {
+          sellerPreferredPickupMethod = "locker";
         }
       }
 
@@ -445,6 +470,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
         book: updatedBook,
         seller_address: sellerAddress,
         seller_locker_data: sellerLockerData,
+        seller_preferred_pickup_method: sellerPreferredPickupMethod,
         buyer_address: buyerAddress,
         loading: false,
       }));
@@ -824,6 +850,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
                   buyerAddress={checkoutState.buyer_address || { street: "", city: "", province: "", postal_code: "", country: "" }}
                   sellerAddress={checkoutState.seller_address}
                   sellerLockerData={checkoutState.seller_locker_data}
+                  sellerPreferredPickupMethod={checkoutState.seller_preferred_pickup_method}
                   onSelectDelivery={handleDeliverySelection}
                   onBack={() => goToStep(2)}
                   onCancel={handleCancelCheckout}
@@ -836,6 +863,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
                   buyerAddress={checkoutState.buyer_address}
                   sellerAddress={checkoutState.seller_address}
                   sellerLockerData={checkoutState.seller_locker_data}
+                  sellerPreferredPickupMethod={checkoutState.seller_preferred_pickup_method}
                   onSelectDelivery={handleDeliverySelection}
                   onBack={() => goToStep(2)}
                   onCancel={handleCancelCheckout}
