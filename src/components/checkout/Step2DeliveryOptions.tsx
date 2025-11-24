@@ -256,7 +256,7 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
 
         console.log("✅ Bob Go options from seller locker:", options);
         setDeliveryOptions(options);
-      } else if (sellerAddress) {
+      } else if (useAddressForRates || (sellerAddress && !sellerHasOnlyLocker)) {
         console.log("🚚 Fetching Bob Go delivery options from seller address...", {
           from: sellerAddress,
           to: buyerAddress,
