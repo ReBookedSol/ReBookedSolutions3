@@ -368,10 +368,10 @@ export const declineBookSale = async (orderIdOrBookId: string): Promise<void> =>
       const firstItem = items[0] || {};
 
       if (firstItem.book_id) {
-        // Try to get book details
+        // Try to get book details (include quantity fields for decline operation)
         const { data: bookData } = await supabase
           .from("books")
-          .select("id, title, author, price")
+          .select("id, title, author, price, sold_quantity, available_quantity, total_quantity")
           .eq("id", firstItem.book_id)
           .single();
         book = bookData;
