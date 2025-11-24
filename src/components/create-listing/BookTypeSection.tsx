@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/select";
 import { School, GraduationCap, BookOpen } from "lucide-react";
 import { UNIVERSITY_YEARS, SOUTH_AFRICAN_UNIVERSITIES_SIMPLE } from "@/constants/universities";
-import { CREATE_LISTING_CATEGORIES } from "@/constants/createListingCategories";
+import { getCategoriesByBookType } from "@/constants/bookTypeCategories";
 import { ALL_READER_GENRES, GENRE_CATEGORIES } from "@/constants/readerGenres";
 import { BookFormData } from "@/types/book";
 
@@ -28,11 +28,8 @@ export const BookTypeSection = ({
   onBookTypeChange,
   onSelectChange,
 }: BookTypeSectionProps) => {
-  // Use shared category list across app
-  // Imported from constants to keep Create Listing and Books filters in sync
-
-
-  const categories = CREATE_LISTING_CATEGORIES.slice().sort((a, b) => a.localeCompare(b));
+  // Get categories based on selected book type
+  const categories = getCategoriesByBookType(bookType);
 
   const conditions = ["New", "Good", "Better", "Average", "Below Average"];
 

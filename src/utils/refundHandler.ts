@@ -80,7 +80,7 @@ export const handleIntelligentRefund = async (
     }
 
     // For committed orders, use the cancel-order-with-refund function
-    if (orderData.status === 'committed') {
+    if ((orderData.status || '').toLowerCase() === 'committed') {
       const { data, error } = await supabase.functions.invoke('cancel-order-with-refund', {
         body: {
           order_id,

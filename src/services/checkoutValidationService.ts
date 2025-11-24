@@ -102,18 +102,28 @@ export const getBuyerCheckoutData = async (userId: string) => {
     // Extract address if available - prioritize encrypted address
     let address: CheckoutAddress | null = null;
 
-    // Try to get encrypted address first
+    // Try to get encrypted address first (check shipping_address, fall back to pickup_address)
     try {
       const { getSimpleUserAddresses } = await import("@/services/simplifiedAddressService");
       const addressData = await getSimpleUserAddresses(userId);
-      if (addressData?.shipping_address) {
-        const addr = addressData.shipping_address as any;
-        if (addr.streetAddress && addr.city && addr.province && addr.postalCode) {
+
+      // Prefer shipping_address, but fall back to pickup_address if shipping is not set
+      const shippingAddr = addressData?.shipping_address;
+      const pickupAddr = addressData?.pickup_address;
+      const addr = shippingAddr || pickupAddr;
+
+      if (addr) {
+        const street = (addr as any).streetAddress || (addr as any).street || "";
+        const city = (addr as any).city || "";
+        const province = (addr as any).province || "";
+        const postal = (addr as any).postalCode || (addr as any).postal_code || "";
+
+        if (street && city && province && postal) {
           address = {
-            street: addr.streetAddress,
-            city: addr.city,
-            province: addr.province,
-            postal_code: addr.postalCode,
+            street,
+            city,
+            province,
+            postal_code: postal,
             country: "South Africa",
           };
           console.log("✅ Using encrypted address for buyer");

@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 
 export interface BobPayInitRequest {
   amount: number;
@@ -87,7 +88,7 @@ export const initializeBobPayPayment = async (
 };
 
 /**
- * Process a BobPay refund
+ * Process a BobPay refund (only for non-committed orders)
  */
 export const processBobPayRefund = async (
   refundData: BobPayRefundRequest
@@ -96,6 +97,28 @@ export const processBobPayRefund = async (
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.access_token) {
       throw new Error('Not authenticated');
+    }
+
+    // Check order status first - only refund if not committed
+    const { data: orderData, error: orderError } = await supabase
+      .from('orders')
+      .select('status')
+      .eq('id', refundData.order_id)
+      .single();
+
+    if (orderError || !orderData) {
+      return {
+        success: false,
+        error: 'Order not found',
+      };
+    }
+
+    // Only invoke BobPay refund for non-committed orders
+    if ((orderData.status || '').toLowerCase() === 'committed') {
+      return {
+        success: false,
+        error: 'Cannot refund committed orders directly. Please use the standard cancel-order-with-refund flow.',
+      };
     }
 
     const { data, error } = await supabase.functions.invoke('bobpay-refund', {

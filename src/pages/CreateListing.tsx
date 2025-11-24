@@ -36,6 +36,7 @@ import { BookTypeSection } from "@/components/create-listing/BookTypeSection";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { canUserListBooks } from "@/services/addressValidationService";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/integrations/supabase/client";
 
 const CreateListing = () => {
   const { user, profile } = useAuth();
@@ -81,6 +82,7 @@ const CreateListing = () => {
   const [sellerPolicyAccepted, setSellerPolicyAccepted] = useState(false);
   const [canListBooks, setCanListBooks] = useState<boolean | null>(null);
   const [isCheckingAddress, setIsCheckingAddress] = useState(true);
+  const [preferredPickupMethod, setPreferredPickupMethod] = useState<"locker" | "pickup" | null>(null);
 
   // Check if user can list books on component mount
   useEffect(() => {
@@ -94,6 +96,17 @@ const CreateListing = () => {
       try {
         const canList = await canUserListBooks(user.id);
         setCanListBooks(canList);
+
+        // Fetch preferred pickup method
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("preferred_pickup_method")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (!error && profile?.preferred_pickup_method) {
+          setPreferredPickupMethod(profile.preferred_pickup_method);
+        }
       } catch (error) {
         console.error("Error checking address status:", error);
         setCanListBooks(false);
@@ -139,15 +152,20 @@ const CreateListing = () => {
 
   const handleBookTypeChange = (type: "school" | "university" | "reader") => {
     setBookType(type);
-    let newItemType: "textbook" | "reader" = type === "reader" ? "reader" : "textbook";
+    const newItemType: "textbook" | "reader" = type === "reader" ? "reader" : "textbook";
 
-    if (type === "school") {
-      setFormData({ ...formData, universityYear: "", university: "", genre: "", itemType: newItemType });
-    } else if (type === "university") {
-      setFormData({ ...formData, grade: "", genre: "", itemType: newItemType });
-    } else if (type === "reader") {
-      setFormData({ ...formData, grade: "", universityYear: "", university: "", itemType: newItemType });
-    }
+    // Clear category and type-specific fields when book type changes since categories are different for each type
+    let updatedFormData = {
+      ...formData,
+      category: "",
+      itemType: newItemType,
+      grade: "",
+      universityYear: "",
+      university: "",
+      genre: "",
+    };
+
+    setFormData(updatedFormData);
   };
 
   const validateForm = () => {
@@ -206,6 +224,13 @@ const CreateListing = () => {
     // Check if user can list books before validating form (address is required)
     if (canListBooks === false) {
       toast.error("❌ Please add a pickup address before listing your book.");
+      navigate("/profile?tab=addresses");
+      return;
+    }
+
+    // Check if user has chosen a preferred pickup method
+    if (!preferredPickupMethod) {
+      toast.error("Please choose your preferred pickup method before listing another book.");
       navigate("/profile?tab=addresses");
       return;
     }

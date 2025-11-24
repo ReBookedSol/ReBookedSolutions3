@@ -27,7 +27,7 @@ import Layout from "@/components/Layout";
 import EnhancedMobileImageUpload from "@/components/EnhancedMobileImageUpload";
 import { getBookById } from "@/services/book/bookQueries";
 import { updateBook } from "@/services/book/bookMutations";
-import { CREATE_LISTING_CATEGORIES } from "@/constants/createListingCategories";
+import { getCategoriesByBookType, READER_CATEGORIES, SCHOOL_CATEGORIES, UNIVERSITY_CATEGORIES } from "@/constants/bookTypeCategories";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -38,6 +38,7 @@ const EditBook = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [bookItemType, setBookItemType] = useState<"textbook" | "reader" | null>(null);
 
   const form = useForm<BookInput>({
     resolver: zodResolver(BookSchema),
@@ -89,6 +90,9 @@ const EditBook = () => {
             setIsLoading(false);
             return;
           }
+
+          // Capture the book's itemType for category selection
+          setBookItemType(bookData.itemType || "textbook");
 
           const formattedData = {
             title: bookData.title,
@@ -316,11 +320,23 @@ const EditBook = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {CREATE_LISTING_CATEGORIES.map((cat) => (
-                          <SelectItem key={cat} value={cat}>
-                            {cat}
-                          </SelectItem>
-                        ))}
+                        {(() => {
+                          // Get categories based on book's itemType
+                          // For reader books, use reader categories; for textbooks, use combined school+university categories
+                          let catList: string[] = [];
+                          if (bookItemType === "reader") {
+                            catList = READER_CATEGORIES;
+                          } else {
+                            // Combine school and university categories for textbooks
+                            const allSubjects = new Set<string>([...SCHOOL_CATEGORIES, ...UNIVERSITY_CATEGORIES]);
+                            catList = Array.from(allSubjects).sort((a, b) => a.localeCompare(b));
+                          }
+                          return catList.map((cat) => (
+                            <SelectItem key={cat} value={cat}>
+                              {cat}
+                            </SelectItem>
+                          ));
+                        })()}
                       </SelectContent>
                     </Select>
                     <FormMessage />
