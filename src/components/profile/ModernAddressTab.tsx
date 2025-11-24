@@ -128,6 +128,44 @@ const ModernAddressTab = ({
     return `${address.street}, ${address.city}, ${address.province} ${address.postalCode}`;
   };
 
+  const savePreferredPickupMethod = async (method: "locker" | "pickup") => {
+    try {
+      setIsSavingPreference(true);
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        toast.error("Not authenticated");
+        return;
+      }
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({ preferred_pickup_method: method })
+        .eq("id", user.id);
+
+      if (error) {
+        toast.error("Failed to save preference");
+        console.error("Error saving preference:", error);
+        return;
+      }
+
+      setPreferredPickupMethod(method);
+      toast.success(
+        method === "locker"
+          ? "Locker set as preferred pickup method"
+          : "Home address set as preferred pickup method"
+      );
+    } catch (error) {
+      toast.error("Failed to save preference");
+      console.error("Error:", error);
+    } finally {
+      setIsSavingPreference(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!pickupAddress || !shippingAddress || !onSaveAddresses) return;
 
