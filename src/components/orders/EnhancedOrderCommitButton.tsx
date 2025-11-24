@@ -400,7 +400,7 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0" />
-            <span className="line-clamp-2 sm:line-clamp-none">Commit to Sale - Enhanced Options</span>
+            <span className="line-clamp-2 sm:line-clamp-none">Commit to Sale</span>
           </AlertDialogTitle>
           <AlertDialogDescription className="text-sm sm:text-base">
             You are about to commit to selling <strong>"{bookTitle}"</strong> to {buyerName}.
