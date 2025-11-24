@@ -321,11 +321,23 @@ const EditBook = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {CREATE_LISTING_CATEGORIES.map((cat) => (
-                          <SelectItem key={cat} value={cat}>
-                            {cat}
-                          </SelectItem>
-                        ))}
+                        {(() => {
+                          // Get categories based on book's itemType
+                          // For reader books, use reader categories; for textbooks, use combined school+university categories
+                          let catList: string[] = [];
+                          if (bookItemType === "reader") {
+                            catList = READER_CATEGORIES;
+                          } else {
+                            // Combine school and university categories for textbooks
+                            const allSubjects = new Set<string>([...SCHOOL_CATEGORIES, ...UNIVERSITY_CATEGORIES]);
+                            catList = Array.from(allSubjects).sort((a, b) => a.localeCompare(b));
+                          }
+                          return catList.map((cat) => (
+                            <SelectItem key={cat} value={cat}>
+                              {cat}
+                            </SelectItem>
+                          ));
+                        })()}
                       </SelectContent>
                     </Select>
                     <FormMessage />
