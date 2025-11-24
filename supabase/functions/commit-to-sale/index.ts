@@ -79,17 +79,12 @@ serve(async (req) => {
       items = [];
     }
 
-    // Determine pickup type - use seller's choice if provided, otherwise use order's setting
-    let pickupType = order.pickup_type || 'door';
+    // Use the original pickup and delivery types from the order
+    // These were set at order creation time and should not be changed
+    const pickupType = order.pickup_type || 'door';
     const deliveryType = order.delivery_type || 'door';
 
-    // If seller selected locker delivery method, override pickup_type
-    if (delivery_method === 'locker' && locker_id) {
-      pickupType = 'locker';
-      console.log(`[commit-to-sale] Seller override: using locker pickup instead of ${order.pickup_type || 'door'}`);
-    }
-
-    console.log(`[commit-to-sale] Shipment type: ${pickupType} → ${deliveryType}`);
+    console.log(`[commit-to-sale] Using original shipment type from order: ${pickupType} → ${deliveryType}`);
 
     // Get seller pickup information based on type
     let pickupData: any = null;
