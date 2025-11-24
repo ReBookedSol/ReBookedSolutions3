@@ -430,19 +430,29 @@ export const declineBookSale = async (orderIdOrBookId: string): Promise<void> =>
     // If we have book info, update book to mark as available again and restore quantities
     if (book) {
       // When declining, we need to:
-      // 1. Set sold: false (only one item was sold)
+      // 1. Set sold: false (since only one item was sold and we're restoring it)
       // 2. Restore quantities: decrement sold_quantity by 1, increment available_quantity by 1
+      // 3. Ensure total_quantity = available_quantity + sold_quantity
+
+      const currentSoldQuantity = (book.sold_quantity || 0);
+      const currentAvailableQuantity = (book.available_quantity || 0);
+      const newSoldQuantity = Math.max(0, currentSoldQuantity - 1);
+      const newAvailableQuantity = currentAvailableQuantity + 1;
+
       const updateData: any = {
         sold: false,
+        sold_quantity: newSoldQuantity,
+        available_quantity: newAvailableQuantity,
+        updated_at: new Date().toISOString(),
       };
 
-      // Restore quantities if they exist
-      if (typeof book.sold_quantity === 'number' && book.sold_quantity > 0) {
-        updateData.sold_quantity = book.sold_quantity - 1;
-      }
-      if (typeof book.available_quantity === 'number') {
-        updateData.available_quantity = book.available_quantity + 1;
-      }
+      console.log("[CommitService] Restoring book quantities:", {
+        bookId: book.id,
+        currentSoldQuantity,
+        currentAvailableQuantity,
+        newSoldQuantity,
+        newAvailableQuantity,
+      });
 
       const { error: updateBookError } = await supabase
         .from("books")
@@ -455,7 +465,8 @@ export const declineBookSale = async (orderIdOrBookId: string): Promise<void> =>
           message: updateBookError.message || 'Unknown error',
           code: updateBookError.code,
           details: updateBookError.details,
-          bookId: book.id
+          bookId: book.id,
+          updateData
         });
         // Don't throw here as the order decline is more important
         console.warn("Book status update failed, but order was declined successfully");
