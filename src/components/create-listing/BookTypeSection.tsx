@@ -3,7 +3,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -233,21 +235,17 @@ export const BookTypeSection = ({
             <SelectTrigger className={errors.genre ? "border-red-500" : ""}>
               <SelectValue placeholder="Select a genre" />
             </SelectTrigger>
-            <SelectContent className="max-h-72">
-              <div className="space-y-1 p-1">
-                {Object.entries(GENRE_CATEGORIES).map(([category, genres]) => (
-                  <div key={category}>
-                    <div className="px-2 py-1.5 text-sm font-semibold text-gray-700 sticky top-0 bg-white">
-                      {category}
-                    </div>
-                    {genres.map((genre) => (
-                      <SelectItem key={genre} value={genre} className="ml-2">
-                        {genre}
-                      </SelectItem>
-                    ))}
-                  </div>
-                ))}
-              </div>
+            <SelectContent>
+              {Object.entries(GENRE_CATEGORIES).map(([category, genres]) => (
+                <SelectGroup key={category}>
+                  <SelectLabel>{category}</SelectLabel>
+                  {genres.map((genre) => (
+                    <SelectItem key={genre} value={genre}>
+                      {genre}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              ))}
             </SelectContent>
           </Select>
           {errors.genre && (

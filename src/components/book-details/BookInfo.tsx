@@ -15,7 +15,7 @@ const BookInfo = ({ book }: BookInfoProps) => {
         <p className="text-lg md:text-xl text-gray-600 mb-4">by {book.author}</p>
         <div className="flex flex-wrap gap-2 mb-4">
           <Badge variant="secondary">{book.category}</Badge>
-          <Badge variant="outline">{book.condition}</Badge>
+          <Badge variant="outline">{book.condition} {book.itemType === "reader" && "reader"}</Badge>
           {book.sold && <Badge variant="destructive">Sold</Badge>}
         </div>
 
@@ -48,7 +48,7 @@ const BookInfo = ({ book }: BookInfoProps) => {
             </div>
             <div className="rounded-lg border bg-muted/30 p-3">
               <dt className="text-[12px] uppercase tracking-wide text-muted-foreground">Condition</dt>
-              <dd className="mt-1 text-sm font-medium text-foreground">{book.condition}</dd>
+              <dd className="mt-1 text-sm font-medium text-foreground">{book.condition} {book.itemType === "reader" && "reader"}</dd>
             </div>
             {typeof book.availableQuantity === 'number' && (
               <div className="rounded-lg border bg-muted/30 p-3">
@@ -72,6 +72,12 @@ const BookInfo = ({ book }: BookInfoProps) => {
               <div className="rounded-lg border bg-muted/30 p-3">
                 <dt className="text-[12px] uppercase tracking-wide text-muted-foreground">Curriculum</dt>
                 <dd className="mt-1 text-sm font-medium text-foreground">{book.curriculum}</dd>
+              </div>
+            )}
+            {book.genre && (
+              <div className="rounded-lg border bg-muted/30 p-3">
+                <dt className="text-[12px] uppercase tracking-wide text-muted-foreground">Genre</dt>
+                <dd className="mt-1 text-sm font-medium text-foreground">{book.genre}</dd>
               </div>
             )}
           </dl>

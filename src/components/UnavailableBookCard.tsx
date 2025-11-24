@@ -90,7 +90,7 @@ const UnavailableBookCard = ({
             R{book.price.toFixed(2)}
           </span>
           <Badge variant="outline" className="text-xs">
-            {book.condition}
+            {book.condition} {book.itemType === "reader" && "reader"}
           </Badge>
         </div>
 

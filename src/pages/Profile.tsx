@@ -490,7 +490,7 @@ const Profile = () => {
                               R{book.price}
                             </p>
                             <Badge variant="secondary" className="text-xs">
-                              {book.condition}
+                              {book.condition} {book.itemType === "reader" && "reader"}
                             </Badge>
                           </div>
                         </div>

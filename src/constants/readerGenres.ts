@@ -15,6 +15,7 @@ export const READER_GENRES = {
     "Magical Realism",
     "Drama",
     "Humor/Comedy",
+    "Other",
   ],
   NON_FICTION: [
     "Biography",
@@ -35,6 +36,7 @@ export const READER_GENRES = {
     "Philosophy",
     "Religion & Spirituality",
     "Health & Wellness",
+    "Other",
   ],
 };
 

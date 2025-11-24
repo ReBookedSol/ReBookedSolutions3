@@ -154,7 +154,7 @@ const FeaturedBookCard = ({ book }: { book: Book }) => {
           </div>
           <div className="absolute top-2 left-2">
             <Badge className="bg-book-600 text-white hover:bg-book-700">
-              {book.condition}
+              {book.condition} {book.itemType === "reader" && "reader"}
             </Badge>
           </div>
         </div>

@@ -337,7 +337,7 @@ const SellerProfile = () => {
 
                       <div className="flex flex-wrap gap-2 mb-4">
                         <Badge variant="secondary" className="text-xs">
-                          {book.condition}
+                          {book.condition} {book.itemType === "reader" && "reader"}
                         </Badge>
                         <Badge variant="outline" className="text-xs">
                           {book.category}

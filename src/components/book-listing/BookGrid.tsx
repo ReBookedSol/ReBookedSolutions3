@@ -213,7 +213,7 @@ const BookGrid = ({
                     {/* Tags and badges */}
                     <div className="flex flex-wrap items-center gap-2 mt-auto">
                       <span className="bg-book-100 text-book-800 px-2 py-1 rounded text-xs font-medium">
-                        {book.condition}
+                        {book.condition} {book.itemType === "reader" && "reader"}
                       </span>
                       {book.grade && (
                         <span className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded text-xs font-medium flex items-center">
@@ -318,7 +318,7 @@ const BookGrid = ({
                     {/* Tags and badges */}
                     <div className="flex flex-wrap items-center gap-2 mt-auto">
                       <span className="bg-book-100 text-book-800 px-2 py-1 rounded text-xs font-medium">
-                        {book.condition}
+                        {book.condition} {book.itemType === "reader" && "reader"}
                       </span>
                       {book.grade && (
                         <span className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded text-xs font-medium flex items-center">

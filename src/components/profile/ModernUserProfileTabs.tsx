@@ -484,7 +484,7 @@ const ModernUserProfileTabs = ({
                                 variant="secondary"
                                 className="bg-white/90 text-gray-700"
                               >
-                                {book.condition}
+                                {book.condition} {book.itemType === "reader" && "reader"}
                               </Badge>
                             </div>
                           </div>
