@@ -435,6 +435,7 @@ export type Database = {
           initial_quantity: number
           inside_pages: string | null
           isbn: string | null
+          item_type: string | null
           pickup_address_encrypted: string | null
           price: number
           province: string | null
@@ -471,6 +472,7 @@ export type Database = {
           initial_quantity?: number
           inside_pages?: string | null
           isbn?: string | null
+          item_type?: string | null
           pickup_address_encrypted?: string | null
           price: number
           province?: string | null
@@ -507,6 +509,7 @@ export type Database = {
           initial_quantity?: number
           inside_pages?: string | null
           isbn?: string | null
+          item_type?: string | null
           pickup_address_encrypted?: string | null
           price?: number
           province?: string | null
@@ -1617,11 +1620,11 @@ export type Database = {
           preferred_delivery_locker_provider_slug: string | null
           preferred_delivery_locker_saved_at: string | null
           preferred_pickup_locker_saved_at: string | null
+          preferred_pickup_method: string | null
           profile_picture_url: string | null
           role: string | null
           shipping_address_encrypted: string | null
           status: string | null
-          subaccount_code: string | null
           suspended_at: string | null
           suspension_reason: string | null
           total_affiliate_earnings: number
@@ -1658,11 +1661,11 @@ export type Database = {
           preferred_delivery_locker_provider_slug?: string | null
           preferred_delivery_locker_saved_at?: string | null
           preferred_pickup_locker_saved_at?: string | null
+          preferred_pickup_method?: string | null
           profile_picture_url?: string | null
           role?: string | null
           shipping_address_encrypted?: string | null
           status?: string | null
-          subaccount_code?: string | null
           suspended_at?: string | null
           suspension_reason?: string | null
           total_affiliate_earnings?: number
@@ -1699,11 +1702,11 @@ export type Database = {
           preferred_delivery_locker_provider_slug?: string | null
           preferred_delivery_locker_saved_at?: string | null
           preferred_pickup_locker_saved_at?: string | null
+          preferred_pickup_method?: string | null
           profile_picture_url?: string | null
           role?: string | null
           shipping_address_encrypted?: string | null
           status?: string | null
-          subaccount_code?: string | null
           suspended_at?: string | null
           suspension_reason?: string | null
           total_affiliate_earnings?: number
@@ -2290,6 +2293,7 @@ export type Database = {
           seller_id: string
         }[]
       }
+      fix_book_quantities: { Args: { p_book_id: string }; Returns: boolean }
       generate_affiliate_code: { Args: never; Returns: string }
       generate_api_key: { Args: { user_id: string }; Returns: string }
       generate_encryption_key_hash: {
@@ -2477,6 +2481,10 @@ export type Database = {
           id: string
           username: string
         }[]
+      }
+      manually_release_order_stock: {
+        Args: { p_order_id: string }
+        Returns: Json
       }
       meetup_mark_read: { Args: { p_message_ids: string[] }; Returns: number }
       redact_json_addresses: { Args: { input: Json }; Returns: Json }
