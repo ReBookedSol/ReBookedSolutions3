@@ -143,7 +143,7 @@ export const initializeBobPayCheckout = async (
 };
 
 /**
- * Handle BobPay refund for an order
+ * Handle BobPay refund for an order (only for non-committed orders)
  */
 export const initiateBobPayRefund = async (
   orderId: string,
@@ -153,6 +153,22 @@ export const initiateBobPayRefund = async (
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.access_token) {
       throw new Error('Not authenticated');
+    }
+
+    // Check order status first - only refund if not committed
+    const { data: orderData, error: orderError } = await supabase
+      .from('orders')
+      .select('status')
+      .eq('id', orderId)
+      .single();
+
+    if (orderError || !orderData) {
+      throw new Error('Order not found');
+    }
+
+    // Only invoke BobPay refund for non-committed orders
+    if ((orderData.status || '').toLowerCase() === 'committed') {
+      throw new Error('Cannot refund committed orders directly. Please use the standard cancel-order-with-refund flow.');
     }
 
     const { data, error } = await supabase.functions.invoke(
