@@ -109,7 +109,7 @@ serve(async (req) => {
     console.log("📦 Order found:", {
       order_id: order.id,
       book_id: order.book_id,
-      items_count: order.items ? JSON.parse(order.items).length : 0,
+      items_count: order.items ? (Array.isArray(order.items) ? order.items.length : 0) : 0,
     });
 
     // Use buyer and seller info directly from order
