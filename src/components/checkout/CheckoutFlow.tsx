@@ -204,7 +204,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
             if (lockerData.id && lockerData.name && lockerData.provider_slug) {
               sellerLockerData = lockerData;
               sellerPreferredPickupMethod = "locker";
-              console.log("✅ Using locker as default preference");
+              console.log("�� Using locker as default preference");
             }
           }
         }
@@ -850,6 +850,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
                   buyerAddress={checkoutState.buyer_address || { street: "", city: "", province: "", postal_code: "", country: "" }}
                   sellerAddress={checkoutState.seller_address}
                   sellerLockerData={checkoutState.seller_locker_data}
+                  sellerPreferredPickupMethod={checkoutState.seller_preferred_pickup_method}
                   onSelectDelivery={handleDeliverySelection}
                   onBack={() => goToStep(2)}
                   onCancel={handleCancelCheckout}
@@ -862,6 +863,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
                   buyerAddress={checkoutState.buyer_address}
                   sellerAddress={checkoutState.seller_address}
                   sellerLockerData={checkoutState.seller_locker_data}
+                  sellerPreferredPickupMethod={checkoutState.seller_preferred_pickup_method}
                   onSelectDelivery={handleDeliverySelection}
                   onBack={() => goToStep(2)}
                   onCancel={handleCancelCheckout}
