@@ -30,7 +30,6 @@ import { updateBook } from "@/services/book/bookMutations";
 import { getCategoriesByBookType, READER_CATEGORIES, SCHOOL_CATEGORIES, UNIVERSITY_CATEGORIES } from "@/constants/bookTypeCategories";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useState } from "react";
 
 const EditBook = () => {
   const navigate = useNavigate();
