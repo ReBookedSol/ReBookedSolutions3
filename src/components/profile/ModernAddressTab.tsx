@@ -378,8 +378,8 @@ const ModernAddressTab = ({
         })();
       }} />
 
-      {/* Preferred Pickup Method Selection - Only show if both locker and address exist */}
-      {!isLoadingPreference && hasSavedLocker && pickupAddress && (
+      {/* Preferred Pickup Method Selection - Only show if both locker, pickup address, and shipping address exist */}
+      {!isLoadingPreference && hasSavedLocker && pickupAddress && shippingAddress && (
         <Card className="border-2 border-purple-100 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg md:text-xl flex items-center gap-2">
