@@ -233,15 +233,15 @@ serve(async (req) => {
     console.log('✅ Enhanced commit completed successfully');
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: `Order committed with ${delivery_method} delivery`,
+      JSON.stringify({
+        success: true,
+        message: `Order committed with ${actualPickupType} pickup`,
         order: updatedOrder,
         shipment: shipmentResult
       }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
 
