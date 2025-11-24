@@ -69,7 +69,8 @@ const OrderActionsPanel: React.FC<OrderActionsPanelProps> = ({
   const [paymentProcessing, setPaymentProcessing] = useState(false);
 
   // Align with server-side blocked statuses: ['collected', 'in transit', 'out for delivery', 'delivered']
-  const blockedStatuses = ["collected", "in transit", "out for delivery", "delivered"];
+  // Also block committed orders - users must contact support for those
+  const blockedStatuses = ["collected", "in transit", "out for delivery", "delivered", "committed"];
   const orderStatusLower = (order.status || "").toLowerCase();
   const deliveryStatusLower = (order.delivery_status || "").toLowerCase();
   const canCancelShipment = !blockedStatuses.includes(orderStatusLower) && !blockedStatuses.includes(deliveryStatusLower);
