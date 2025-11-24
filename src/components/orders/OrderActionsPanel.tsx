@@ -286,9 +286,12 @@ const OrderActionsPanel: React.FC<OrderActionsPanelProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-md p-2 flex items-start gap-2">
-          <Info className="w-4 h-4 text-gray-500 mt-0.5" />
-          <span>We also email the waybill to you for records.</span>
+        <div className="text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded-md p-3 flex items-start gap-2">
+          <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="font-medium text-blue-900 mb-1">Need Help?</p>
+            <p className="text-blue-700">If you have any issues with this order, please contact our support team for assistance.</p>
+          </div>
         </div>
 
         {/* Unified Cancel for Buyer and Seller when not collected/in transit */}
