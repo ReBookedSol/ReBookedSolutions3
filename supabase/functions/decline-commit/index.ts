@@ -1,6 +1,10 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders } from "../_shared/cors.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -43,19 +47,19 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-    console.log("Processing decline for order:", order_id);
+    console.log("🔄 Processing decline for order:", order_id);
 
     // Get order details with buyer and seller info
     const { data: order, error: orderError } = await supabase
       .from("orders")
-      .select("id, buyer_id, seller_id, buyer_email, seller_email, buyer_full_name, seller_full_name, payment_reference, amount, total_amount, selected_shipping_cost, status, tracking_number")
+      .select("id, buyer_id, seller_id, buyer_email, seller_email, buyer_full_name, seller_full_name, payment_reference, amount, total_amount, selected_shipping_cost, status, tracking_number, book_id, items")
       .eq("id", order_id)
       .eq("seller_id", seller_id)
       .eq("status", "pending_commit")
       .single();
 
     if (orderError || !order) {
-      console.error("Order fetch error:", orderError);
+      console.error("❌ Order fetch error:", orderError);
       return new Response(
         JSON.stringify({
           success: false,
@@ -68,6 +72,12 @@ serve(async (req) => {
         }
       );
     }
+
+    console.log("📦 Order found:", {
+      order_id: order.id,
+      book_id: order.book_id,
+      items_count: order.items ? JSON.parse(order.items).length : 0,
+    });
 
     // Use buyer and seller info directly from order
     const buyer = {
@@ -83,6 +93,8 @@ serve(async (req) => {
     };
 
     // Update order status to declined
+    // The database trigger will automatically release the stock
+    console.log("📝 Updating order status to declined...");
     const { error: updateError } = await supabase
       .from("orders")
       .update({
@@ -93,12 +105,13 @@ serve(async (req) => {
       .eq("id", order_id);
 
     if (updateError) {
-      console.error("Order update error:", updateError);
+      console.error("❌ Order update error:", updateError);
       return new Response(
         JSON.stringify({
           success: false,
           error: "ORDER_UPDATE_FAILED",
           message: "Failed to update order status",
+          details: updateError.message,
         }),
         {
           status: 500,
@@ -107,7 +120,7 @@ serve(async (req) => {
       );
     }
 
-    console.log("Order status updated to declined");
+    console.log("✅ Order status updated to declined (stock released automatically by trigger)");
 
     // Calculate refund amount correctly
     // selected_shipping_cost is in Rands (not multiplied by 100)
@@ -116,7 +129,7 @@ serve(async (req) => {
     const bookAmountInKobo = order.amount || 0;
     const totalRefundAmount = shippingInKobo + bookAmountInKobo;
 
-    console.log("Refund calculation:", {
+    console.log("💰 Refund calculation:", {
       shipping_rands: order.selected_shipping_cost,
       shipping_kobo: shippingInKobo,
       book_amount_kobo: bookAmountInKobo,
@@ -126,7 +139,7 @@ serve(async (req) => {
     // Process Paystack refund if payment reference exists
     let refundResult: any = null;
     if (order.payment_reference) {
-      console.log("Processing refund for payment:", order.payment_reference);
+      console.log("💳 Processing refund for payment:", order.payment_reference);
 
       try {
         const refundResponse = await fetch(
@@ -164,18 +177,19 @@ serve(async (req) => {
           console.error("❌ Refund failed:", refundResult.error);
         }
       } catch (refundError) {
-        console.error("Refund processing error:", refundError);
+        console.error("⚠️ Refund processing error:", refundError);
         refundResult = {
           success: false,
           error: refundError instanceof Error ? refundError.message : String(refundError),
         };
       }
     } else {
-      console.warn("No payment reference found for order");
+      console.warn("⚠️ No payment reference found for order");
     }
 
     // Create database notifications from order_notifications table
     try {
+      console.log("📬 Creating notifications...");
       const notifications = [];
 
       if (buyer.id) {
@@ -186,8 +200,8 @@ serve(async (req) => {
             type: "order_declined",
             title: "Order Declined",
             message: `Your order has been declined by the seller. ${refundResult?.success
-                ? "Refund processed and will appear in 3-5 business days."
-                : "Refund is being processed."
+              ? "Refund processed and will appear in 3-5 business days."
+              : "Refund is being processed."
               }`,
             read: false,
           })
@@ -208,13 +222,14 @@ serve(async (req) => {
       }
 
       await Promise.allSettled(notifications);
-      console.log("Database notifications created in order_notifications table");
+      console.log("✅ Database notifications created");
     } catch (notificationError) {
-      console.error("Notification error:", notificationError);
+      console.error("⚠️ Notification error:", notificationError);
     }
 
     // Send email notifications
     try {
+      console.log("📧 Sending email notifications...");
       const emailPromises = [];
 
       // Email to buyer
@@ -239,7 +254,7 @@ serve(async (req) => {
 
       // Email to seller
       if (seller.email) {
-        const sellerHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Order Decline Confirmation</title><style>body{font-family:Arial,sans-serif;background-color:#f3fef7;padding:20px;color:#1f4e3d;margin:0}.container{max-width:500px;margin:auto;background-color:#ffffff;padding:30px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05)}.header-error{background:#dc2626;color:white;padding:20px;text-align:center;border-radius:10px 10px 0 0;margin:-30px -30px 20px -30px}.btn{display:inline-block;padding:12px 20px;background-color:#3ab26f;color:white;text-decoration:none;border-radius:5px;margin-top:20px;font-weight:bold}.info-box-success{background:#f0fdf4;border:1px solid #10b981;padding:15px;border-radius:5px;margin:15px 0}.footer{background:#f3fef7;color:#1f4e3d;padding:20px;text-align:center;font-size:12px;line-height:1.5;margin:30px -30px -30px -30px;border-radius:0 0 10px 10px;border-top:1px solid #e5e7eb}.link{color:#3ab26f}</style></head><body><div class="container"><div class="header-error"><h1>✅ Order Decline Confirmed</h1></div><p>Hello ${seller.name},</p><p>You have successfully declined the order commitment.</p><div class="info-box-success"><h3>📋 Order Details</h3><p><strong>Order ID:</strong> ${order_id}</p><p><strong>Reason:</strong> ${reason || "You declined to commit"}</p></div><p>The buyer has been notified and their payment has been refunded.</p><div class="footer"><p><strong>This is an automated message from ReBooked Solutions.</strong><br>Please do not reply to this email.</p><p>For assistance, contact: <a href="mailto:support@rebookedsolutions.co.za" class="link">support@rebookedsolutions.co.za</a><br>Visit us at: <a href="https://rebookedsolutions.co.za" class="link">https://rebookedsolutions.co.za</a></p><p>T&Cs apply. <em>"Pre-Loved Pages, New Adventures"</em></p></div></div></body></html>`;
+        const sellerHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Order Decline Confirmation</title><style>body{font-family:Arial,sans-serif;background-color:#f3fef7;padding:20px;color:#1f4e3d;margin:0}.container{max-width:500px;margin:auto;background-color:#ffffff;padding:30px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05)}.header-error{background:#dc2626;color:white;padding:20px;text-align:center;border-radius:10px 10px 0 0;margin:-30px -30px 20px -30px}.btn{display:inline-block;padding:12px 20px;background-color:#3ab26f;color:white;text-decoration:none;border-radius:5px;margin-top:20px;font-weight:bold}.info-box-success{background:#f0fdf4;border:1px solid #10b981;padding:15px;border-radius:5px;margin:15px 0}.footer{background:#f3fef7;color:#1f4e3d;padding:20px;text-align:center;font-size:12px;line-height:1.5;margin:30px -30px -30px -30px;border-radius:0 0 10px 10px;border-top:1px solid #e5e7eb}.link{color:#3ab26f}</style></head><body><div class="container"><div class="header-error"><h1>✅ Order Decline Confirmed</h1></div><p>Hello ${seller.name},</p><p>You have successfully declined the order commitment.</p><div class="info-box-success"><h3>📋 Order Details</h3><p><strong>Order ID:</strong> ${order_id}</p><p><strong>Reason:</strong> ${reason || "You declined to commit"}</p></div><p>The buyer has been notified and their payment has been refunded. Your book stock has been automatically restored.</p><div class="footer"><p><strong>This is an automated message from ReBooked Solutions.</strong><br>Please do not reply to this email.</p><p>For assistance, contact: <a href="mailto:support@rebookedsolutions.co.za" class="link">support@rebookedsolutions.co.za</a><br>Visit us at: <a href="https://rebookedsolutions.co.za" class="link">https://rebookedsolutions.co.za</a></p><p>T&Cs apply. <em>"Pre-Loved Pages, New Adventures"</em></p></div></div></body></html>`;
 
         emailPromises.push(
           fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
@@ -258,19 +273,22 @@ serve(async (req) => {
       }
 
       await Promise.allSettled(emailPromises);
-      console.log("Notification emails sent successfully");
+      console.log("✅ Notification emails sent successfully");
     } catch (emailError) {
-      console.error("Email sending error:", emailError);
+      console.error("⚠️ Email sending error:", emailError);
     }
+
+    console.log("🎉 Order decline process completed successfully");
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Order declined successfully",
+        message: "Order declined successfully. Stock has been automatically released.",
         details: {
           order_id,
           status: "declined",
           declined_at: new Date().toISOString(),
+          stock_released: true,
           refund_amount_kobo: totalRefundAmount,
           refund_amount_rands: totalRefundAmount / 100,
           refund_processed: refundResult?.success || false,
@@ -288,7 +306,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Decline commit error:", error);
+    console.error("❌ Decline commit error:", error);
     return new Response(
       JSON.stringify({
         success: false,
