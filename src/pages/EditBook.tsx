@@ -92,6 +92,9 @@ const EditBook = () => {
             return;
           }
 
+          // Capture the book's itemType for category selection
+          setBookItemType(bookData.itemType || "textbook");
+
           const formattedData = {
             title: bookData.title,
             author: bookData.author,
