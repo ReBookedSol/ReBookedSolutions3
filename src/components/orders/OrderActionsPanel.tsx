@@ -300,12 +300,12 @@ const OrderActionsPanel: React.FC<OrderActionsPanelProps> = ({
             <DialogTrigger asChild>
               <Button variant="destructive" className="w-full">
                 <X className="w-4 h-4 mr-2" />
-                Cancel Shipment
+                Cancel Order
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Cancel Shipment</DialogTitle>
+                <DialogTitle>Cancel Order</DialogTitle>
                 <DialogDescription>
                   Are you sure you want to cancel this shipment? {userRole === "buyer" ? "You will receive a full refund." : "The buyer will be refunded."}
                 </DialogDescription>
