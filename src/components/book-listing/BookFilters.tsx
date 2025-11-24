@@ -69,7 +69,18 @@ const BookFilters = ({
   onUpdateFilters,
   onClearFilters,
 }: BookFiltersProps) => {
-  const categories = CREATE_LISTING_CATEGORIES;
+  // Get categories based on selected book type, or combine all if "all" is selected
+  const getDisplayCategories = () => {
+    if (bookType === "all") {
+      // Combine all categories from all types and remove duplicates, then sort
+      const allCats = new Set<string>();
+      [...SCHOOL_CATEGORIES, ...UNIVERSITY_CATEGORIES, ...READER_CATEGORIES].forEach(cat => allCats.add(cat));
+      return Array.from(allCats).sort((a, b) => a.localeCompare(b));
+    }
+    return getCategoriesByBookType(bookType as "school" | "university" | "reader");
+  };
+
+  const categories = getDisplayCategories();
   const conditions = ["New", "Good", "Better", "Average", "Below Average"];
   const grades = [
     "Grade 1",
