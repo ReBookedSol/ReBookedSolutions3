@@ -199,8 +199,6 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
 
   // Check if form is valid based on preferred method
   const isFormValid =
-    isPackagedSecurely &&
-    canFulfillOrder &&
     preferredPickupMethod &&
     ((preferredPickupMethod === "pickup" && deliveryMethod === "home") ||
       (preferredPickupMethod === "locker" && deliveryMethod === "locker" && (selectedLocker || savedLocker)));
