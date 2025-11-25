@@ -858,7 +858,7 @@ Time: ${new Date().toISOString()}
         } else if (affiliateResult?.success) {
           console.log("✅ Affiliate earning processed:", affiliateResult.earning);
         } else {
-          console.log("ℹ️ Affiliate earning info:", affiliateResult?.message);
+          console.log("���️ Affiliate earning info:", affiliateResult?.message);
         }
       } catch (affiliateException) {
         console.warn("⚠️ Exception processing affiliate earning:", affiliateException);
@@ -1403,10 +1403,20 @@ Time: ${new Date().toISOString()}
 
         <Button
           onClick={handleBobPayPayment}
-          disabled={true}
-          className="w-full px-8 py-3 text-lg opacity-50 cursor-not-allowed"
+          disabled={processing}
+          className="w-full px-8 py-3 text-lg"
         >
-          Checkout Temporarily Blocked
+          {processing ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            <>
+              <CreditCard className="w-4 h-4 mr-2" />
+              Complete Payment
+            </>
+          )}
         </Button>
       </div>
     </div>
