@@ -69,23 +69,13 @@ const CheckoutSuccess: React.FC = () => {
           );
 
           if (createOrderError) {
-            console.warn("⚠️ create-order function returned error (book may already be marked):", createOrderError);
             // Don't throw - this might be expected if already marked
           } else if (createOrderResult?.success) {
             // Book marked as sold
-          } else {
-            console.warn("⚠️ create-order function returned non-success response:", createOrderResult);
           }
         } catch (functionError) {
-          console.warn("⚠️ Error invoking create-order function:", functionError);
           // Continue with other actions even if function call fails
         }
-      } else {
-        console.warn("⚠️ Missing required data to invoke create-order:", {
-          bookId,
-          buyer_id: order.buyer_id,
-          seller_id: order.seller_id
-        });
       }
 
       // Step 2: Send emails via EnhancedPurchaseEmailService
@@ -110,7 +100,6 @@ const CheckoutSuccess: React.FC = () => {
         });
         // Purchase emails sent
       } catch (emailError) {
-        console.warn("⚠️ Email service error (emails may still be queued):", emailError);
       }
 
       // Step 3: Create in-app notifications
@@ -124,7 +113,6 @@ const CheckoutSuccess: React.FC = () => {
         );
         // Buyer notification created
       } catch (notifError) {
-        console.warn("⚠️ Failed to create buyer notification:", notifError);
       }
 
       try {
@@ -137,7 +125,6 @@ const CheckoutSuccess: React.FC = () => {
         );
         // Seller notification created
       } catch (notifError) {
-        console.warn("⚠️ Failed to create seller notification:", notifError);
       }
 
       // Step 4: Update order status to pending_commit if still pending
@@ -153,18 +140,16 @@ const CheckoutSuccess: React.FC = () => {
             .eq("id", order.id);
 
           if (updateError) {
-            console.warn("⚠️ Failed to update order status:", updateError);
+            // Failed to update status
           } else {
             // Order status updated
           }
         } catch (updateError) {
-          console.warn("⚠️ Order status update error:", updateError);
         }
       }
 
       // All post-payment actions completed
     } catch (error) {
-      console.error("❌ Post-payment actions failed:", error);
       // Don't throw - show success page anyway as order was created
     }
   };
@@ -186,7 +171,6 @@ const CheckoutSuccess: React.FC = () => {
         .maybeSingle();
 
       if (orderError || !order) {
-        console.error("Order not found:", orderError);
         setError("Order not found. Please check your reference number. Your payment may still be processing.");
         // Give user a longer time to see the error
         return;
@@ -215,7 +199,7 @@ const CheckoutSuccess: React.FC = () => {
             .then(() => {})
             .catch(() => {});
         } catch (logError) {
-          console.warn("Activity logging failed (non-critical):", logError);
+          // Activity logging failed
         }
       }
 
@@ -250,7 +234,6 @@ const CheckoutSuccess: React.FC = () => {
 
       setOrderData(confirmation);
     } catch (err) {
-      console.error("Error fetching order data:", err);
       setError(err instanceof Error ? err.message : "Failed to load order");
     } finally {
       setLoading(false);
