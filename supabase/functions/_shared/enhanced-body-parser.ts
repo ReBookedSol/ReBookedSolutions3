@@ -18,7 +18,6 @@ export async function enhancedParseBody<T = any>(req: Request): Promise<Enhanced
   try {
     // First, check if body was already consumed
     if (req.bodyUsed) {
-      console.warn(`⚠️ Body already consumed - cannot parse JSON`);
       return {
         success: false,
         data: null,
@@ -29,9 +28,6 @@ export async function enhancedParseBody<T = any>(req: Request): Promise<Enhanced
 
     // Check content type
     const contentType = req.headers.get("content-type");
-    if (!contentType?.includes("application/json")) {
-      console.warn(`⚠️ Non-JSON content type: ${contentType}`);
-    }
 
     // Attempt to parse JSON with timeout protection
     const parsePromise = req.json() as Promise<T>;
@@ -40,13 +36,6 @@ export async function enhancedParseBody<T = any>(req: Request): Promise<Enhanced
     });
 
     const data = await Promise.race([parsePromise, timeoutPromise]);
-    
-    console.log(`✅ Enhanced body parsed successfully:`, {
-      hasData: !!data,
-      dataType: typeof data,
-      dataKeys: typeof data === 'object' && data !== null ? Object.keys(data) : 'not-object',
-      timestamp: new Date().toISOString()
-    });
 
     return {
       success: true,
@@ -58,14 +47,6 @@ export async function enhancedParseBody<T = any>(req: Request): Promise<Enhanced
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    
-    console.error(`❌ Enhanced body parsing failed:`, {
-      error: errorMessage,
-      bodyUsed: req.bodyUsed,
-      method: req.method,
-      contentType: req.headers.get("content-type"),
-      timestamp: new Date().toISOString()
-    });
 
     // Check if this is a "body already consumed" error
     const isBodyConsumedError = errorMessage.toLowerCase().includes("body") && 
