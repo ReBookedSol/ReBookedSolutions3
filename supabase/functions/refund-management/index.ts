@@ -153,7 +153,7 @@ serve(async (req) => {
           paystack_response: result.data,
         });
       } catch (dbError) {
-        console.error("Failed to store refund in database:", dbError);
+        // Error storing refund in database
       }
     }
 
@@ -171,7 +171,6 @@ serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("Refund management error:", error);
     return new Response(
       JSON.stringify({ success: false, error: "UNEXPECTED_ERROR", message: error instanceof Error ? error.message : String(error) }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
