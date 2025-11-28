@@ -32,12 +32,7 @@ export const useErrorHandler = () => {
       }
 
       if (logError) {
-        const safeMessage = getSafeErrorMessage(error);
-        console.error(`[${context}] Error: ${safeMessage}`, {
-          originalError: error,
-          context,
-          timestamp: new Date().toISOString()
-        });
+        // Error logged but not in console
       }
 
       if (showToast) {

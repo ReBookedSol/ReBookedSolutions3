@@ -60,11 +60,6 @@ export const useOAuthRedirect = (options: UseOAuthRedirectOptions = {}) => {
       try {
         // Handle OAuth errors from query params
         if (error) {
-          console.error(
-            "OAuth error from query params:",
-            error,
-            error_description,
-          );
           hasProcessed.current = true;
 
           if (showNotifications) {
@@ -77,21 +72,14 @@ export const useOAuthRedirect = (options: UseOAuthRedirectOptions = {}) => {
 
         // If we have a hash or code, this might be an OAuth redirect
         if (hash || code) {
-          console.log(
-            "Potential OAuth redirect detected, letting Supabase handle it...",
-          );
-
           // Set up a one-time listener for auth state changes
           const {
             data: { subscription },
           } = supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log("Auth state change during OAuth:", event, !!session);
-
             if (hasProcessed.current) return;
 
             if (event === "SIGNED_IN" && session) {
               hasProcessed.current = true;
-              console.log("OAuth sign-in successful");
 
               if (showNotifications) {
                 toast.success(successMessage);
@@ -110,7 +98,6 @@ export const useOAuthRedirect = (options: UseOAuthRedirectOptions = {}) => {
               (event === "TOKEN_REFRESHED" && !session)
             ) {
               // Handle sign out or failed refresh
-              console.log("OAuth flow resulted in sign out or failed session");
               hasProcessed.current = true;
 
               if (showNotifications) {
@@ -134,10 +121,6 @@ export const useOAuthRedirect = (options: UseOAuthRedirectOptions = {}) => {
               } = await supabase.auth.getSession();
 
               if (sessionError) {
-                console.error(
-                  "Error getting session after OAuth:",
-                  sessionError,
-                );
                 hasProcessed.current = true;
 
                 if (showNotifications) {
@@ -152,7 +135,6 @@ export const useOAuthRedirect = (options: UseOAuthRedirectOptions = {}) => {
 
               if (session && !hasProcessed.current) {
                 hasProcessed.current = true;
-                console.log("Found existing session after OAuth redirect");
 
                 if (showNotifications) {
                   toast.success(successMessage);
@@ -163,14 +145,13 @@ export const useOAuthRedirect = (options: UseOAuthRedirectOptions = {}) => {
                 subscription.unsubscribe();
               }
             } catch (error) {
-              console.error("Error checking session after OAuth:", error);
+              // Error checking session
             }
           }, 100);
 
           // Cleanup subscription after a timeout if nothing happened
           const timeoutId = setTimeout(() => {
             if (!hasProcessed.current) {
-              console.log("OAuth handling timeout, cleaning up...");
               subscription.unsubscribe();
             }
           }, 10000);
@@ -181,7 +162,6 @@ export const useOAuthRedirect = (options: UseOAuthRedirectOptions = {}) => {
           };
         }
       } catch (error) {
-        console.error("OAuth redirect handling error:", error);
         hasProcessed.current = true;
 
         if (showNotifications) {

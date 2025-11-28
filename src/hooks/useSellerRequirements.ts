@@ -26,7 +26,6 @@ export const useSellerRequirements = () => {
       const reqs = await BankingService.getSellerRequirements(user.id);
       setRequirements(reqs);
     } catch (err) {
-      console.error("Error fetching seller requirements:", err);
       setError("Failed to load seller requirements");
     } finally {
       setIsLoading(false);

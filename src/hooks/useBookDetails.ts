@@ -21,7 +21,6 @@ export const useBookDetails = (bookId: string | undefined) => {
     setError(null);
 
     try {
-      console.log("Loading book with ID:", bookId);
       const bookData = await getBookById(bookId);
 
       if (!bookData) {
@@ -29,11 +28,8 @@ export const useBookDetails = (bookId: string | undefined) => {
         return;
       }
 
-      console.log("Book loaded successfully:", bookData);
       setBook(bookData);
     } catch (error) {
-      console.error("Error loading book:", error);
-
       // Handle specific error types
       if (error instanceof Error) {
         if (
