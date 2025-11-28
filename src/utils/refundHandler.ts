@@ -48,7 +48,6 @@ export const detectPaymentProvider = async (
 
     return 'unknown';
   } catch (err) {
-    console.error('Error detecting payment provider:', err);
     return 'unknown';
   }
 };

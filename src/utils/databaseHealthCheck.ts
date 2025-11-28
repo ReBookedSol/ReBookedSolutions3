@@ -25,11 +25,9 @@ export class DatabaseHealthCheck {
           error.message?.includes("relation") ||
           error.message?.includes("does not exist")
         ) {
-          console.warn(`Table "${tableName}" does not exist in database`);
           return false;
         }
         // Other errors might be temporary, so don't mark as missing
-        console.warn(`Error checking table "${tableName}":`, error.message);
         return false;
       }
       
@@ -37,7 +35,6 @@ export class DatabaseHealthCheck {
       this.checkedTables.add(tableName);
       return true;
     } catch (error) {
-      console.error(`Exception checking table "${tableName}":`, error);
       return false;
     }
   }
