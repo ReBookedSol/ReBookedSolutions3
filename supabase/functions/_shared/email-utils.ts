@@ -76,17 +76,5 @@ export function logEmailEvent(
   type: "sent" | "failed" | "rate_limited",
   details: any,
 ): void {
-  const timestamp = new Date().toISOString();
-  console.log(
-    JSON.stringify({
-      timestamp,
-      type,
-      details: {
-        ...details,
-        // Remove sensitive data from logs
-        auth: undefined,
-        password: undefined,
-      },
-    }),
-  );
+  // Email event logging disabled
 }
