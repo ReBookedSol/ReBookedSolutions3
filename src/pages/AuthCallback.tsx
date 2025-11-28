@@ -135,10 +135,6 @@ const AuthCallback = () => {
         const type = getParam("type");
 
         // Debug password reset flow specifically
-        if (type === "recovery") {
-          console.log("🔐 PASSWORD RESET FLOW DETECTED");
-          console.log("🔐 This should redirect to /reset-password after authentication");
-        }
         const error = getParam("error");
         const error_description = getParam("error_description");
 
@@ -146,17 +142,6 @@ const AuthCallback = () => {
         const token_hash = getParam("token_hash");
         const token = getParam("token");
 
-        console.log("🔑 Auth callback parameters:", {
-          hasAccessToken: !!access_token,
-          hasRefreshToken: !!refresh_token,
-          hasTokenHash: !!token_hash,
-          hasToken: !!token,
-          type,
-          error,
-          error_description,
-          fullSearch: window.location.search,
-          fullHash: window.location.hash
-        });
 
         // Handle errors first
         if (error) {
@@ -170,7 +155,6 @@ const AuthCallback = () => {
 
         // Handle token-based authentication (email confirmation, password reset)
         if (access_token && refresh_token) {
-          console.log("🔑 Setting session with access/refresh tokens");
 
           const { data, error: sessionError } = await supabase.auth.setSession({
             access_token,
@@ -178,7 +162,6 @@ const AuthCallback = () => {
           });
 
           if (sessionError) {
-            console.error("❌ Session setting error:", sessionError);
             setStatus("error");
             setMessage("Failed to authenticate. Please try logging in manually.");
             toast.error("Authentication failed. Please try logging in.");
@@ -186,7 +169,6 @@ const AuthCallback = () => {
           }
 
           if (data.session && data.user) {
-            console.log("✅ Session set successfully:", data.user.email);
             setStatus("success");
 
             if (type === "signup") {
@@ -198,11 +180,9 @@ const AuthCallback = () => {
                 navigate("/profile", { replace: true });
               }, 2000);
             } else if (type === "recovery") {
-              console.log("🔐 Password recovery type detected (token path) - redirecting to reset password page");
               setMessage("Password reset link verified! Redirecting to reset your password.");
               toast.success("Reset link verified! Set your new password.");
               // Redirect to reset password page immediately for better UX
-              console.log("🔄 Navigating to /reset-password from token path");
               navigate("/reset-password", { replace: true });
             } else {
               setMessage("Authentication successful! You are now logged in.");
@@ -218,7 +198,6 @@ const AuthCallback = () => {
 
         // Handle OTP verification (token_hash or token)
         if ((token_hash || token) && type) {
-          console.log("🔐 Attempting OTP verification with:", { hasTokenHash: !!token_hash, hasToken: !!token, type });
 
           const verificationData = token_hash
             ? {
