@@ -331,16 +331,10 @@ const NotificationsNew = () => {
         setConnectionStatus(result);
 
         if (!result.supabaseReachable || !result.databaseWorking) {
-          console.warn('⚠️ Connection issues detected:', result);
           toast.warning('Connection issues detected. Some features may not work properly.');
         }
       } catch (error) {
         const safeConnectionErrorMessage = getSafeErrorMessage(error, 'Connection test failed');
-        console.error('❌ Connection test failed:', {
-          message: safeConnectionErrorMessage,
-          code: error?.code,
-          details: error?.details
-        });
         const errorMessage = getConnectionErrorMessage(error);
         setConnectionStatus({
           isOnline: navigator.onLine,
