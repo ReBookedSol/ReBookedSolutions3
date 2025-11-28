@@ -14,8 +14,6 @@ serve(async (req) => {
   }
 
   try {
-    console.log("🕐 Mail queue cron job triggered at:", new Date().toISOString());
-
     // Call the mail queue processor
     const processorResponse = await fetch(`${SUPABASE_URL}/functions/v1/process-mail-queue`, {
       method: "POST",
@@ -29,8 +27,6 @@ serve(async (req) => {
     const processorResult = await processorResponse.json();
 
     if (processorResponse.ok) {
-      console.log("✅ Mail queue processed successfully:", processorResult);
-      
       return new Response(
         JSON.stringify({
           success: true,
@@ -44,8 +40,6 @@ serve(async (req) => {
         }
       );
     } else {
-      console.error("❌ Mail queue processor failed:", processorResult);
-      
       return new Response(
         JSON.stringify({
           success: false,
@@ -60,8 +54,6 @@ serve(async (req) => {
       );
     }
   } catch (error) {
-    console.error("❌ Mail queue cron job error:", error);
-
     return new Response(
       JSON.stringify({
         success: false,
