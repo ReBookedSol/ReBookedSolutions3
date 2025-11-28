@@ -32,10 +32,6 @@ export const safeGetProfile = async <T = any>(
 
     return { data, error };
   } catch (error) {
-    console.error(`Error fetching profile for user ${userId}:`, {
-      message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    });
     return { data: null, error };
   }
 };
@@ -58,7 +54,6 @@ export const getUserProfile = async <T = any>(
       throw new Error(errorMessage);
     }
 
-    console.warn(errorMessage);
     return null;
   }
 
@@ -78,10 +73,6 @@ export const profileExists = async (userId: string): Promise<boolean> => {
 
     return !error && data !== null;
   } catch (error) {
-    console.error(
-      `Error checking if profile exists for user ${userId}:`,
-      error,
-    );
     return false;
   }
 };

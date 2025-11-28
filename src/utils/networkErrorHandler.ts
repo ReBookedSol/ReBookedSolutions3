@@ -90,11 +90,9 @@ export async function withRetry<T>(
       }
       
       // Calculate delay for next attempt
-      const delay = exponentialBackoff 
+      const delay = exponentialBackoff
         ? retryDelay * Math.pow(2, attempt)
         : retryDelay;
-      
-      console.warn(`[NetworkErrorHandler] Attempt ${attempt + 1} failed, retrying in ${delay}ms:`, errorInfo.errorMessage);
       
       // Wait before retrying
       await new Promise(resolve => setTimeout(resolve, delay));
@@ -103,7 +101,6 @@ export async function withRetry<T>(
   
   // All retries failed
   const errorInfo = analyzeError(lastError);
-  console.error(`[NetworkErrorHandler] All ${maxRetries + 1} attempts failed:`, errorInfo);
   
   // Show user-friendly error message
   toast.error("Connection Error", {
@@ -119,13 +116,6 @@ export async function withRetry<T>(
  */
 export function handleSupabaseError(error: any, context?: string): void {
   const errorInfo = analyzeError(error);
-  
-  console.error(`[SupabaseError] ${context || 'Operation failed'}:`, {
-    message: errorInfo.errorMessage,
-    isNetworkError: errorInfo.isNetworkError,
-    isAuthError: errorInfo.isAuthError,
-    fullError: error
-  });
 
   if (errorInfo.isNetworkError) {
     toast.error("Network Connection Issue", {

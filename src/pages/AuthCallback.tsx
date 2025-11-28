@@ -45,14 +45,12 @@ const AuthCallback = () => {
       const access_token = getParam("access_token");
 
       if (type === "recovery" || isRecoveryHint()) {
-        console.log("🔐 Authenticated user in recovery flow - redirecting directly to reset password");
         navigate("/reset-password", { replace: true });
         return;
       }
 
       // If user is authenticated but came via confirmation link, show success message
       if (type === "signup" || token_hash || access_token) {
-        console.log("✅ User already authenticated via confirmation link");
 
         // Mark email confirmation for welcome message if this is a signup
         if (type === "signup") {
@@ -64,7 +62,6 @@ const AuthCallback = () => {
         return;
       }
 
-      console.log("🔄 User already authenticated, redirecting from auth callback");
       toast.success("You are already logged in!");
       navigate("/profile", { replace: true });
       return;
@@ -78,17 +75,12 @@ const AuthCallback = () => {
     }
     const handleAuthCallback = async () => {
       try {
-        console.log("🔍 Processing auth callback");
-        console.log("📍 Current URL:", window.location.href);
-        console.log("📍 Search params:", window.location.search);
-        console.log("📍 Hash:", window.location.hash);
 
         // FIRST: Check if Supabase has already authenticated the user automatically
         // This happens in many cases where the callback URL contains valid tokens
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
         if (!sessionError && sessionData.session && sessionData.user) {
-          console.log("✅ User already authenticated automatically by Supabase!");
           setStatus("success");
 
           const type = new URLSearchParams(window.location.search).get("type") ||
@@ -143,10 +135,6 @@ const AuthCallback = () => {
         const type = getParam("type");
 
         // Debug password reset flow specifically
-        if (type === "recovery") {
-          console.log("🔐 PASSWORD RESET FLOW DETECTED");
-          console.log("🔐 This should redirect to /reset-password after authentication");
-        }
         const error = getParam("error");
         const error_description = getParam("error_description");
 
@@ -154,17 +142,6 @@ const AuthCallback = () => {
         const token_hash = getParam("token_hash");
         const token = getParam("token");
 
-        console.log("🔑 Auth callback parameters:", {
-          hasAccessToken: !!access_token,
-          hasRefreshToken: !!refresh_token,
-          hasTokenHash: !!token_hash,
-          hasToken: !!token,
-          type,
-          error,
-          error_description,
-          fullSearch: window.location.search,
-          fullHash: window.location.hash
-        });
 
         // Handle errors first
         if (error) {
@@ -178,7 +155,6 @@ const AuthCallback = () => {
 
         // Handle token-based authentication (email confirmation, password reset)
         if (access_token && refresh_token) {
-          console.log("🔑 Setting session with access/refresh tokens");
 
           const { data, error: sessionError } = await supabase.auth.setSession({
             access_token,
@@ -186,7 +162,6 @@ const AuthCallback = () => {
           });
 
           if (sessionError) {
-            console.error("❌ Session setting error:", sessionError);
             setStatus("error");
             setMessage("Failed to authenticate. Please try logging in manually.");
             toast.error("Authentication failed. Please try logging in.");
@@ -194,7 +169,6 @@ const AuthCallback = () => {
           }
 
           if (data.session && data.user) {
-            console.log("✅ Session set successfully:", data.user.email);
             setStatus("success");
 
             if (type === "signup") {
@@ -206,11 +180,9 @@ const AuthCallback = () => {
                 navigate("/profile", { replace: true });
               }, 2000);
             } else if (type === "recovery") {
-              console.log("🔐 Password recovery type detected (token path) - redirecting to reset password page");
               setMessage("Password reset link verified! Redirecting to reset your password.");
               toast.success("Reset link verified! Set your new password.");
               // Redirect to reset password page immediately for better UX
-              console.log("🔄 Navigating to /reset-password from token path");
               navigate("/reset-password", { replace: true });
             } else {
               setMessage("Authentication successful! You are now logged in.");
@@ -226,7 +198,6 @@ const AuthCallback = () => {
 
         // Handle OTP verification (token_hash or token)
         if ((token_hash || token) && type) {
-          console.log("🔐 Attempting OTP verification with:", { hasTokenHash: !!token_hash, hasToken: !!token, type });
 
           const verificationData = token_hash
             ? {
@@ -241,7 +212,6 @@ const AuthCallback = () => {
           const { data, error: otpError } = await supabase.auth.verifyOtp(verificationData);
 
           if (otpError) {
-            console.error("❌ OTP verification error:", otpError);
             setStatus("error");
 
             // Use helper function for better error messages
@@ -260,7 +230,6 @@ const AuthCallback = () => {
           }
 
           if (data.session && data.user) {
-            console.log("✅ OTP verification successful:", data.user.email);
             setStatus("success");
 
             if (type === "signup") {
@@ -271,11 +240,9 @@ const AuthCallback = () => {
                 navigate("/profile", { replace: true });
               }, 2000);
             } else if (type === "recovery") {
-              console.log("🔐 Password recovery type detected (OTP path) - redirecting to reset password page");
               setMessage("Password reset link verified! Redirecting to reset your password.");
               toast.success("Reset link verified! Set your new password.");
               // Redirect to reset password page immediately for better UX
-              console.log("🔄 Navigating to /reset-password from OTP path");
               navigate("/reset-password", { replace: true });
             } else {
               setMessage("Email verification successful! You are now logged in.");
@@ -286,7 +253,6 @@ const AuthCallback = () => {
             }
             return;
           } else {
-            console.warn("⚠️ OTP verification succeeded but no session returned");
             setStatus("error");
             setMessage("Verification succeeded but session was not created. Please try logging in.");
             return;
@@ -295,20 +261,16 @@ const AuthCallback = () => {
 
         // Handle other types of auth callbacks (like OAuth)
         if (type) {
-          console.log("🔄 Processing auth type:", type);
-          
           // Let Supabase handle the session automatically
           const { data, error: authError } = await supabase.auth.getSession();
-          
+
           if (authError) {
-            console.error("❌ Session retrieval error:", authError);
             setStatus("error");
             setMessage("Failed to retrieve session. Please try logging in.");
             return;
           }
 
           if (data.session) {
-            console.log("✅ Session retrieved successfully");
             setStatus("success");
             setMessage("Successfully authenticated!");
             
@@ -322,7 +284,6 @@ const AuthCallback = () => {
         // If we get here, check once more if user got authenticated during the process
         const { data: finalSessionCheck } = await supabase.auth.getSession();
         if (finalSessionCheck.session && finalSessionCheck.user) {
-          console.log("✅ User authenticated during callback processing!");
           setStatus("success");
           setMessage("Authentication successful! You are now logged in.");
           toast.success("Successfully authenticated!");
@@ -366,13 +327,12 @@ const AuthCallback = () => {
             return;
           }
         } catch (manualError) {
-          console.warn("Manual verification also failed:", manualError);
+          // Manual verification failed, continue to final check
         }
 
         // Final check: maybe user is authenticated but we just can't detect the params
         const { data: veryFinalCheck } = await supabase.auth.getSession();
         if (veryFinalCheck.session && veryFinalCheck.user) {
-          console.log("✅ User is authenticated despite unclear parameters!");
           setStatus("success");
           setMessage("Authentication successful! You are now logged in.");
           toast.success("Successfully authenticated!");
@@ -385,7 +345,6 @@ const AuthCallback = () => {
         setMessage("Authentication link appears to be invalid or expired. Please try logging in directly or request a new verification email.");
         
       } catch (error) {
-        console.error("❌ Auth callback exception:", error);
         setStatus("error");
         const safeErrorMsg = getSafeErrorMessage(error, "An unexpected error occurred during authentication");
         setMessage(safeErrorMsg);

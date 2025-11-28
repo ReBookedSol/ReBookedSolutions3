@@ -331,16 +331,10 @@ const NotificationsNew = () => {
         setConnectionStatus(result);
 
         if (!result.supabaseReachable || !result.databaseWorking) {
-          console.warn('⚠️ Connection issues detected:', result);
           toast.warning('Connection issues detected. Some features may not work properly.');
         }
       } catch (error) {
         const safeConnectionErrorMessage = getSafeErrorMessage(error, 'Connection test failed');
-        console.error('❌ Connection test failed:', {
-          message: safeConnectionErrorMessage,
-          code: error?.code,
-          details: error?.details
-        });
         const errorMessage = getConnectionErrorMessage(error);
         setConnectionStatus({
           isOnline: navigator.onLine,
@@ -549,30 +543,20 @@ const NotificationsNew = () => {
     setDismissingNotifications(prev => new Set(prev).add(notificationId));
 
     try {
-      console.log('🗑️ Starting dismissNotification:', {
-        categoryId,
-        notificationId,
-        userId: user?.id,
-        isOnline: navigator.onLine,
-        timestamp: new Date().toISOString()
-      });
 
       // Check network connectivity first
       if (!navigator.onLine) {
-        console.error('❌ No internet connection');
         toast.error('No internet connection. Please check your network.');
         return;
       }
 
       // Check if user is authenticated
       if (!user?.id) {
-        console.error('❌ No authenticated user');
         toast.error('You must be logged in to delete notifications');
         return;
       }
 
       // First, let's verify the notification exists - check both tables
-      console.log('🔍 Checking if notification exists in notifications or order_notifications...');
 
       let existingNotification = null;
       let notificationTable = 'notifications';
@@ -588,7 +572,6 @@ const NotificationsNew = () => {
       if (!regularError && regularNotif) {
         existingNotification = regularNotif;
         notificationTable = 'notifications';
-        console.log('✅ Notification found in notifications table:', existingNotification);
       } else if (regularError?.code !== 'PGRST116') {
         // Only treat as error if it's not "not found"
         checkError = regularError;
@@ -603,7 +586,6 @@ const NotificationsNew = () => {
         if (!orderError && orderNotif) {
           existingNotification = orderNotif;
           notificationTable = 'order_notifications';
-          console.log('✅ Notification found in order_notifications table:', existingNotification);
         } else if (orderError?.code !== 'PGRST116') {
           checkError = orderError;
         }
@@ -611,49 +593,30 @@ const NotificationsNew = () => {
 
       if (checkError) {
         const safeErrorMessage = getSafeErrorMessage(checkError, 'Unknown error checking notification');
-        console.error('❌ Error checking notification existence:', {
-          message: safeErrorMessage,
-          code: checkError.code,
-          details: checkError.details,
-          hint: checkError.hint,
-        });
         toast.error(`Notification not found: ${safeErrorMessage}`);
         return;
       }
 
       if (!existingNotification) {
-        console.error('❌ Notification not found in either notifications or order_notifications table');
         toast.error('Notification not found');
         return;
       }
 
       // Verify ownership
       if (existingNotification.user_id !== user.id) {
-        console.error('❌ User does not own this notification');
         toast.error('You can only delete your own notifications');
         return;
       }
 
       // Delete from the correct table
-      console.log(`🗑️ Attempting to delete notification from ${notificationTable} table...`);
       const { data: deleteData, error: deleteError } = await supabase
         .from(notificationTable)
         .delete()
         .eq('id', notificationId)
         .eq('user_id', user.id); // Double-check ownership in delete query
 
-      console.log('Delete operation result:', { data: deleteData, error: deleteError, table: notificationTable });
-
       if (deleteError) {
         const safeDeleteErrorMessage = getSafeErrorMessage(deleteError, 'Unknown delete error');
-        console.error('❌ Database error deleting notification:', {
-          notificationId,
-          table: notificationTable,
-          code: deleteError.code,
-          message: safeDeleteErrorMessage,
-          details: deleteError.details,
-          hint: deleteError.hint,
-        });
 
         // Handle specific error cases with user-friendly messages
         if (deleteError.code === 'PGRST116') {
@@ -668,15 +631,12 @@ const NotificationsNew = () => {
         return;
       }
 
-      console.log('✅ Successfully deleted notification from database');
-
       // Clear notification cache to avoid stale reads
       if (user?.id) {
         clearNotificationCache(user.id);
       }
 
       // Update local state to remove from UI immediately (before showing success message)
-      console.log('🔄 Updating local state to remove notification from UI...');
       setCategories((prev) => {
         const updatedCategories = prev.map((category) =>
           category.id === categoryId
@@ -688,19 +648,15 @@ const NotificationsNew = () => {
               }
             : category,
         );
-        console.log('✅ Local state updated - notification removed from UI');
         return updatedCategories;
       });
 
       // Show success message immediately after UI update
       toast.success('Notification removed');
-      console.log('✅ Notification removed from UI - dismissNotification completed successfully');
 
       // Immediately refresh the notifications hook to update badge count and ensure consistency
-      console.log('🔄 Refreshing notifications hook for immediate update...');
       try {
         await refreshNotifications();
-        console.log('✅ Notifications hook refreshed successfully - badge count and state should update immediately');
       } catch (refreshError) {
         const safeRefreshErrorMessage = getSafeErrorMessage(refreshError, 'Failed to refresh notifications');
         console.warn('⚠��� Failed to refresh notifications after deletion:', {
@@ -713,15 +669,6 @@ const NotificationsNew = () => {
       }
 
     } catch (error) {
-      console.error('💥 Exception while dismissing notification:', {
-        error,
-        notificationId,
-        categoryId,
-        isOnline: navigator.onLine,
-        timestamp: new Date().toISOString(),
-        stack: error instanceof Error ? error.stack : undefined
-      });
-
       // Show user-friendly error message
       const safeCatchErrorMessage = getSafeErrorMessage(error, 'An unexpected error occurred');
 

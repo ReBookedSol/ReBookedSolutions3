@@ -28,7 +28,6 @@ export const calculateAPS = (
           subject.points >= 0
         );
       } catch (error) {
-        console.warn("Error filtering subject:", subject, error);
         return false;
       }
     });
@@ -38,7 +37,6 @@ export const calculateAPS = (
       try {
         return total + (subject.points || 0);
       } catch (error) {
-        console.warn("Error adding subject points:", subject, error);
         return total;
       }
     }, 0);
@@ -57,7 +55,6 @@ export const calculateAPS = (
         !ALL_SOUTH_AFRICAN_UNIVERSITIES ||
         !Array.isArray(ALL_SOUTH_AFRICAN_UNIVERSITIES)
       ) {
-        console.error("Universities data not available for APS calculation");
         return {
           subjects: contributingSubjects,
           totalScore,
@@ -115,24 +112,15 @@ export const calculateAPS = (
                     apsGap: apsGap > 0 ? apsGap : undefined,
                   });
                 } catch (degreeError) {
-                  console.warn(
-                    "Error processing degree in APS calculation:",
-                    degreeError,
-                  );
+                  // Error processing degree
                 }
               });
             } catch (facultyError) {
-              console.warn(
-                "Error processing faculty in APS calculation:",
-                facultyError,
-              );
+              // Error processing faculty
             }
           });
         } catch (universityError) {
-          console.warn(
-            "Error processing university in APS calculation:",
-            universityError,
-          );
+          // Error processing university
         }
       });
 
@@ -145,12 +133,11 @@ export const calculateAPS = (
             (a.degree?.apsRequirement || 0) - (b.degree?.apsRequirement || 0)
           );
         } catch (sortError) {
-          console.warn("Error sorting eligible degrees:", sortError);
           return 0;
         }
       });
     } catch (error) {
-      console.error("Error finding eligible degrees:", error);
+      // Error finding eligible degrees
     }
 
     return {
@@ -161,8 +148,6 @@ export const calculateAPS = (
         universityAPSCalculation.universitySpecificScores,
     };
   } catch (error) {
-    console.error("Error in calculateAPS:", error);
-
     // Return safe fallback
     return {
       subjects: [],
@@ -191,7 +176,6 @@ export const validateSubjectMarks = (marks: number): boolean => {
   try {
     return typeof marks === "number" && marks >= 0 && marks <= 100;
   } catch (error) {
-    console.error("Error validating subject marks:", error);
     return false;
   }
 };
@@ -200,7 +184,6 @@ export const getSubjectLevel = (marks: number): number => {
   try {
     return convertPercentageToPoints(marks);
   } catch (error) {
-    console.error("Error getting subject level:", error);
     return 0;
   }
 };
@@ -213,7 +196,6 @@ export const formatAPSScore = (score: number): string => {
 
     return `${Math.max(0, Math.floor(score))} points`;
   } catch (error) {
-    console.error("Error formatting APS score:", error);
     return "0 points";
   }
 };
@@ -248,7 +230,6 @@ export const getEligibilityStatus = (
       };
     }
   } catch (error) {
-    console.error("Error getting eligibility status:", error);
     return {
       eligible: false,
       message: "Error checking eligibility",
@@ -408,7 +389,6 @@ export const validateAPSSubjects = (
       warnings,
     };
   } catch (error) {
-    console.error("Error validating APS subjects:", error);
     return {
       isValid: false,
       errors: ["Error validating subjects"],
@@ -434,7 +414,6 @@ export const getAPSScoreDescription = (score: number): string => {
     if (score >= 20) return "Basic - May qualify for bridging programs";
     return "Below requirements - Consider alternative pathways";
   } catch (error) {
-    console.error("Error getting APS score description:", error);
     return "Unable to determine score level";
   }
 };

@@ -133,7 +133,7 @@ export const getAllQuickQuotes = async (
       currency: "ZAR",
     });
   } catch (error) {
-    console.error("Error getting Courier Guy quote:", error);
+    // Error getting Courier Guy quote
   }
 
   try {
@@ -152,7 +152,7 @@ export const getAllQuickQuotes = async (
       currency: "ZAR",
     });
   } catch (error) {
-    console.error("Error getting ShipLogic quote:", error);
+    // Error getting ShipLogic quote
   }
 
   return quotes;

@@ -28,11 +28,7 @@ class LoadingStateManager {
     // Set up timeout to detect stuck states
     setTimeout(() => {
       if (this.loadingStates.has(id)) {
-        console.warn(`[LoadingStateManager] Stuck loading state detected:`, {
-          id,
-          component,
-          duration: Date.now() - loadingState.startTime,
-        });
+        // Stuck loading state detected
 
         // Force clear the stuck state
         this.clearLoading(id);
@@ -42,9 +38,6 @@ class LoadingStateManager {
       }
     }, loadingState.timeout);
 
-    console.debug(
-      `[LoadingStateManager] Started loading: ${component} (${id})`,
-    );
   }
 
   clearLoading(id: string) {
@@ -52,18 +45,11 @@ class LoadingStateManager {
 
     const state = this.loadingStates.get(id);
     if (state) {
-      const duration = Date.now() - state.startTime;
-      console.debug(
-        `[LoadingStateManager] Cleared loading: ${state.component} (${id}) - ${duration}ms`,
-      );
       this.loadingStates.delete(id);
     }
   }
 
   private recoverFromStuckState(component: string) {
-    console.warn(
-      `[LoadingStateManager] Attempting recovery for stuck component: ${component}`,
-    );
 
     // Try to trigger a re-render by dispatching a custom event
     window.dispatchEvent(
@@ -75,9 +61,6 @@ class LoadingStateManager {
     // For auth-related components, just clear the loading state without navigation refresh
     // to prevent blank screen flashing
     if (component === "AuthContext") {
-      console.warn(
-        "[LoadingStateManager] Auth stuck state detected, clearing without navigation refresh",
-      );
       this.clearAllStates();
       return;
     }
@@ -85,9 +68,6 @@ class LoadingStateManager {
     // For other components, still allow soft navigation refresh but with longer delay
     setTimeout(() => {
       if (this.hasStuckStates()) {
-        console.warn(
-          "[LoadingStateManager] Performing soft navigation refresh",
-        );
         const currentPath = window.location.pathname;
 
         // Use React Router navigation if available

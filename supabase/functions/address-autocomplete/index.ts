@@ -27,7 +27,6 @@ serve(async (req) => {
 
     const apiKey = Deno.env.get('GOOGLE_MAPS_API_KEY');
     if (!apiKey) {
-      console.error('GOOGLE_MAPS_API_KEY not configured');
       return new Response(
         JSON.stringify({ error: 'API key not configured' }),
         { 
@@ -39,13 +38,11 @@ serve(async (req) => {
 
     // Call Google Places Autocomplete API
     const placesUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${apiKey}&components=country:za`;
-    
-    console.log('Calling Google Places Autocomplete API');
+
     const response = await fetch(placesUrl);
     const data = await response.json();
 
     if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
-      console.error('Google API error:', data);
       return new Response(
         JSON.stringify({ error: `Google API error: ${data.status}` }),
         { 
@@ -61,8 +58,6 @@ serve(async (req) => {
       place_id: prediction.place_id,
     }));
 
-    console.log(`Found ${suggestions.length} suggestions`);
-
     return new Response(
       JSON.stringify({ suggestions }),
       { 
@@ -72,7 +67,6 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in autocomplete function:', error);
     const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return new Response(
       JSON.stringify({ error: errorMessage }),

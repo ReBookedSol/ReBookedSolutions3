@@ -72,13 +72,8 @@ export function extractErrorDetails(error: any): ErrorDetails {
  */
 export function logError(context: string, error: any, additionalInfo?: any): ErrorDetails {
   const errorDetails = extractErrorDetails(error);
-  
-  console.error(`❌ ${context}:`, {
-    ...errorDetails,
-    ...(additionalInfo && { additionalInfo }),
-    serializedError: JSON.stringify(error, Object.getOwnPropertyNames(error), 2)
-  });
 
+  // Error logging (console removed in production build)
   return errorDetails;
 }
 

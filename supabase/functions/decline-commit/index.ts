@@ -47,7 +47,6 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-    console.log("🔄 Processing decline for order:", order_id);
 
     // Get order details - must be in pending status
     const { data: order, error: orderError } = await supabase
@@ -59,7 +58,6 @@ serve(async (req) => {
       .maybeSingle();
 
     if (orderError) {
-      console.error("❌ Database error fetching order:", orderError);
       return new Response(
         JSON.stringify({
           success: false,
@@ -75,7 +73,6 @@ serve(async (req) => {
     }
 
     if (!order) {
-      console.error("❌ Order not found or invalid:", { order_id, seller_id });
 
       const { data: existingOrder } = await supabase
         .from("orders")

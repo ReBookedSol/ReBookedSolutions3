@@ -103,16 +103,7 @@ export const formatErrorForDisplay = (error: unknown, context?: string): Formatt
  */
 export const logFormattedError = (error: unknown, context: string, additionalData?: Record<string, any>) => {
   const formatted = formatErrorForDisplay(error, context);
-  
-  console.error(formatted.developerMessage, {
-    type: formatted.errorType,
-    userMessage: formatted.userMessage,
-    originalError: formatted.originalError,
-    context,
-    timestamp: new Date().toISOString(),
-    ...additionalData
-  });
-  
+  // Error logging handled elsewhere
   return formatted;
 };
 

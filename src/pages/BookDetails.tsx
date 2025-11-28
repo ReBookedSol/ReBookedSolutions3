@@ -28,7 +28,6 @@ const BookDetails = () => {
   // Validate and debug book ID
   useEffect(() => {
     if (!id) {
-      console.error("No book ID provided in URL");
       toast.error("Invalid book link - redirecting to browse books");
       setTimeout(() => {
         navigate("/books");
@@ -36,18 +35,7 @@ const BookDetails = () => {
       return;
     }
 
-    console.log("BookDetails: Processing book ID:", {
-      id,
-      url: window.location.href,
-      pathname: window.location.pathname
-    });
-
     const validId = extractBookId(id);
-    if (!validId) {
-      console.warn("Invalid book ID format, but will let query handle it:", id);
-    } else {
-      console.log("BookDetails: Valid book ID confirmed:", validId);
-    }
   }, [id, navigate]);
 
   const { book, isLoading, error } = useBookDetails(id || "");
@@ -109,7 +97,6 @@ const BookDetails = () => {
     try {
       addToCart(book);
     } catch (error) {
-      console.error("Error adding book to cart:", error);
       toast.error("Failed to add book to cart. Please try again.");
     }
   };

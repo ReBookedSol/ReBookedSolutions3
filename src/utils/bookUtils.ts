@@ -13,7 +13,6 @@ export const isValidBookId = (id: string): boolean => {
 export const extractBookId = (id: string | undefined): string | null => {
   if (!id) return null;
   if (!isValidBookId(id)) {
-    console.warn("Invalid book ID format:", id);
     return null;
   }
   return id;
@@ -23,12 +22,5 @@ export const extractBookId = (id: string | undefined): string | null => {
  * Debug book ID - logs validation info
  */
 export const debugBookId = (id: string | undefined): void => {
-  if (process.env.NODE_ENV === "development") {
-    console.log("Book ID Debug:", {
-      id,
-      isPresent: !!id,
-      isValid: id ? isValidBookId(id) : false,
-      length: id?.length,
-    });
-  }
+  // Debug logging removed
 };

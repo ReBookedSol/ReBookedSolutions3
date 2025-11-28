@@ -61,28 +61,24 @@ const EditBook = () => {
   useEffect(() => {
     const loadBookData = async () => {
       if (!bookId) {
-        console.error("Book ID is missing from URL");
         setError("Book ID is missing from the URL");
         setIsLoading(false);
         return;
       }
 
       if (!user) {
-        console.error("User not authenticated");
         setError("You must be logged in to edit books");
         setIsLoading(false);
         return;
       }
 
       try {
-        console.log("Loading book with ID:", bookId);
         setIsLoading(true);
         setError(null);
 
         const bookData = await getBookById(bookId);
 
         if (bookData) {
-          console.log("Book data loaded:", bookData);
 
           // Check if user owns this book
           if (bookData.seller.id !== user.id) {
@@ -113,7 +109,6 @@ const EditBook = () => {
           setError("Book not found");
         }
       } catch (error) {
-        console.error("Error loading book data:", error);
         const errorMessage =
           error instanceof Error ? error.message : "Failed to load book data";
         setError(errorMessage);
@@ -132,7 +127,6 @@ const EditBook = () => {
         return;
       }
 
-      console.log("Updating book with values:", values);
       setIsSubmitting(true);
 
       const updatedBook = await updateBook(bookId, values);
@@ -144,7 +138,6 @@ const EditBook = () => {
         toast.error("Failed to update book");
       }
     } catch (error: unknown) {
-      console.error("Error updating book:", error);
       const errorMessage =
         error instanceof Error ? error.message : "Failed to update book";
       toast.error(errorMessage);

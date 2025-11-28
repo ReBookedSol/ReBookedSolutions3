@@ -23,7 +23,7 @@ export const attemptManualVerification = async (params: {
         return { success: true, method: 'session', data };
       }
     } catch (err) {
-      console.warn('Session method failed:', err);
+      // Session method failed
     }
   }
 
@@ -39,7 +39,7 @@ export const attemptManualVerification = async (params: {
         return { success: true, method: 'otp_hash', data };
       }
     } catch (err) {
-      console.warn('OTP hash method failed:', err);
+      // OTP hash method failed
     }
   }
 
@@ -51,7 +51,7 @@ export const attemptManualVerification = async (params: {
       return { success: true, method: 'existing_session', data };
     }
   } catch (err) {
-    console.warn('Existing session check failed:', err);
+    // Existing session check failed
   }
 
   return { success: false, method: 'none' };
