@@ -24,7 +24,6 @@ export const useBanking = () => {
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Unknown error occurred";
-      console.error("Error fetching banking details:", errorMessage, err);
 
       // Only set error for actual failures, not for missing setup
       if (
@@ -33,8 +32,7 @@ export const useBanking = () => {
       ) {
         setError(`Failed to load banking details: ${errorMessage}`);
       } else {
-        // For development fallbacks, just log and continue
-        console.log("ℹ️ No banking setup found - this is normal for new users");
+        // For development fallbacks, just continue
         setBankingDetails(null);
       }
     } finally {
@@ -69,7 +67,6 @@ export const useBanking = () => {
 
       return result;
     } catch (err) {
-      console.error("Error setting up banking:", err);
       return { success: false, error: "An unexpected error occurred" };
     }
   };
@@ -94,7 +91,6 @@ export const useBanking = () => {
 
       return result;
     } catch (err) {
-      console.error("Error updating banking:", err);
       return { success: false, error: "An unexpected error occurred" };
     }
   };
@@ -109,7 +105,6 @@ export const useBanking = () => {
         bankCode,
       );
     } catch (err) {
-      console.error("Error validating account number:", err);
       return { valid: false, error: "Validation service unavailable" };
     }
   };

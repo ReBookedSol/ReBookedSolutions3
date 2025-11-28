@@ -7,13 +7,10 @@ import { setupConnectionMonitoring } from '@/utils/connectionStatus';
  */
 export function useConnectionMonitoring() {
   useEffect(() => {
-    console.log('🌐 Setting up connection monitoring...');
     setupConnectionMonitoring();
-    
+
     // Cleanup function (though connection monitoring doesn't need cleanup)
-    return () => {
-      console.log('🌐 Connection monitoring hook cleanup');
-    };
+    return () => {};
   }, []);
 }
 

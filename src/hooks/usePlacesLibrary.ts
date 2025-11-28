@@ -44,7 +44,6 @@ export const usePlacesLibrary = () => {
       } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
         setState({ isLoaded: false, error });
-        console.error('Failed to load Places library:', error);
       }
     };
 

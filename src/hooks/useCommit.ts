@@ -48,7 +48,6 @@ export const useCommit = (): UseCommitReturn => {
       const pending = await getCommitPendingBooks();
       setPendingCommits(pending || []);
     } catch (error) {
-      console.error("Failed to fetch pending commits:", error);
       // Set empty array instead of showing error to prevent UI crash
       setPendingCommits([]);
       // Only show error in development
@@ -75,7 +74,6 @@ export const useCommit = (): UseCommitReturn => {
           "Book sale committed successfully! Delivery process will begin shortly.",
         );
       } catch (error) {
-        console.error("Failed to commit book sale:", error);
         const errorMessage =
           error instanceof Error ? error.message : "Failed to commit sale";
         toast.error(errorMessage);
@@ -102,7 +100,6 @@ export const useCommit = (): UseCommitReturn => {
           "Sale declined successfully. The book is now available again and the buyer will receive a full refund.",
         );
       } catch (error) {
-        console.error("Failed to decline book sale:", error);
         const errorMessage =
           error instanceof Error ? error.message : "Failed to decline sale";
         toast.error(errorMessage);
