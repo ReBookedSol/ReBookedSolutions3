@@ -327,13 +327,12 @@ const AuthCallback = () => {
             return;
           }
         } catch (manualError) {
-          console.warn("Manual verification also failed:", manualError);
+          // Manual verification failed, continue to final check
         }
 
         // Final check: maybe user is authenticated but we just can't detect the params
         const { data: veryFinalCheck } = await supabase.auth.getSession();
         if (veryFinalCheck.session && veryFinalCheck.user) {
-          console.log("✅ User is authenticated despite unclear parameters!");
           setStatus("success");
           setMessage("Authentication successful! You are now logged in.");
           toast.success("Successfully authenticated!");
@@ -346,7 +345,6 @@ const AuthCallback = () => {
         setMessage("Authentication link appears to be invalid or expired. Please try logging in directly or request a new verification email.");
         
       } catch (error) {
-        console.error("❌ Auth callback exception:", error);
         setStatus("error");
         const safeErrorMsg = getSafeErrorMessage(error, "An unexpected error occurred during authentication");
         setMessage(safeErrorMsg);
