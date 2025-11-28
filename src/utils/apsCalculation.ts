@@ -161,13 +161,11 @@ export const calculateAPS = (
 export const convertPercentageToPoints = (percentage: number): number => {
   try {
     if (typeof percentage !== "number" || percentage < 0 || percentage > 100) {
-      console.warn("Invalid percentage for APS conversion:", percentage);
       return 0;
     }
 
     return calculateAPSPoints(percentage);
   } catch (error) {
-    console.error("Error converting percentage to points:", error);
     return 0;
   }
 };
@@ -288,7 +286,6 @@ export const getRecommendations = (currentAPS: number): string[] => {
 
     return recommendations;
   } catch (error) {
-    console.error("Error getting recommendations:", error);
     return ["Unable to provide recommendations at this time"];
   }
 };
