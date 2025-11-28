@@ -389,7 +389,6 @@ export const validateAPSSubjects = (
       warnings,
     };
   } catch (error) {
-    console.error("Error validating APS subjects:", error);
     return {
       isValid: false,
       errors: ["Error validating subjects"],
@@ -415,7 +414,6 @@ export const getAPSScoreDescription = (score: number): string => {
     if (score >= 20) return "Basic - May qualify for bridging programs";
     return "Below requirements - Consider alternative pathways";
   } catch (error) {
-    console.error("Error getting APS score description:", error);
     return "Unable to determine score level";
   }
 };
