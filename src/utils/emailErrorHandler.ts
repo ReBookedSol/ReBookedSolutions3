@@ -93,12 +93,7 @@ export class EmailErrorHandler {
 
   static logError(error: any, context: string): void {
     const categorized = this.categorizeEmailError(error);
-    
-    console.group(`📧 Email Error - ${context}`);
-    console.error('Error Type:', categorized.type);
-    console.error('User Message:', categorized.message);
-    console.error('Original Error:', categorized.originalError);
-    console.error('Suggestions:', categorized.suggestions);
-    console.groupEnd();
+
+    // Error logging disabled
   }
 }
