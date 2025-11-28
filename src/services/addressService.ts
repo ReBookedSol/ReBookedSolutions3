@@ -28,13 +28,11 @@ const encryptAddress = async (address: Address, options?: { save?: { table: stri
     });
 
     if (error) {
-      console.warn("Encryption not available or failed:", error.message);
       return null; // Return null instead of throwing error
     }
 
     return data;
   } catch (error) {
-    console.warn("Encryption service unavailable, continuing without encryption:", error instanceof Error ? error.message : String(error));
     return null; // Return null for graceful fallback
   }
 };
@@ -54,18 +52,15 @@ const decryptAddress = async (params: { table: 'profiles' | 'orders' | 'books'; 
     });
 
     if (error) {
-      console.warn("Decryption not available or failed:", (error as any).message);
       return null;
     }
 
     if (data?.success) {
       return data.data || null;
     } else {
-      console.warn("Decryption failed:", data?.error?.message || "Unknown error");
       return null;
     }
   } catch (error) {
-    console.warn("Decryption service unavailable:", error instanceof Error ? error.message : String(error));
     return null;
   }
 };
@@ -101,13 +96,10 @@ export const saveUserAddresses = async (
       });
 
       if (pickupResult && pickupResult.success) {
-        console.log("✅ Pickup address encrypted and saved successfully");
         encryptionResults.pickup = true;
-      } else {
-        console.warn("⚠️ Pickup address encryption failed:", pickupResult?.error || "Unknown error");
       }
     } catch (encryptError) {
-      console.warn("⚠️ Pickup address encryption exception:", encryptError);
+      // Encryption error
     }
 
     // Try to encrypt and save shipping address (if different)
@@ -122,13 +114,10 @@ export const saveUserAddresses = async (
         });
 
         if (shippingResult && shippingResult.success) {
-          console.log("✅ Shipping address encrypted and saved successfully");
           encryptionResults.shipping = true;
-        } else {
-          console.warn("⚠️ Shipping address encryption failed:", shippingResult?.error || "Unknown error");
         }
       } catch (encryptError) {
-        console.warn("⚠️ Shipping address encryption exception:", encryptError);
+        // Encryption error
       }
     } else {
       // If addresses are the same, mark shipping encryption as successful if pickup succeeded
@@ -142,15 +131,12 @@ export const saveUserAddresses = async (
 
     // Check encryption results and fail if encryption didn't work
     if (!encryptionResults.pickup) {
-      console.error("❌ Pickup address encryption failed - cannot save addresses without encryption");
       updateData.encryption_status = 'failed';
       throw new Error("Failed to encrypt pickup address. Please try again.");
     } else if (!addressesSame && !encryptionResults.shipping) {
-      console.error("❌ Shipping address encryption failed - cannot save addresses without encryption");
       updateData.encryption_status = 'failed';
       throw new Error("Failed to encrypt shipping address. Please try again.");
     } else {
-      console.log("✅ All addresses encrypted successfully - no plaintext storage");
       updateData.encryption_status = 'encrypted';
     }
 
@@ -163,8 +149,6 @@ export const saveUserAddresses = async (
       safeLogError("Error updating profile metadata", error);
       throw error;
     }
-
-    console.log(`Address save complete - Encryption status: pickup=${encryptionResults.pickup}, shipping=${encryptionResults.shipping}`);
 
     return {
       pickup_address: pickupAddress,
@@ -184,8 +168,6 @@ export const saveUserAddresses = async (
 
 export const getSellerPickupAddress = async (sellerId: string) => {
   try {
-    console.log("Fetching encrypted pickup address for seller:", sellerId);
-
     // First get the book ID for this seller to use for decryption
     const { data: bookData, error: bookError } = await supabase
       .from("books")
@@ -195,27 +177,16 @@ export const getSellerPickupAddress = async (sellerId: string) => {
       .maybeSingle();
 
     if (bookError) {
-      const message = getSafeErrorMessage(bookError, 'Unknown error fetching book');
-      console.warn("[getSellerPickupAddress] Books query warning:", message, {
-        code: (bookError as any)?.code,
-        details: (bookError as any)?.details,
-        hint: (bookError as any)?.hint,
-        sellerId,
-      });
       return null;
     }
 
     if (!bookData) {
-      console.log("❌ No book found for seller");
       return null;
     }
 
     if (!bookData.pickup_address_encrypted) {
-      console.log("❌ No encrypted pickup address found for seller");
       return null;
     }
-
-    console.log("✅ Found encrypted address in books table, attempting to decrypt...");
 
     // Use the decrypt-address edge function to decrypt the data from books table
     const decryptedAddress = await decryptAddress({
@@ -225,20 +196,11 @@ export const getSellerPickupAddress = async (sellerId: string) => {
     });
 
     if (decryptedAddress) {
-      console.log("✅ Successfully decrypted seller pickup address from books table");
       return decryptedAddress;
     }
 
-    console.log("❌ Failed to decrypt seller pickup address");
     return null;
   } catch (error) {
-    console.error("Error in getSellerPickupAddress:", {
-      sellerId,
-      message: error instanceof Error ? error.message : String(error),
-      code: error?.code,
-      details: error?.details,
-    });
-
     // Handle network errors
     if (
       error instanceof TypeError &&
@@ -257,8 +219,6 @@ export const getSellerPickupAddress = async (sellerId: string) => {
 
 export const getUserAddresses = async (userId: string) => {
   try {
-    console.log("Fetching addresses for user:", userId);
-
     const mapToAddress = (raw: any) => {
       if (!raw) return null;
       return {
@@ -285,9 +245,8 @@ export const getUserAddresses = async (userId: string) => {
         address_type: 'pickup'
       });
       pickupAddress = mapToAddress(pickup);
-      console.log("📍 Pickup address result:", pickupAddress);
     } catch (error) {
-      console.warn("Failed to get pickup address:", error);
+      // Failed to get pickup address
     }
 
     // For shipping address, try the decrypt function directly
@@ -298,16 +257,13 @@ export const getUserAddresses = async (userId: string) => {
         address_type: 'shipping'
       });
       shippingAddress = mapToAddress(shipping);
-      console.log("📍 Shipping address result:", shippingAddress);
     } catch (error) {
-      console.warn("Failed to get shipping address:", error);
+      // Failed to get shipping address
     }
 
     // No plaintext fallback allowed
 
     if (pickupAddress || shippingAddress) {
-      console.log("✅ Successfully fetched user addresses");
-
       // Get addresses_same flag from profile metadata
       const { data: profileData } = await supabase
         .from("profiles")
@@ -328,7 +284,6 @@ export const getUserAddresses = async (userId: string) => {
       };
     }
 
-    console.log("❌ No addresses found for user");
     return null;
   } catch (error) {
     safelog("Error in getUserAddresses", error, {
@@ -356,8 +311,6 @@ export const updateBooksPickupAddress = async (
   newPickupAddress: any,
 ): Promise<{ success: boolean; updatedCount: number; error?: string }> => {
   try {
-    console.log("Updating pickup address and province for all books of user:", userId);
-
     // Extract province from the new pickup address
     let province = null;
     if (newPickupAddress?.province) {
@@ -383,7 +336,6 @@ export const updateBooksPickupAddress = async (
       .eq("seller_id", userId);
 
     if (fetchError) {
-      console.error("Error fetching user books:", fetchError);
       return {
         success: false,
         updatedCount: 0,
@@ -432,7 +384,6 @@ export const updateBooksPickupAddress = async (
       .select("id");
 
     if (error) {
-      console.error("Error updating books pickup address and province:", error);
       return {
         success: false,
         updatedCount: 0,
@@ -441,16 +392,12 @@ export const updateBooksPickupAddress = async (
     }
 
     const updatedCount = data?.length || 0;
-    console.log(
-      `Successfully updated pickup address and province for ${updatedCount} book listings${province ? ` with province: ${province}` : ""}`,
-    );
 
     return {
       success: true,
       updatedCount,
     };
   } catch (error) {
-    console.error("Error in updateBooksPickupAddress:", error);
     return {
       success: false,
       updatedCount: 0,
@@ -462,8 +409,6 @@ export const updateBooksPickupAddress = async (
 // Get encrypted book pickup address for shipping calculations
 export const getBookPickupAddress = async (bookId: string) => {
   try {
-    console.log("Fetching encrypted pickup address for book:", bookId);
-
     // Get encrypted address only - no plaintext fallback
     const decryptedAddress = await decryptAddress({
       table: 'books',
@@ -472,14 +417,11 @@ export const getBookPickupAddress = async (bookId: string) => {
     });
 
     if (decryptedAddress) {
-      console.log("✅ Successfully fetched encrypted book pickup address");
       return decryptedAddress;
     }
 
-    console.log("❌ No encrypted pickup address found for book");
     return null;
   } catch (error) {
-    console.error("Error in getBookPickupAddress:", error);
     throw error;
   }
 };
@@ -487,8 +429,6 @@ export const getBookPickupAddress = async (bookId: string) => {
 // Get encrypted order shipping address for delivery
 export const getOrderShippingAddress = async (orderId: string) => {
   try {
-    console.log("Fetching encrypted shipping address for order:", orderId);
-
     // Get encrypted address only - no plaintext fallback
     const decryptedAddress = await decryptAddress({
       table: 'orders',
@@ -497,14 +437,11 @@ export const getOrderShippingAddress = async (orderId: string) => {
     });
 
     if (decryptedAddress) {
-      console.log("✅ Successfully fetched encrypted order shipping address");
       return decryptedAddress;
     }
 
-    console.log("❌ No encrypted shipping address found for order");
     return null;
   } catch (error) {
-    console.error("Error in getOrderShippingAddress:", error);
     throw error;
   }
 };
