@@ -125,35 +125,17 @@ export function createErrorDetails(error: unknown, context?: string): {
 export function logError(context: string, error: unknown, additionalData?: any): void {
   const errorMessage = getErrorMessage(error);
   const errorType = getErrorType(error);
-
-  console.error(`[${context}] ${errorType}: ${errorMessage}`);
-
-  if (additionalData) {
-    console.error(`[${context}] Additional data:`, additionalData);
-  }
-
-  const stack = getErrorStack(error);
-  if (stack) {
-    console.error(`[${context}] Stack trace:`, stack);
-  }
+  // Error logging disabled in production
 }
 
 /**
  * Info and Warning log helpers for consistency
  */
 export function logInfo(context: string, message: string, data?: any): void {
-  if (data !== undefined) {
-    console.log(`[${context}] ${message}`, data);
-  } else {
-    console.log(`[${context}] ${message}`);
-  }
+  // Info logging disabled in production
 }
 
 export function logWarning(context: string, warning: unknown, data?: any): void {
   const msg = getErrorMessage(warning);
-  if (data !== undefined) {
-    console.warn(`[${context}] ${msg}`, data);
-  } else {
-    console.warn(`[${context}] ${msg}`);
-  }
+  // Warning logging disabled in production
 }
