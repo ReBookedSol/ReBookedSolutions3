@@ -55,13 +55,10 @@ serve(async (req) => {
     }
     const BOBGO_BASE_URL = resolveBaseUrl();
 
-    console.log(`Tracking shipment ${tracking_number} via ${BOBGO_BASE_URL}`);
-
     let trackingInfo: any = null;
     let simulated = false;
 
     if (!BOBGO_API_KEY) {
-      console.warn("No BOBGO_API_KEY - returning simulated tracking");
       simulated = true;
       trackingInfo = {
         tracking_number,
@@ -92,7 +89,6 @@ serve(async (req) => {
       try {
         // Correct BobGo API endpoint for tracking
         const trackingUrl = `${BOBGO_BASE_URL}/tracking?tracking_reference=${encodeURIComponent(tracking_number)}`;
-        console.log(`Fetching: ${trackingUrl}`);
 
         const resp = await fetch(trackingUrl, {
           method: "GET",
@@ -105,12 +101,10 @@ serve(async (req) => {
 
         if (!resp.ok) {
           const text = await resp.text().catch(() => "");
-          console.error("BobGo API error:", resp.status, text);
           throw new Error(`BobGo API returned ${resp.status}: ${text || resp.statusText}`);
         }
 
         const data = await resp.json();
-        console.log("BobGo API response:", JSON.stringify(data));
 
         // BobGo returns an array, get the first item
         const shipmentData = Array.isArray(data) ? data[0] : data;
@@ -153,7 +147,6 @@ serve(async (req) => {
           raw: data,
         };
       } catch (err: any) {
-        console.error("BobGo tracking failed:", err?.message || err);
 
         // Return error with simulated fallback
         simulated = true;
@@ -175,7 +168,6 @@ serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {
-    console.error("bobgo-track-shipment error:", error);
     return new Response(
       JSON.stringify({ success: false, error: error.message || "Failed to track shipment" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
