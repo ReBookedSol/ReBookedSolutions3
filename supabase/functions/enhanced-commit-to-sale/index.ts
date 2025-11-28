@@ -47,10 +47,6 @@ serve(async (req) => {
 
     const { order_id, seller_id, delivery_method, locker_id, use_locker_api }: CommitRequest = await req.json();
 
-    if (Deno.env.get('ENVIRONMENT') === 'development') {
-      console.log('🚀 Enhanced commit request received');
-    }
-
     // Validate required fields
     if (!order_id || !seller_id || !delivery_method) {
       return new Response(
@@ -93,7 +89,6 @@ serve(async (req) => {
       .single();
 
     if (orderError || !order) {
-      console.error('❌ Order not found or access denied:', orderError);
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -127,8 +122,6 @@ serve(async (req) => {
 
     // Handle locker delivery (only if order's original pickup_type is locker)
     if (actualPickupType === "locker" && use_locker_api) {
-      console.log('📦 Creating locker shipment...');
-      
       try {
         // Prepare shipment data
         const shipmentData: LockerShipmentData = {
@@ -147,14 +140,11 @@ serve(async (req) => {
 
         // Create locker shipment via Courier Guy API
         shipmentResult = await createLockerShipment(shipmentData);
-        
+
         if (!shipmentResult.success) {
           throw new Error(shipmentResult.error || 'Failed to create locker shipment');
         }
-
-        console.log('✅ Locker shipment created:', shipmentResult);
       } catch (error) {
-        console.error('❌ Locker shipment creation failed:', error);
         return new Response(
           JSON.stringify({ 
             success: false, 
@@ -195,7 +185,6 @@ serve(async (req) => {
       .single();
 
     if (updateError) {
-      console.error('❌ Failed to update order:', updateError);
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -230,8 +219,6 @@ serve(async (req) => {
         }
       });
 
-    console.log('✅ Enhanced commit completed successfully');
-
     return new Response(
       JSON.stringify({
         success: true,
@@ -246,7 +233,6 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('💥 Enhanced commit error:', error);
     return new Response(
       JSON.stringify({ 
         success: false, 
