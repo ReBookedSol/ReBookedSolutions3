@@ -54,7 +54,7 @@ const BankingRequirementGate: React.FC<BankingRequirementGateProps> = ({
         const reqs = await BankingService.getSellerRequirements(user.id);
         setRequirements(reqs);
       } catch (error) {
-        console.error("Error checking requirements:", error);
+        // Error checking requirements
       } finally {
         setIsLoading(false);
       }

@@ -105,7 +105,6 @@ const MultiImageUpload = ({
       });
 
     if (uploadError) {
-      console.error("Upload error:", uploadError);
       throw uploadError;
     }
 
@@ -158,7 +157,6 @@ const MultiImageUpload = ({
       updateImages(newImages);
       toast.success(`${slots[index].label} uploaded successfully!`);
     } catch (error) {
-      console.error("Upload failed:", error);
       toast.error(`Failed to upload ${slots[index].label}. Please try again.`);
       const newImages = [...imageArray];
       newImages[index] = "";

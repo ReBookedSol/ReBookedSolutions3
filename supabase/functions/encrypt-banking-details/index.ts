@@ -53,7 +53,6 @@ async function importAesKey(rawKeyString: string): Promise<CryptoKey> {
     keyBytes = enc.encode(rawKeyString);
     
     if (keyBytes.byteLength !== 32) {
-      console.error('Key length:', keyBytes.byteLength, 'bytes (need 32)');
       throw new Error('INVALID_KEY_LENGTH: Key must be exactly 32 bytes');
     }
   }
@@ -97,7 +96,6 @@ async function encryptGCM(plaintext: string, keyString: string, version: number)
     const full = new Uint8Array(encrypted);
     
     if (full.byteLength < 16) {
-      console.error('Encryption output too short:', full.byteLength);
       throw new Error('ENCRYPTION_FAILED: Output too short');
     }
 
@@ -112,7 +110,6 @@ async function encryptGCM(plaintext: string, keyString: string, version: number)
       version
     };
   } catch (error) {
-    console.error('Encryption error:', error);
     throw new Error('ENCRYPTION_FAILED: ' + (error as Error).message);
   }
 }
@@ -132,7 +129,6 @@ async function getUserFromRequest(req: Request) {
   const { data: { user }, error } = await supabase.auth.getUser(token);
 
   if (error) {
-    console.error('Auth error:', error);
     return null;
   }
 
@@ -149,7 +145,6 @@ serve(async (req) => {
 
     const user = await getUserFromRequest(req);
     if (!user) {
-      console.error('Authentication failed - no user found');
       return new Response(
         JSON.stringify({
           success: false,
@@ -168,7 +163,6 @@ serve(async (req) => {
     try {
       body = await req.json();
     } catch (e) {
-      console.error('Failed to parse request body:', e);
       return new Response(
         JSON.stringify({
           success: false,
@@ -185,7 +179,6 @@ serve(async (req) => {
 
     // Validate required fields
     if (!account_number || !bank_code || !bank_name || !business_name || !email) {
-      console.error('Missing required fields');
       return new Response(
         JSON.stringify({
           success: false,
@@ -222,7 +215,6 @@ serve(async (req) => {
 
     const encryptionKey = getEncryptionKey();
     if (!encryptionKey) {
-      console.error('Encryption key not configured');
       return new Response(
         JSON.stringify({
           success: false,
@@ -268,7 +260,6 @@ serve(async (req) => {
           .single();
 
         if (updateError) {
-          console.error('Failed to update banking record:', updateError);
           return new Response(
             JSON.stringify({
               success: false,
@@ -290,7 +281,6 @@ serve(async (req) => {
           .single();
 
         if (insertError) {
-          console.error('Failed to create banking record:', insertError);
           return new Response(
             JSON.stringify({
               success: false,
@@ -318,7 +308,6 @@ serve(async (req) => {
         }
       );
     } catch (encryptError) {
-      console.error('Failed to encrypt banking details:', encryptError);
       return new Response(
         JSON.stringify({
           success: false,
@@ -331,7 +320,6 @@ serve(async (req) => {
       );
     }
   } catch (error) {
-    console.error('Unexpected error in encrypt-banking-details:', error);
     return new Response(
       JSON.stringify({
         success: false,

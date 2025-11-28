@@ -96,21 +96,9 @@ To fix this issue:
 Current environment: ${ENV.NODE_ENV}
     `;
 
-    console.error(errorMessage);
-
     // In production, log error but don't crash the app completely
     // This allows the app to show a proper error UI instead of blank screen
-    if (import.meta.env.PROD) {
-      console.error(
-        `❌ Missing required environment variables: ${missing.join(", ")}`,
-      );
-      console.error(
-        "⚠️ Application may not function correctly without proper configuration",
-      );
-      // Don't throw - let the app render and show environment error component
-    } else {
-      console.warn("⚠️ Using fallback environment variables for development");
-    }
+    // Don't throw - let the app render and show environment error component
   }
 
   // Additional validation for production
@@ -118,27 +106,9 @@ Current environment: ${ENV.NODE_ENV}
     import.meta.env.PROD &&
     ENV.VITE_SUPABASE_URL === DEV_FALLBACKS.VITE_SUPABASE_URL
   ) {
-    console.error(
-      "🚨 CRITICAL: Using development Supabase credentials in production! This is a security risk.",
-    );
-    console.error(
-      "Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables for production.",
-    );
+    // Using development Supabase credentials in production
   }
 
-  if (missing.length === 0) {
-    // Only log in development
-    if (import.meta.env.DEV) {
-      console.log("✅ Environment variables validated successfully");
-    }
-
-    // Warn about missing optional API keys in production
-    if (import.meta.env.PROD && missingOptional.length > 0) {
-      console.warn(
-        `⚠️ Optional API keys not set (some features may be limited): ${missingOptional.join(", ")}`,
-      );
-    }
-  }
 
   return missing.length === 0;
 };

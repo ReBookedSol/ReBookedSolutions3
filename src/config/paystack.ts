@@ -18,7 +18,6 @@ export const PAYSTACK_CONFIG = {
   // Get public key with fallback
   getPublicKey: () => {
     if (!PAYSTACK_CONFIG.isConfigured() && PAYSTACK_CONFIG.isDevelopment()) {
-      console.warn("��️ Using development fallback - Paystack not configured");
       return "pk_test_development_fallback";
     }
     return PAYSTACK_CONFIG.PUBLIC_KEY;

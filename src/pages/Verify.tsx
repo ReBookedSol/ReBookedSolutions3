@@ -33,9 +33,6 @@ const Verify = () => {
   useEffect(() => {
     const handleVerification = async () => {
       try {
-        console.log("🔍 Starting email verification process");
-        console.log("📍 Current URL:", window.location.href);
-
         // Extract parameters to check if we have verification tokens
         const token = searchParams.get("token");
         const tokenHash = searchParams.get("token_hash");
@@ -43,7 +40,6 @@ const Verify = () => {
 
         // If we have verification parameters, add a delay to ensure Supabase client is ready
         if ((token || tokenHash) && type) {
-          console.log("⏱️ Delaying verification to ensure Supabase client is ready...");
           await new Promise(resolve => setTimeout(resolve, 500));
         }
 
@@ -52,7 +48,6 @@ const Verify = () => {
         const fallback = searchParams.get("fallback");
 
         if (fallback === "true" && email) {
-          console.log("🔄 Processing backup verification for:", email);
           const success = BackupEmailService.verifyEmailFallback(email);
 
           if (success) {
@@ -85,7 +80,6 @@ const Verify = () => {
           fallback
         };
 
-        console.log("🔍 All URL parameters:", urlParams);
         setDebugInfo(urlParams);
 
         // Use the verification service
@@ -95,7 +89,6 @@ const Verify = () => {
         );
 
         if (result.success) {
-          console.log("✅ Email verification successful:", result);
           setStatus("success");
           setMessage(result.message);
           toast.success("Email verified successfully!");
@@ -105,8 +98,6 @@ const Verify = () => {
             navigate("/", { replace: true });
           }, 2000);
         } else {
-          console.error("❌ Email verification failed:", result);
-
           // Get user-friendly error message
           const errorMessage =
             EmailVerificationService.getFormattedErrorMessage?.(result) ||
@@ -121,7 +112,6 @@ const Verify = () => {
           ) {
             // Try backup verification if email is present
             if (email) {
-              console.log("🔄 Trying backup verification for:", email);
               const backupSuccess = BackupEmailService.verifyEmailFallback(email);
 
               if (backupSuccess) {
@@ -157,7 +147,6 @@ const Verify = () => {
           }
         }
       } catch (error: unknown) {
-        console.error("❌ Email verification exception:", error);
         setStatus("error");
 
         const errorMessage = getSafeErrorMessage(error, "Unexpected error during verification");
@@ -207,8 +196,6 @@ const Verify = () => {
     }
 
     try {
-      console.log("🔐 Attempting manual verification");
-
       const verificationData = tokenHash
         ? {
             token_hash: tokenHash,
@@ -222,10 +209,8 @@ const Verify = () => {
       const { data, error } = await supabase.auth.verifyOtp(verificationData);
 
       if (error) {
-        console.error("❌ Manual verification error:", error);
         toast.error(`Manual verification failed: ${error.message}`);
       } else if (data.session) {
-        console.log("✅ Manual verification successful");
         setStatus("success");
         setMessage("Email verified successfully! You are now logged in.");
         toast.success("Email verified successfully!");
@@ -234,7 +219,6 @@ const Verify = () => {
         toast.error("Verification did not return a session");
       }
     } catch (error: unknown) {
-      console.error("❌ Exception during manual verification:", error);
       const errorMessage = getSafeErrorMessage(error, "Manual verification failed");
       toast.error(`Manual verification failed: ${errorMessage}`);
     }

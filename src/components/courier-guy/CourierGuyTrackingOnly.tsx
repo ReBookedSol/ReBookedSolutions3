@@ -40,7 +40,6 @@ const CourierGuyTrackingOnly = () => {
         },
       );
     } catch (error) {
-      console.error("Error loading eligibility data:", error);
       setEligibility({
         canSell: false,
         canBuy: false,

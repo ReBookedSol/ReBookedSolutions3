@@ -118,17 +118,11 @@ export const validateProductionConfig = () => {
     warnings.push('VITE_GOOGLE_MAPS_API_KEY is not set - map features will be limited');
   }
 
-  // Log results
+  // Return results
   if (errors.length > 0) {
-    console.error('🚨 Production Configuration Errors:', errors);
     return false;
   }
 
-  if (warnings.length > 0) {
-    console.warn('⚠️ Production Configuration Warnings:', warnings);
-  }
-
-  console.log('✅ Production configuration validated successfully');
   return true;
 };
 

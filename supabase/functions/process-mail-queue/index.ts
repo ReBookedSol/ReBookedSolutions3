@@ -185,8 +185,6 @@ serve(async (req) => {
       }
     }
 
-    console.log(`📊 Processing complete: ${successCount} sent, ${failureCount} failed`);
-
     return new Response(
       JSON.stringify({
         success: true,

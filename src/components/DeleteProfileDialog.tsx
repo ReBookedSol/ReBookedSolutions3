@@ -54,7 +54,6 @@ const DeleteProfileDialog = ({ isOpen, onClose }: DeleteProfileDialogProps) => {
       };
 
       // Store feedback for admin dashboard (placeholder - would be actual API call)
-      console.log("Feedback data for admin:", feedbackData);
 
       // Here you would implement the actual profile deletion logic
       await new Promise((resolve) => setTimeout(resolve, 2000));

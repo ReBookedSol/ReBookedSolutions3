@@ -29,9 +29,6 @@ const validateSupabaseConfig = () => {
 
   // Validate API key format to prevent malformed keys with newlines
   const cleanKey = ENV.VITE_SUPABASE_ANON_KEY.replace(/\s+/g, '');
-  if (cleanKey !== ENV.VITE_SUPABASE_ANON_KEY) {
-    console.warn('Supabase API key contains whitespace/newlines - cleaning it');
-  }
 
   // Check for basic JWT structure (should have 3 parts separated by dots)
   const keyParts = cleanKey.split('.');
@@ -59,8 +56,6 @@ const createSupabaseClient = () => {
     return supabaseInstance;
   }
 
-  console.log('[Supabase] Creating new client instance');
-
   supabaseInstance = createClient<Database>(
     ENV.VITE_SUPABASE_URL,
     cleanApiKey, // Use cleaned API key
@@ -84,22 +79,15 @@ const createSupabaseClient = () => {
         reconnectAfterMs: (retries) => {
           // Stop attempting after 5 retries to prevent endless loops
           if (retries >= 5) {
-            console.log(`[Supabase] Max reconnection attempts reached (${retries + 1}), stopping`);
             return false; // Stop reconnecting completely
           }
           // Exponential backoff: 1s, 2s, 4s, 8s, 10s
           const delay = Math.min(1000 * Math.pow(2, retries), 10000);
-          console.log(`[Supabase] Reconnecting in ${delay}ms (attempt ${retries + 1}/5)`);
           return delay;
         },
         // Increase timeout for slower connections
         timeout: 20000,
-        // Log WebSocket events in development
-        logger: import.meta.env.DEV ? (level, message, ...args) => {
-          if (level === 'error' || level === 'warn') {
-            console.log(`[Supabase Realtime ${level.toUpperCase()}]`, message, ...args);
-          }
-        } : undefined,
+        logger: undefined,
       },
       global: {
         headers: {

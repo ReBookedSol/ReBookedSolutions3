@@ -172,7 +172,6 @@ const Checkout: React.FC = () => {
         .single();
 
       if (bookError) {
-        console.error("Book query error:", bookError);
         throw new Error(`Failed to load book details: ${bookError.message}`);
       }
 
@@ -248,10 +247,6 @@ const Checkout: React.FC = () => {
 
       setBook(checkoutBook);
     } catch (err) {
-      console.error("Error loading book data:", err);
-      console.error("Original Book ID:", id);
-      console.error("Full error:", err);
-
       const errorMessage =
         err instanceof Error ? err.message : "Failed to load book";
       setError(errorMessage);

@@ -71,32 +71,12 @@ const Cart = () => {
 
     setIsProcessing(true);
 
-    console.log('🛒 CHECKOUT DEBUG:', {
-      sellerId,
-      cartToCheckout: cartToCheckout ? {
-        sellerId: cartToCheckout.sellerId,
-        sellerName: cartToCheckout.sellerName,
-        itemCount: cartToCheckout.items.length
-      } : null,
-      itemsToCheckout: itemsToCheckout.map(item => ({
-        bookId: item.bookId,
-        title: item.title,
-        price: item.price
-      })),
-      itemCount: itemsToCheckout.length
-    });
 
     try {
       // Use cart checkout for multiple items OR when explicitly using seller cart checkout
       const forceCartCheckout = sellerId !== undefined; // User clicked "Checkout This Cart"
 
       if (itemsToCheckout.length > 1 || forceCartCheckout) {
-        console.log('🛒 Using cart checkout:', {
-          reason: itemsToCheckout.length > 1 ? 'multiple items' : 'explicit cart checkout',
-          itemCount: itemsToCheckout.length,
-          forceCartCheckout
-        });
-
         // Multiple items from same seller - store cart data and navigate to cart checkout
         const checkoutCartData = {
           items: itemsToCheckout,
@@ -106,8 +86,6 @@ const Cart = () => {
           timestamp: Date.now(),
           cartType: sellerId ? 'seller-cart' : 'legacy-cart'
         };
-
-        console.log('🛒 Storing cart data:', checkoutCartData);
 
         // Clear any previous checkout data to prevent conflicts
         localStorage.removeItem('checkoutCart');
@@ -123,15 +101,12 @@ const Cart = () => {
         navigate(`/checkout-cart?t=${timestamp}`);
 
       } else if (itemsToCheckout.length === 1) {
-        console.log('🛒 Single item detected, using single book checkout');
         // Single item checkout
         navigate(`/checkout/${itemsToCheckout[0].bookId}`);
       } else {
-        console.log('🛒 No items to checkout');
         toast.error("No items to checkout");
       }
     } catch (error) {
-      console.error("Checkout error:", error);
       toast.error("Failed to proceed to checkout");
     } finally {
       setIsProcessing(false);

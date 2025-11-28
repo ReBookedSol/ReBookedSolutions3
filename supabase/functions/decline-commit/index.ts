@@ -102,11 +102,6 @@ serve(async (req) => {
       );
     }
 
-    console.log("📦 Order found:", {
-      order_id: order.id,
-      book_id: order.book_id,
-      items_count: order.items ? (Array.isArray(order.items) ? order.items.length : 0) : 0,
-    });
 
     const buyer = {
       id: order.buyer_id,
@@ -121,7 +116,6 @@ serve(async (req) => {
     };
 
     // Update order status to declined
-    console.log("📝 Updating order status to declined...");
     const { error: updateError } = await supabase
       .from("orders")
       .update({
@@ -132,7 +126,6 @@ serve(async (req) => {
       .eq("id", order_id);
 
     if (updateError) {
-      console.error("❌ Order update error:", updateError);
       return new Response(
         JSON.stringify({
           success: false,
@@ -147,12 +140,10 @@ serve(async (req) => {
       );
     }
 
-    console.log("✅ Order status updated to declined");
 
     // Process BobPay refund if payment reference exists
     let refundResult: any = null;
     if (order.payment_reference) {
-      console.log("💳 Processing refund for order:", order_id);
 
       try {
         const refundResponse = await fetch(
@@ -173,24 +164,20 @@ serve(async (req) => {
         refundResult = await refundResponse.json();
 
         if (refundResult.success) {
-          console.log("✅ Refund successful");
+          // Refund successful
         } else {
-          console.error("❌ Refund failed:", refundResult.error);
+          // Refund failed
         }
       } catch (refundError) {
-        console.error("⚠️ Refund processing error:", refundError);
         refundResult = {
           success: false,
           error: refundError instanceof Error ? refundError.message : String(refundError),
         };
       }
-    } else {
-      console.warn("⚠️ No payment reference found for order");
     }
 
     // Create database notifications
     try {
-      console.log("📬 Creating notifications...");
       const notifications = [];
 
       if (buyer.id) {
@@ -223,14 +210,11 @@ serve(async (req) => {
       }
 
       await Promise.allSettled(notifications);
-      console.log("✅ Database notifications created");
     } catch (notificationError) {
-      console.error("⚠️ Notification error:", notificationError);
     }
 
     // Send email notifications
     try {
-      console.log("📧 Sending email notifications...");
       const emailPromises = [];
 
       // Email to buyer
@@ -280,12 +264,9 @@ serve(async (req) => {
       }
 
       await Promise.allSettled(emailPromises);
-      console.log("✅ Notification emails sent successfully");
     } catch (emailError) {
-      console.error("⚠️ Email sending error:", emailError);
     }
 
-    console.log("🎉 Order decline process completed successfully");
 
     return new Response(
       JSON.stringify({
@@ -308,7 +289,6 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("❌ Decline commit error:", error);
     return new Response(
       JSON.stringify({
         success: false,

@@ -181,7 +181,6 @@ serve(async (req) => {
       const bodyText = await req.text();
       requestData = bodyText ? JSON.parse(bodyText) : {};
     } catch (parseError) {
-      console.error("❌ Error parsing request body:", parseError);
       return new Response(
         JSON.stringify({
           success: false,
@@ -250,7 +249,6 @@ serve(async (req) => {
       .single();
 
     if (orderError || !order) {
-      console.error("❌ Error fetching order:", orderError);
       return new Response(
         JSON.stringify({
           success: false,
@@ -262,16 +260,9 @@ serve(async (req) => {
       );
     }
 
-    console.log("📦 Order found:", {
-      order_id,
-      book_id: order.book_id,
-      seller_email: order.seller_email,
-      seller_name: order.seller_full_name
-    });
 
     // Check if book_id exists
     if (!order.book_id) {
-      console.error("❌ Order has no book_id");
       return new Response(
         JSON.stringify({
           success: false,
@@ -291,7 +282,6 @@ serve(async (req) => {
       .single();
 
     if (bookError || !book) {
-      console.error("❌ Error fetching book:", bookError);
       return new Response(
         JSON.stringify({
           success: false,
@@ -303,7 +293,6 @@ serve(async (req) => {
       );
     }
 
-    console.log("📚 Book found:", { book_id: book.id, title: book.title, price: book.price });
 
     // Use the book's price directly
     const bookPrice = Number(book.price);
@@ -321,7 +310,6 @@ serve(async (req) => {
       );
     }
 
-    console.log("💰 Calculating credit: Book price =", bookPrice, "(90% =", (bookPrice * 0.9), ")");
 
     // Check if seller has active banking details
     const { data: bankingDetails } = await supabase
@@ -333,7 +321,6 @@ serve(async (req) => {
 
     // If seller has active banking details, payment will be sent directly
     if (bankingDetails) {
-      console.log("🏦 Seller has banking details - payment via direct transfer");
       return new Response(
         JSON.stringify({
           success: true,
@@ -348,8 +335,6 @@ serve(async (req) => {
     }
 
     // No banking details - credit wallet
-    console.log("💳 Crediting wallet with book price:", bookPrice);
-
     // Call RPC with explicit numeric type cast
     const { data: creditResult, error: creditError } = await supabase
       .rpc('credit_wallet_on_collection', {
@@ -359,7 +344,6 @@ serve(async (req) => {
       });
 
     if (creditError) {
-      console.error("❌ RPC Error crediting wallet:", creditError);
       return new Response(
         JSON.stringify({
           success: false,
@@ -378,7 +362,6 @@ serve(async (req) => {
 
     // Check RPC response
     if (!creditResult || !Array.isArray(creditResult) || creditResult.length === 0) {
-      console.error("❌ Invalid RPC response:", creditResult);
       return new Response(
         JSON.stringify({
           success: false,
@@ -394,7 +377,6 @@ serve(async (req) => {
     const rpcResult = creditResult[0];
 
     if (!rpcResult.success) {
-      console.error("❌ Wallet credit failed:", rpcResult.error_message);
       return new Response(
         JSON.stringify({
           success: false,
@@ -408,7 +390,6 @@ serve(async (req) => {
       );
     }
 
-    console.log("✅ Wallet credited successfully");
 
     // Get amounts from RPC result (already in rands, not cents)
     const creditAmount = Number(rpcResult.credit_amount);
@@ -419,8 +400,6 @@ serve(async (req) => {
     const sellerName = order.seller_full_name || "Seller";
 
     if (sellerEmail) {
-      console.log("👤 Seller found:", sellerName, sellerEmail);
-      console.log("💰 New wallet balance:", newBalance);
 
       // Create in-app notification
       try {
@@ -432,12 +411,11 @@ serve(async (req) => {
         });
 
         if (notifError) {
-          console.error("❌ Error creating in-app notification:", notifError);
+          // Failed to create notification
         } else {
-          console.log("✅ In-app notification created successfully");
+          // Notification created
         }
       } catch (notificationError) {
-        console.error("❌ Exception creating in-app notification:", notificationError);
       }
 
       // Send email notification
@@ -475,12 +453,11 @@ serve(async (req) => {
         });
 
         if (emailError) {
-          console.error("❌ Error sending email:", emailError);
+          // Failed to send email
         } else {
-          console.log("✅ Credit notification email sent successfully:", emailResult);
+          // Email sent successfully
         }
       } catch (emailError) {
-        console.error("❌ Exception sending email:", emailError);
       }
     } else {
       console.log("⚠️ Seller email not found in order");
@@ -501,7 +478,6 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error("❌ Error in credit-wallet-on-collection:", error);
     return new Response(
       JSON.stringify({
         success: false,

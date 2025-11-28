@@ -12,8 +12,6 @@ interface SellerInfoProps {
 }
 
 const SellerInfo = ({ seller, onViewProfile }: SellerInfoProps) => {
-  console.log("SellerInfo received seller data:", seller);
-
   return (
     <Card>
       <CardContent className="p-4">

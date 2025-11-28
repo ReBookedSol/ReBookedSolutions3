@@ -120,7 +120,6 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
 
       return addressData;
     } catch (err) {
-      console.error('Error extracting address data:', err);
       return null;
     }
   };
@@ -172,7 +171,6 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
       const errorMsg = err instanceof Error ? err.message : 'Unknown error';
       setLocalError(`Failed to initialize autocomplete: ${errorMsg}`);
       setIsInitializing(false);
-      console.error('Failed to initialize autocomplete:', err);
     }
   };
 

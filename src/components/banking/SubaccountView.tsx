@@ -78,7 +78,6 @@ const SubaccountView: React.FC<SubaccountViewProps> = ({
         }
       }
     } catch (error) {
-      console.error("Error loading subaccount data:", error);
       setError("Failed to load subaccount details");
     } finally {
       setIsLoading(false);
@@ -90,12 +89,10 @@ const SubaccountView: React.FC<SubaccountViewProps> = ({
   }, []);
 
   const handleEdit = () => {
-    console.log('Edit button clicked:', { onEdit: !!onEdit, isEditing });
     if (onEdit) {
       try {
         onEdit();
       } catch (error) {
-        console.error('Error calling onEdit:', error);
         toast.error('Failed to enter edit mode');
       }
     } else {

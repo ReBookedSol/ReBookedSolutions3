@@ -58,7 +58,6 @@ export default function PasswordVerificationForm({ onVerified, onCancel }: Passw
         setError("Password verification failed. Please try again.");
       }
     } catch (err: any) {
-      console.error("Password verification error:", err);
       setError("An error occurred during verification. Please try again.");
     } finally {
       setIsVerifying(false);

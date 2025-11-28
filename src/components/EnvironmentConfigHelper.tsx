@@ -66,14 +66,10 @@ const EnvironmentConfigHelper: React.FC = () => {
       });
       
       if (response.ok) {
-        console.log("✅ Supabase connection successful");
         // Refresh the page to apply the working configuration
         window.location.reload();
-      } else {
-        console.log("❌ Supabase responded with error:", response.status);
       }
     } catch (error) {
-      console.log("❌ Failed to connect to Supabase:", error);
     } finally {
       setIsLoading(false);
     }
@@ -159,7 +155,6 @@ const EnvironmentConfigHelper: React.FC = () => {
               <Button 
                 onClick={() => {
                   // This will be handled by the MCP system
-                  console.log("Opening MCP popover...");
                 }}
                 className="bg-blue-600 hover:bg-blue-700"
               >

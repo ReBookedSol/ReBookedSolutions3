@@ -89,7 +89,6 @@ export const ManualAddressInput = ({
         setSuggestions(results);
         setShowDropdown(results.length > 0);
       } catch (error) {
-        console.error("Error fetching suggestions:", error);
         setSuggestions([]);
       } finally {
         setIsLoading(false);
@@ -117,7 +116,7 @@ export const ManualAddressInput = ({
         });
       }
     } catch (error) {
-      console.error("Error fetching address details:", error);
+      // Error fetching address details
     } finally {
       setIsLoading(false);
     }

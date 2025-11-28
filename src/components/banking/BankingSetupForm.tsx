@@ -106,7 +106,6 @@ const BankingSetupForm: React.FC<BankingSetupFormProps> = ({
         );
         setAccountValidation(result);
       } catch (error) {
-        console.error("Account validation error:", error);
         setAccountValidation({ valid: false });
       }
       setIsValidatingAccount(false);

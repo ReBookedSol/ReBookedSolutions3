@@ -33,7 +33,6 @@ const Navbar = () => {
     isLoading = auth.isLoading;
     profile = auth.profile;
   } catch (error) {
-    console.warn("Auth context not available in Navbar, using default values");
     // Fallback values already set above
   }
 
@@ -48,7 +47,6 @@ const Navbar = () => {
       toast.success(`Successfully logged out. Goodbye!`);
       navigate("/");
     } catch (error) {
-      console.error("Logout error:", error);
       toast.error("Failed to logout. Please try again.");
     }
   };

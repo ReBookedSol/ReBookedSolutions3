@@ -94,12 +94,6 @@ class NetworkErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Only log non-network errors to avoid spam
-    if (
-      !error.message.includes("Failed to fetch") &&
-      !error.message.includes("fullstory")
-    ) {
-      console.error("NetworkErrorBoundary caught an error:", error, errorInfo);
-    }
   }
 
   private handleRetry = () => {

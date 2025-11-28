@@ -40,8 +40,6 @@ const BankingRequirementCheck: React.FC<BankingRequirementCheckProps> = ({
 
     try {
       setLoading(true);
-      console.log("🔍 Checking listing requirements for user:", user.id, forceRefresh ? "(forced refresh)" : "");
-
       // Check for saved locker
       let hasSavedLocker = false;
       try {
@@ -55,17 +53,15 @@ const BankingRequirementCheck: React.FC<BankingRequirementCheckProps> = ({
           const lockerData = profile.preferred_delivery_locker_data as any;
           if (lockerData.id && lockerData.name) {
             hasSavedLocker = true;
-            console.log("📍 User has saved locker");
           }
         }
       } catch (error) {
-        console.warn("Failed to check saved locker:", error);
+        // Failed to check locker
       }
 
       // Check pickup address from seller requirements
       const requirements = await BankingService.getSellerRequirements(user.id);
 
-      console.log("✅ Locker result:", hasSavedLocker, "📍 Address result:", requirements);
 
       // User can list if they have EITHER locker OR pickup address
       const canList = hasSavedLocker || requirements.hasPickupAddress;
@@ -81,12 +77,10 @@ const BankingRequirementCheck: React.FC<BankingRequirementCheckProps> = ({
         ],
       };
 
-      console.log("📊 Final listing requirements status:", status);
 
       setBankingStatus(status);
       onCanProceed(status.canListBooks);
     } catch (error) {
-      console.error("Error checking listing requirements:", error);
       onCanProceed(false);
     } finally {
       setLoading(false);

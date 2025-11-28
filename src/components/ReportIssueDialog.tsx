@@ -63,16 +63,12 @@ const ReportIssueDialog = ({ isOpen, onClose }: ReportIssueDialogProps) => {
     
     try {
       // Simulate API call - replace with actual implementation
-      if (import.meta.env.DEV) {
-        console.log('Submitting report');
-      }
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       toast.success('Report submitted successfully! We\'ll get back to you soon.');
       resetForm();
       onClose();
     } catch (error) {
-      console.error('Error submitting report:', error);
       toast.error('Failed to submit report. Please try again.');
     } finally {
       setIsSubmitting(false);
