@@ -75,7 +75,7 @@ export default function BankingForm({ onSuccess, onCancel }: BankingFormProps) {
         setFormData((p) => ({ ...p, email: session.user.email || "" }));
       }
     } catch (e) {
-      console.error("Error loading banking details:", e);
+      // Error loading banking details
     }
   };
 
@@ -120,7 +120,6 @@ export default function BankingForm({ onSuccess, onCancel }: BankingFormProps) {
       if (!session) throw new Error("Please log in to continue");
 
       // Encrypt and save banking details via edge function (which handles DB save)
-      console.log("🔒 Starting banking details encryption and save...");
       const encryptionResult = await BankingEncryptionService.encryptBankingDetails(
         formData.accountNumber,
         branchCode,
@@ -133,7 +132,6 @@ export default function BankingForm({ onSuccess, onCancel }: BankingFormProps) {
         throw new Error(encryptionResult.error || "Failed to encrypt and save banking details");
       }
 
-      console.log("✅ Banking details encrypted and saved successfully");
 
       // Edge function already saved to banking_subaccounts, now just update profile
       const subaccountCode = `ACCT_${session.user.id}_${Date.now()}`;
@@ -156,15 +154,13 @@ export default function BankingForm({ onSuccess, onCancel }: BankingFormProps) {
         .eq("id", session.user.id);
 
       if (profileError) {
-        console.warn("⚠️ Warning: Profile update had an issue (non-critical):", profileError);
+        // Profile update had an issue (non-critical)
       }
 
       // Log the banking update activity
       try {
         await ActivityService.logBankingUpdate(session.user.id, isEditMode);
-        console.log("✅ Banking update activity logged");
       } catch (activityError) {
-        console.warn("⚠️ Failed to log banking update activity:", activityError);
       }
 
       toast({ title: "Success!", description: isEditMode ? "Banking details updated securely!" : "Banking details saved securely!" });
@@ -174,7 +170,6 @@ export default function BankingForm({ onSuccess, onCancel }: BankingFormProps) {
         navigate("/profile");
       }
     } catch (err: any) {
-      console.error("Banking form submission error:", err);
       toast({ title: "Error", description: err.message || "Something went wrong", variant: "destructive" });
     } finally {
       setIsSubmitting(false);

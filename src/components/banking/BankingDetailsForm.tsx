@@ -105,7 +105,7 @@ const BankingDetailsForm: React.FC<BankingDetailsFormProps> = ({
           setBranchCode("");
         }
       } catch (error) {
-        console.warn("Failed to load existing banking details:", error);
+        // Failed to load existing banking details
       } finally {
         setIsLoading(false);
       }
@@ -132,7 +132,7 @@ const BankingDetailsForm: React.FC<BankingDetailsFormProps> = ({
         setHasAutofilled(true);
       }
     } catch (error) {
-      console.error("Error autofilling user info:", error);
+      // Error autofilling user info
     }
   };
 
