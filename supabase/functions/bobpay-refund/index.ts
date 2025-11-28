@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
       );
       user = authUser;
     } catch (authError) {
-      console.log('Auth failed, proceeding as admin operation:', authError);
+      // Auth failed - will proceed as admin operation
     }
 
     const body = await req.json().catch(() => null);
@@ -48,8 +48,6 @@ Deno.serve(async (req) => {
 
     const orderId = refundData.order_id;
     const reason = refundData.reason;
-
-    console.log('Processing BobPay refund:', refundData);
 
     // Get order details with payment transactions
     const { data: order, error: orderError } = await supabaseClient
@@ -69,15 +67,6 @@ Deno.serve(async (req) => {
       .eq('order_id', orderId)
       .order('created_at', { ascending: false });
 
-    if (paymentsError) {
-      console.error('Error fetching payment transactions:', paymentsError);
-    }
-
-    console.log('Found payment transactions:', payments?.length || 0);
-
-    // Skip authorization checks and eligibility checks - allow refund regardless of status
-    console.log('Forcing refund regardless of status for order:', order.id);
-
     // Get custom_payment_id from payment transaction - try multiple sources
     let customPaymentId = null;
     let paymentTransaction = null;
@@ -89,7 +78,6 @@ Deno.serve(async (req) => {
         if (tx.custom_payment_id) {
           customPaymentId = tx.custom_payment_id;
           paymentTransaction = tx;
-          console.log('Found custom_payment_id from column:', customPaymentId);
           break;
         }
 
@@ -98,7 +86,6 @@ Deno.serve(async (req) => {
         if (bobpayResponse?.custom_payment_id) {
           customPaymentId = bobpayResponse.custom_payment_id;
           paymentTransaction = tx;
-          console.log('Found custom_payment_id from bobpay_response:', customPaymentId);
           break;
         }
 
@@ -106,7 +93,6 @@ Deno.serve(async (req) => {
         if (tx.reference && tx.reference.startsWith('ORDER-')) {
           customPaymentId = tx.reference;
           paymentTransaction = tx;
-          console.log('Using reference as custom_payment_id:', customPaymentId);
           break;
         }
       }
@@ -115,14 +101,11 @@ Deno.serve(async (req) => {
     // If still not found, try order payment_reference
     if (!customPaymentId && order.payment_reference) {
       customPaymentId = order.payment_reference;
-      console.log('Using order payment_reference as custom_payment_id:', customPaymentId);
     }
 
     if (!customPaymentId) {
       throw new Error('No custom_payment_id found for this order. Cannot process refund.');
     }
-
-    console.log('Initiating BobPay refund for custom_payment_id:', customPaymentId);
 
     // Calculate refund amount - payment_transactions stores in cents (bigint)
     let refundAmountInCents = 0;
@@ -131,25 +114,13 @@ Deno.serve(async (req) => {
     if (paymentTransaction) {
       refundAmountInCents = paymentTransaction.amount;
       refundAmountInZAR = refundAmountInCents / 100;
-      console.log('Using amount from payment_transaction:', {
-        cents: refundAmountInCents,
-        zar: refundAmountInZAR,
-      });
     } else if (order.total_amount) {
       refundAmountInZAR = parseFloat(order.total_amount);
       refundAmountInCents = Math.round(refundAmountInZAR * 100);
-      console.log('Using total_amount from order:', {
-        cents: refundAmountInCents,
-        zar: refundAmountInZAR,
-      });
     } else if (order.amount) {
       // order.amount is integer, might be in cents
       refundAmountInCents = order.amount;
       refundAmountInZAR = refundAmountInCents / 100;
-      console.log('Using amount from order:', {
-        cents: refundAmountInCents,
-        zar: refundAmountInZAR,
-      });
     }
 
     // Get BobPay credentials
@@ -175,14 +146,11 @@ Deno.serve(async (req) => {
 
         if (refundResponse.ok) {
           refundResult = await refundResponse.json();
-          console.log('BobPay refund successful:', refundResult);
         } else {
           const errorText = await refundResponse.text();
-          console.error('BobPay API error:', errorText);
           throw new Error(`BobPay API error: ${errorText}`);
         }
       } catch (apiError) {
-        console.error('BobPay API call failed:', apiError);
         throw apiError;
       }
     } else {
@@ -214,7 +182,6 @@ Deno.serve(async (req) => {
       .single();
 
     if (refundTxError) {
-      console.error('Error creating refund transaction:', refundTxError);
       throw new Error(`Failed to create refund transaction: ${refundTxError.message}`);
     }
 
@@ -228,10 +195,6 @@ Deno.serve(async (req) => {
         updated_at: new Date().toISOString(),
       })
       .eq('id', orderId);
-
-    if (orderUpdateError) {
-      console.error('Error updating order status:', orderUpdateError);
-    }
 
     // Create notifications
     try {
@@ -252,7 +215,7 @@ Deno.serve(async (req) => {
         },
       ]);
     } catch (notifError) {
-      console.error('Failed to create notifications, but refund was successful:', notifError);
+      // Notification error - continue with refund
     }
 
     return new Response(
@@ -273,8 +236,6 @@ Deno.serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error in bobpay-refund:', error);
-
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
 
     // Log failed refund attempt if order_id is available
@@ -297,7 +258,7 @@ Deno.serve(async (req) => {
           },
         });
       } catch (logError) {
-        console.error('Failed to log refund error:', logError);
+        // Error logging - continue
       }
     }
 
