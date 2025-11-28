@@ -159,7 +159,6 @@ const EnhancedAddressEditDialog = ({
       setShippingCoords({ lat, lng });
     }
 
-    console.log("Pickup address selected:", newAddress);
   };
 
   const handleShippingPlaceChanged = () => {
@@ -208,7 +207,6 @@ const EnhancedAddressEditDialog = ({
     setShippingAddress(newAddress);
     setShippingCoords({ lat, lng });
 
-    console.log("Shipping address selected:", newAddress);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -246,7 +244,6 @@ const EnhancedAddressEditDialog = ({
       toast.success("Addresses updated successfully!");
       onClose();
     } catch (error) {
-      console.error("Error saving addresses:", error);
       toast.error("Failed to save addresses. Please try again.");
     } finally {
       setIsSubmitting(false);
