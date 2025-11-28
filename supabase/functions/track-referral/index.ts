@@ -27,12 +27,6 @@ serve(async (req) => {
     // Trim and normalize the affiliate code
     const normalizedCode = affiliate_code?.trim()?.toUpperCase();
 
-    console.log('Tracking referral:', { 
-      original_code: affiliate_code, 
-      normalized_code: normalizedCode,
-      new_user_id 
-    });
-
     if (!normalizedCode) {
       return new Response(
         JSON.stringify({ error: 'Affiliate code is required' }),
@@ -48,15 +42,11 @@ serve(async (req) => {
       .eq('is_affiliate', true)
       .maybeSingle();
 
-    console.log('Affiliate lookup result:', { affiliate, affiliateError });
-
     if (affiliateError) {
-      console.error('Error looking up affiliate:', affiliateError);
       throw affiliateError;
     }
 
     if (!affiliate) {
-      console.error('Affiliate not found for code:', affiliate_code);
       return new Response(
         JSON.stringify({ error: 'Invalid affiliate code' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
@@ -71,12 +61,10 @@ serve(async (req) => {
       .maybeSingle();
 
     if (existingError) {
-      console.error('Error checking existing referral:', existingError);
       throw existingError;
     }
 
     if (existing) {
-      console.log('User already referred');
       return new Response(
         JSON.stringify({ message: 'User already has a referrer' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
@@ -94,18 +82,15 @@ serve(async (req) => {
       .single();
 
     if (referralError) {
-      console.error('Error creating referral:', referralError);
       throw referralError;
     }
 
-    console.log('Referral created:', referral);
 
     return new Response(
       JSON.stringify({ success: true, referral }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
   } catch (error) {
-    console.error('Error in track-referral:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({ error: errorMessage }),
