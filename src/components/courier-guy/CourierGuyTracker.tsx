@@ -59,7 +59,6 @@ const CourierGuyTracker = ({
       setTrackingInfo(info);
       toast.success("Tracking information retrieved successfully!");
     } catch (error) {
-      console.error("Error tracking shipment:", error);
       const errorMessage =
         error instanceof Error ? error.message : "Failed to track shipment";
       toast.error(errorMessage);
