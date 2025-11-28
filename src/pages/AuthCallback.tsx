@@ -253,7 +253,6 @@ const AuthCallback = () => {
             }
             return;
           } else {
-            console.warn("⚠️ OTP verification succeeded but no session returned");
             setStatus("error");
             setMessage("Verification succeeded but session was not created. Please try logging in.");
             return;
@@ -262,20 +261,16 @@ const AuthCallback = () => {
 
         // Handle other types of auth callbacks (like OAuth)
         if (type) {
-          console.log("🔄 Processing auth type:", type);
-          
           // Let Supabase handle the session automatically
           const { data, error: authError } = await supabase.auth.getSession();
-          
+
           if (authError) {
-            console.error("❌ Session retrieval error:", authError);
             setStatus("error");
             setMessage("Failed to retrieve session. Please try logging in.");
             return;
           }
 
           if (data.session) {
-            console.log("✅ Session retrieved successfully");
             setStatus("success");
             setMessage("Successfully authenticated!");
             
@@ -289,7 +284,6 @@ const AuthCallback = () => {
         // If we get here, check once more if user got authenticated during the process
         const { data: finalSessionCheck } = await supabase.auth.getSession();
         if (finalSessionCheck.session && finalSessionCheck.user) {
-          console.log("✅ User authenticated during callback processing!");
           setStatus("success");
           setMessage("Authentication successful! You are now logged in.");
           toast.success("Successfully authenticated!");
