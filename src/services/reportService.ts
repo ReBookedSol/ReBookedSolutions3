@@ -28,7 +28,6 @@ export const submitReport = async (
       throw new Error("You must be logged in to submit a report");
     }
 
-    console.log("Submitting general report to reports table:", reportData);
 
     const id = (globalThis.crypto && 'randomUUID' in globalThis.crypto)
       ? globalThis.crypto.randomUUID()
@@ -48,19 +47,11 @@ export const submitReport = async (
     });
 
     if (error) {
-      console.error("Error submitting general report to reports:", {
-        code: (error as any)?.code,
-        message: (error as any)?.message,
-        details: (error as any)?.details,
-        hint: (error as any)?.hint,
-      });
       throw new Error((error as any)?.message || "Failed to submit report");
     }
 
-    console.log("General report saved in reports with id:", id);
     return { id };
   } catch (error) {
-    console.error("Error in submitReport:", error);
     throw new Error((error as any)?.message || "Failed to submit report");
   }
 };
@@ -69,7 +60,6 @@ export const submitBookReport = async (
   reportData: ReportData,
 ): Promise<void> => {
   try {
-    console.log("Submitting book report:", reportData);
     
     const { error } = await supabase.from("reports").insert({
       reported_user_id: reportData.reportedUserId,
@@ -82,21 +72,10 @@ export const submitBookReport = async (
     });
 
     if (error) {
-      console.error("Error submitting book report:", {
-        message: error.message || String(error),
-        code: error.code,
-        details: error.details
-      });
       throw error;
     }
 
-    console.log("Book report submitted successfully");
   } catch (error) {
-    console.error("Error in submitBookReport:", {
-      message: error instanceof Error ? error.message : String(error),
-      code: error?.code,
-      details: error?.details
-    });
     throw error;
   }
 };
@@ -109,13 +88,11 @@ export const getAllReports = async (): Promise<any[]> => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("Error fetching reports:", error);
       throw error;
     }
 
     return data || [];
   } catch (error) {
-    console.error("Error in getAllReports:", error);
     throw error;
   }
 };
@@ -131,13 +108,11 @@ export const getReportsByStatus = async (
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("Error fetching reports by status:", error);
       throw error;
     }
 
     return data || [];
   } catch (error) {
-    console.error("Error in getReportsByStatus:", error);
     throw error;
   }
 };
@@ -151,13 +126,11 @@ export const getSuspendedUsers = async (): Promise<any[]> => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("Error fetching suspended users:", error);
       throw error;
     }
 
     return data || [];
   } catch (error) {
-    console.error("Error in getSuspendedUsers:", error);
     throw error;
   }
 };
@@ -170,11 +143,9 @@ export const dismissReport = async (reportId: string): Promise<void> => {
       .eq("id", reportId);
 
     if (error) {
-      console.error("Error dismissing report:", error);
       throw error;
     }
   } catch (error) {
-    console.error("Error in dismissReport:", error);
     throw error;
   }
 };
@@ -219,7 +190,6 @@ export const banUserFromReport = async (
       throw resolveError;
     }
   } catch (error) {
-    console.error("Error banning user from report:", error);
     throw error;
   }
 };
@@ -264,7 +234,6 @@ export const suspendUserFromReport = async (
       throw resolveError;
     }
   } catch (error) {
-    console.error("Error suspending user from report:", error);
     throw error;
   }
 };

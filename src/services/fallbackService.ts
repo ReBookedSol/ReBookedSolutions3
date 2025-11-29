@@ -286,7 +286,6 @@ export function useServiceStatus() {
         lastChecked: new Date(),
       });
     } catch (error) {
-      console.error("Health check failed:", error);
     }
   }, []);
 

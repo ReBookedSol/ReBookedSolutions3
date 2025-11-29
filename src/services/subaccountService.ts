@@ -54,13 +54,11 @@ export class SubaccountService {
         .single();
 
       if (error) {
-        console.error("Error creating subaccount:", error);
         return { success: false, error: "Failed to create subaccount" };
       }
 
       return { success: true, subaccount: data };
     } catch (error) {
-      console.error("Subaccount creation error:", error);
       return { success: false, error: "An unexpected error occurred" };
     }
   }
@@ -86,13 +84,11 @@ export class SubaccountService {
           // No subaccount found
           return { success: true, subaccount: undefined };
         }
-        console.error("Error fetching subaccount:", error);
         return { success: false, error: "Failed to fetch subaccount" };
       }
 
       return { success: true, subaccount: data };
     } catch (error) {
-      console.error("Subaccount fetch error:", error);
       return { success: false, error: "An unexpected error occurred" };
     }
   }
@@ -119,13 +115,11 @@ export class SubaccountService {
         .single();
 
       if (error) {
-        console.error("Error updating subaccount:", error);
         return { success: false, error: "Failed to update subaccount" };
       }
 
       return { success: true, subaccount: data };
     } catch (error) {
-      console.error("Subaccount update error:", error);
       return { success: false, error: "An unexpected error occurred" };
     }
   }
@@ -145,13 +139,11 @@ export class SubaccountService {
         .eq("id", subaccountId);
 
       if (error) {
-        console.error("Error deactivating subaccount:", error);
         return { success: false, error: "Failed to deactivate subaccount" };
       }
 
       return { success: true };
     } catch (error) {
-      console.error("Subaccount deactivation error:", error);
       return { success: false, error: "An unexpected error occurred" };
     }
   }

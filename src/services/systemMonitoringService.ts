@@ -103,10 +103,6 @@ class SystemMonitoringService {
       );
     }
 
-    // Log to console in development
-    if (import.meta.env.DEV) {
-      console.error(`[${severity.toUpperCase()}] ${type}: ${message}`, context);
-    }
 
     return id;
   }
@@ -443,9 +439,6 @@ if (typeof window !== "undefined") {
   setInterval(
     () => {
       const cleaned = systemMonitor.cleanupOldErrors(7);
-      if (cleaned > 0 && import.meta.env.DEV) {
-        console.log(`Cleaned up ${cleaned} old error logs`);
-      }
     },
     24 * 60 * 60 * 1000,
   ); // Daily
