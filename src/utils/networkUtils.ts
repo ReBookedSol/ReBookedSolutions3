@@ -142,9 +142,6 @@ export const retryWithBackoff = async <T>(
       }
 
       const delay = baseDelay * Math.pow(2, attempt);
-      console.warn(
-        `[${context}] Attempt ${attempt + 1} failed, retrying in ${delay}ms...`,
-      );
 
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
