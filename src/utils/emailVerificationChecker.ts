@@ -17,7 +17,6 @@ export class EmailVerificationChecker {
    */
   static async checkEmailVerificationStatus(): Promise<EmailVerificationStatus> {
     try {
-      console.log("🔍 Checking email verification status...");
 
       // Create a test signup with a fake email to see the behavior
       const testEmail = `test-${Date.now()}@example-nonexistent.com`;
@@ -38,7 +37,7 @@ export class EmailVerificationChecker {
           // This might not work from client side, but try anyway
           await supabase.auth.admin.deleteUser(data.user.id);
         } catch (cleanupError) {
-          console.warn("Could not cleanup test user (expected):", cleanupError);
+          // Could not cleanup test user (expected)
         }
       }
 
@@ -99,7 +98,6 @@ export class EmailVerificationChecker {
         recommendation: "Review Supabase authentication configuration",
       };
     } catch (error) {
-      console.error("❌ Email verification check failed:", error);
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
 

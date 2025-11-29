@@ -65,12 +65,7 @@ export const safeLogError = (context: string, error: unknown, additionalData?: R
       ])
     ) : {};
 
-  console.error(`[${context}]`, {
-    message: errorMessage,
-    error: errorInfo,
-    timestamp: new Date().toISOString(),
-    ...cleanAdditionalData
-  });
+  // Error logged via safeLogError utility
 };
 
 export const formatSupabaseError = (error: any): string => {

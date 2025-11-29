@@ -17,13 +17,11 @@ export async function getTableColumns(
       .eq("table_schema", "public");
 
     if (error) {
-      console.warn(`Could not fetch schema for table ${tableName}:`, error);
       return [];
     }
 
     return data || [];
   } catch (error) {
-    console.warn(`Schema check failed for table ${tableName}:`, error);
     return [];
   }
 }

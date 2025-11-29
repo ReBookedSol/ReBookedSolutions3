@@ -64,57 +64,5 @@ export const verifyProgramAllocation = () => {
 // Run verification and log results
 export const logProgramVerification = () => {
   const results = verifyProgramAllocation();
-
-  console.log("🔍 PROGRAM ALLOCATION VERIFICATION");
-  console.log("==================================");
-  console.log(`📊 Total Universities: ${results.totalUniversities}`);
-  console.log(
-    `✅ Universities with Programs: ${results.universitiesWithPrograms}`,
-  );
-  console.log(`📚 Total Programs: ${results.totalPrograms}`);
-  console.log(
-    `🏫 Average Programs per University: ${Math.round(results.totalPrograms / results.universitiesWithPrograms)}`,
-  );
-
-  if (results.universitiesWithoutPrograms.length > 0) {
-    console.log(
-      `⚠️ Universities without programs: ${results.universitiesWithoutPrograms.join(", ")}`,
-    );
-  }
-
-  console.log("\n📈 Programs by Faculty:");
-  Object.entries(results.programsByFaculty)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 10)
-    .forEach(([faculty, count]) => {
-      console.log(`  • ${faculty}: ${count} programs`);
-    });
-
-  console.log("\n🎯 Sample Programs:");
-  results.samplePrograms.slice(0, 10).forEach((sample) => {
-    console.log(
-      `  • ${sample.program} (${sample.university}) - APS: ${sample.aps}`,
-    );
-  });
-
-  console.log("\n📋 Program Statistics:");
-  console.log(
-    `  • Total Program Templates: ${PROGRAM_STATISTICS.totalPrograms}`,
-  );
-  console.log(`  • Faculty Types: ${PROGRAM_STATISTICS.facultyCount}`);
-  console.log(
-    `  • Competitive Programs: ${PROGRAM_STATISTICS.competitivePrograms}`,
-  );
-  console.log(
-    `  • Universal Programs: ${PROGRAM_STATISTICS.universalPrograms}`,
-  );
-
   return results;
 };
-
-// Auto-run verification in development
-if (import.meta.env.DEV) {
-  setTimeout(() => {
-    logProgramVerification();
-  }, 1000);
-}

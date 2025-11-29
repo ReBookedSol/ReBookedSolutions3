@@ -111,8 +111,6 @@ export const logDetailedError = (
     isNetworkError: isNetworkError(error),
   };
 
-  console.error(`[${context}] Error occurred:`, errorInfo);
-
   return errorInfo;
 };
 

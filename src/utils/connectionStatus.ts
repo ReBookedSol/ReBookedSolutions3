@@ -37,7 +37,6 @@ export async function testSupabaseConnection(): Promise<boolean> {
     
     return !error;
   } catch (error) {
-    console.warn("Supabase connection test failed:", error);
     connectionStatus.supabaseConnected = false;
     connectionStatus.lastChecked = new Date();
     return false;
@@ -59,7 +58,6 @@ export function setupConnectionMonitoring(): void {
   // Monitor online/offline status
   window.addEventListener('online', () => {
     connectionStatus.isOnline = true;
-    console.log("🌐 Browser is back online");
     toast.success("Connection restored", {
       description: "You're back online!",
       duration: 3000,
@@ -71,7 +69,6 @@ export function setupConnectionMonitoring(): void {
 
   window.addEventListener('offline', () => {
     connectionStatus.isOnline = false;
-    console.log("🌐 Browser is offline");
     toast.warning("Connection lost", {
       description: "You're currently offline. Some features may not work.",
       duration: 5000,

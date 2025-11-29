@@ -64,8 +64,7 @@ export async function safeFetch<T = any>(
     if (error.name === 'AbortError') {
       throw new Error(`Request timeout: ${url}`);
     }
-    
-    console.error("SafeFetch Error:", error);
+
     throw new Error(`Fetch failed: ${error.message}`);
   }
 }

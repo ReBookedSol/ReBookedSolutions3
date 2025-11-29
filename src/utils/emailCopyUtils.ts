@@ -19,7 +19,6 @@ export const copyEmailToClipboard = async (email: string): Promise<void> => {
       document.execCommand("copy");
       toast.success("Email address copied to clipboard");
     } catch (fallbackError) {
-      console.error("Fallback copy failed:", fallbackError);
       toast.error("Failed to copy email address");
     } finally {
       document.body.removeChild(textArea);

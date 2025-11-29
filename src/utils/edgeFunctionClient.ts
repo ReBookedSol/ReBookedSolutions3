@@ -183,7 +183,6 @@ export async function verifyPaystackPayment(reference: string) {
  * Test Edge Function connectivity
  */
 export async function testEdgeFunctionConnectivity(functionName: string = 'health-test') {
-  console.log(`🔍 Testing connectivity to ${functionName}...`);
   
   const result = await callEdgeFunction(functionName, {
     method: 'POST',

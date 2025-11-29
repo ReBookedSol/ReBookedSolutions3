@@ -20,11 +20,6 @@ export const sanitizeUrl = (url: string): string => {
 
     return parsed.toString();
   } catch (error) {
-    // Log the error for debugging purposes
-    console.warn(
-      `Invalid URL provided to sanitizeUrl: "${url}". Error: ${error instanceof Error ? error.message : "Unknown error"}`,
-    );
-
     // Return a safe default URL instead of empty string
     return "about:blank";
   }
@@ -146,7 +141,7 @@ export const secureStorage = {
 
       localStorage.setItem(key, serializedValue);
     } catch (error) {
-      console.error("Failed to store item:", error);
+      // Failed to store item
     }
   },
 
@@ -167,7 +162,6 @@ export const secureStorage = {
 
       return JSON.parse(value);
     } catch (error) {
-      console.error("Failed to retrieve item:", error);
       return null;
     }
   },
@@ -200,9 +194,5 @@ export const initSecurity = (): void => {
     //   }
     // });
 
-    // Clear console in production (optional)
-    // console.clear();
-    // console.log('%cStop!', 'color: red; font-size: 50px; font-weight: bold;');
-    // console.log('%cThis is a browser feature intended for developers. Do not enter any code here.', 'color: red; font-size: 16px;');
   }
 };
