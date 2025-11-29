@@ -143,12 +143,6 @@ serve(async (req) => {
 
     const info = await transporter.sendMail(mailOptions);
 
-    console.log("✅ Email sent:", {
-      messageId: info.messageId,
-      to: emailRequest.to,
-      subject: emailRequest.subject,
-    });
-
     return new Response(
       JSON.stringify({
         success: true,
@@ -165,7 +159,6 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("❌ Email sending error:", error);
 
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
 

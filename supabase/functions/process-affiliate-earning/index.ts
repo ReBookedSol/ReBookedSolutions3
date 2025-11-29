@@ -18,8 +18,6 @@ serve(async (req) => {
     );
 
     const { book_id, order_id, seller_id } = await req.json();
-    
-    console.log('Processing affiliate earning:', { book_id, order_id, seller_id });
 
     // Check if order already tracked
     const { data: existingOrder } = await supabaseClient
@@ -29,7 +27,6 @@ serve(async (req) => {
       .single();
 
     if (existingOrder) {
-      console.log('Order already tracked for affiliate commission');
       return new Response(
         JSON.stringify({ message: 'Order already tracked' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
@@ -44,14 +41,12 @@ serve(async (req) => {
       .single();
 
     if (!affiliateReferral) {
-      console.log('Seller not referred by any affiliate');
       return new Response(
         JSON.stringify({ message: 'Seller not referred' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       );
     }
 
-    console.log('Seller referred by affiliate:', affiliateReferral.affiliate_id);
 
     // Create affiliate_orders record with Pending status
     const { data: affiliateOrder, error: orderError } = await supabaseClient
@@ -66,11 +61,9 @@ serve(async (req) => {
       .single();
 
     if (orderError) {
-      console.error('Error creating affiliate order:', orderError);
       throw orderError;
     }
 
-    console.log('Affiliate order tracked:', affiliateOrder);
 
     return new Response(
       JSON.stringify({
@@ -80,7 +73,6 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
   } catch (error) {
-    console.error('Error in process-affiliate-earning:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({ error: errorMessage }),

@@ -125,7 +125,6 @@ serve(async (req) => {
       // Locker collection - use pickup point
       payload.collection_pickup_point_location_id = collectionPickupPoint.locationId;
       payload.pickup_point_provider_slug = collectionPickupPoint.providerSlug;
-      console.log("Collection from locker:", collectionPickupPoint.locationId, collectionPickupPoint.providerSlug);
     } else if (fromAddress) {
       // Door collection - use address
       payload.collection_address = {
@@ -140,7 +139,6 @@ serve(async (req) => {
       payload.collection_contact_name = "Seller";
       payload.collection_contact_mobile_number = "+27000000000";
       payload.collection_contact_email = "seller@example.com";
-      console.log("Collection from address:", fromAddress.local_area);
     }
 
     // Handle delivery (either address or pickup point)
@@ -151,7 +149,6 @@ serve(async (req) => {
       if (!payload.pickup_point_provider_slug) {
         payload.pickup_point_provider_slug = deliveryPickupPoint.providerSlug;
       }
-      console.log("Delivery to locker:", deliveryPickupPoint.locationId, deliveryPickupPoint.providerSlug);
     } else if (toAddress) {
       // Door delivery - use address
       payload.delivery_address = {
@@ -166,18 +163,14 @@ serve(async (req) => {
       payload.delivery_contact_name = "Buyer";
       payload.delivery_contact_mobile_number = "+27000000000";
       payload.delivery_contact_email = "buyer@example.com";
-      console.log("Delivery to address:", toAddress.local_area);
     }
 
     // Optional filters
     if (preferences?.carriers?.length) payload.providers = preferences.carriers;
     if (preferences?.service_levels?.length) payload.service_levels = preferences.service_levels;
 
-    console.log("BobGo API Request:", JSON.stringify(payload, null, 2));
-
     // Make API call if key is available
     if (!BOBGO_API_KEY || BOBGO_API_KEY.trim() === "") {
-      console.warn("BOBGO_API_KEY not set - returning simulated quotes");
       return new Response(
         JSON.stringify({
           success: true,
@@ -210,12 +203,10 @@ serve(async (req) => {
 
       if (!resp.ok) {
         const text = await resp.text().catch(() => "");
-        console.error("BobGo API error:", resp.status, text);
         throw new Error(`BobGo API HTTP ${resp.status}: ${text}`);
       }
 
       const data = await resp.json();
-      console.log("BobGo API Raw Response:", JSON.stringify(data, null, 2));
       
       // Extract rates from nested provider_rate_requests structure
       const quotes: any[] = [];
@@ -249,14 +240,11 @@ serve(async (req) => {
         }
       }
 
-      console.log(`Received ${quotes.length} quotes from BobGo`);
-
       return new Response(
         JSON.stringify({ success: true, quotes, provider: "bobgo", raw: data }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     } catch (err: any) {
-      console.error("BobGo API failed:", err?.message || err);
       return new Response(
         JSON.stringify({ 
           success: true, 
@@ -277,7 +265,6 @@ serve(async (req) => {
       );
     }
   } catch (error: any) {
-    console.error("bobgo-get-rates error:", error);
     return new Response(
       JSON.stringify({ success: false, error: error.message || "Failed to get rates" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

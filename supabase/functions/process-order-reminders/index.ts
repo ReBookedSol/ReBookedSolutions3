@@ -263,14 +263,11 @@ T&Cs apply
             try {
               // This would integrate with an SMS service like Twilio
               // For now, we'll just note that SMS needs to be sent
-              console.log(
-                `SMS reminder needed for order ${order.id}`,
-              );
 
               // You could implement SMS sending here:
               // await sendSMSReminder(order.seller.phone, order.id, timeLeft);
             } catch (smsError) {
-              console.error("SMS reminder failed:", smsError);
+              // Handle SMS error silently
             }
           }
         } else {
@@ -280,10 +277,7 @@ T&Cs apply
           });
         }
       } catch (orderError) {
-        console.error(
-          `Failed to process reminder for order ${order.id}:`,
-          orderError,
-        );
+        // Handle order processing error silently
         errors.push({
           order_id: order.id,
           error: orderError.message,
