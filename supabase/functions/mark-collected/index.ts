@@ -176,13 +176,7 @@ serve(async (req) => {
         )
         .filter(Boolean);
 
-      if (notificationErrors.length === 0) {
-        console.log("✅ Database notifications created successfully");
-      } else {
-        console.warn(`${notificationErrors.length} notification(s) failed to create`);
-      }
     } catch (notificationError) {
-      console.error("Failed to create database notifications:", notificationError);
     }
 
     // Send notification emails
@@ -238,7 +232,6 @@ serve(async (req) => {
         )
         .filter(Boolean);
     } catch (emailError) {
-      console.error("Failed to send collection notifications:", emailError);
       emailErrors.push({ general: emailError.message });
     }
 

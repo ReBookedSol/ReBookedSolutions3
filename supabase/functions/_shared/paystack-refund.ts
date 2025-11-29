@@ -41,13 +41,6 @@ export async function refundTransaction(
       body.merchant_note = `Refund processed: ${reason}`;
     }
 
-    console.log(
-      `💸 Initiating Paystack refund for transaction ${transactionId}`,
-      {
-        amount: amountKobo ? `${amountKobo} kobo` : "full amount",
-        reason,
-      },
-    );
 
     const response = await fetch(url, {
       method: "POST",
@@ -61,26 +54,17 @@ export async function refundTransaction(
     const data = await response.json();
 
     if (data.status) {
-      console.log("✅ Paystack refund initiated successfully:", {
-        refund_id: data.data.id,
-        status: data.data.status,
-        amount: data.data.amount,
-        transaction: transactionId,
-      });
-
       return {
         success: true,
         data: data.data,
       };
     } else {
-      console.error("❌ Paystack refund failed:", data.message);
       return {
         success: false,
         error: data.message || "Refund failed",
       };
     }
   } catch (error) {
-    console.error("💥 Refund transaction error:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown refund error",

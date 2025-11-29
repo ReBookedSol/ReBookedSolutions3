@@ -30,8 +30,6 @@ export const withAsyncErrorHandling = async <T>(
     onSuccess?.(result);
     return result;
   } catch (error) {
-    console.error("Async operation failed:", error);
-
     const errorMsg = error instanceof Error ? error.message : String(error);
     toast.error(`${errorMessage}: ${errorMsg}`);
 
@@ -80,7 +78,6 @@ export const createSafeAsyncHandler = <T extends any[]>(
 
   const safeHandler = async (...args: T) => {
     if (isExecuting) {
-      console.log("Handler already executing, ignoring duplicate call");
       return;
     }
 
@@ -90,7 +87,6 @@ export const createSafeAsyncHandler = <T extends any[]>(
     try {
       await handler(...args);
     } catch (error) {
-      console.error("Safe async handler error:", error);
       throw error;
     } finally {
       loadingSetter?.(false);

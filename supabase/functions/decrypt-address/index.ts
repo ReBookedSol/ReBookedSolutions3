@@ -184,8 +184,6 @@ function parseRequestBody(body: any): DecryptionParams | null {
 }
 
 Deno.serve(async (req: Request) => {
-  console.log(`[decrypt-address] ${req.method} request received`)
-
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -354,7 +352,7 @@ Deno.serve(async (req: Request) => {
             }, { status: 422 })
           }
         } catch (decryptError) {
-          console.error(`[decrypt-address] Decryption failed:`, decryptError)
+          // Decryption error
         }
       }
 

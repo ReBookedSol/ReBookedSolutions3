@@ -45,13 +45,6 @@ export const logError = (context: string, error: unknown) => {
     isDatabaseError: isDatabaseError(error),
   };
 
-  // Use structured logging
-  console.error(`[${context}]`, errorInfo);
-
-  // Also log a simple version for quick scanning
-  const simpleMessage = `${context}: ${errorInfo.message}${errorInfo.code ? ` (${errorInfo.code})` : ""}`;
-  console.error(simpleMessage);
-
   return errorInfo;
 };
 
@@ -233,15 +226,6 @@ export const retryWithExponentialBackoff = async <T>(
       // Calculate delay with exponential backoff
       const delay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay);
 
-      console.warn(
-        `Attempt ${attempt + 1}/${maxRetries + 1} failed, retrying in ${delay}ms`,
-        {
-          error: getErrorMessage(error),
-          attempt: attempt + 1,
-          delay,
-        },
-      );
-
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
@@ -284,7 +268,5 @@ export const withTimeout = <T>(
 export const logDatabaseError = logError;
 export const getUserErrorMessage = getErrorMessage;
 export const logQueryDebug = (context: string, query: any, result?: any) => {
-  if (import.meta.env.DEV) {
-    console.log(`[Query Debug] ${context}:`, { query, result });
-  }
+  // Query logging disabled
 };

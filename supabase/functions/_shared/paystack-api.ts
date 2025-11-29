@@ -73,10 +73,6 @@ export class PaystackApi {
 
     while (attempt <= retries) {
       try {
-        console.log(
-          `Paystack API request attempt ${attempt + 1}/${retries + 1}: ${method} ${url}`,
-        );
-
         // Create timeout controller
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -92,10 +88,7 @@ export class PaystackApi {
           try {
             errorData = await response.json();
           } catch (parseError) {
-            console.error(
-              "Failed to parse Paystack error response:",
-              parseError,
-            );
+            // Error parsing response
           }
 
           // Don't retry for client errors (4xx)
@@ -125,9 +118,6 @@ export class PaystackApi {
             };
 
             if (attempt < retries) {
-              console.log(
-                `Server error ${response.status}, retrying in ${retryDelay}ms...`,
-              );
               await this.delay(retryDelay);
               attempt++;
               continue;
@@ -173,10 +163,6 @@ export class PaystackApi {
             status_code: response.status,
           };
         } catch (parseError) {
-          console.error(
-            "Failed to parse Paystack success response:",
-            parseError,
-          );
           return {
             success: false,
             error: "PAYSTACK_RESPONSE_PARSE_ERROR",
@@ -189,16 +175,11 @@ export class PaystackApi {
           };
         }
       } catch (error) {
-        console.error(
-          `Paystack API request failed (attempt ${attempt + 1}):`,
-          error,
-        );
         lastError = error;
 
         // Handle specific error types
         if (error.name === "AbortError") {
           if (attempt < retries) {
-            console.log(`Request timeout, retrying in ${retryDelay}ms...`);
             await this.delay(retryDelay);
             attempt++;
             continue;
@@ -219,7 +200,6 @@ export class PaystackApi {
 
         if (error.name === "TypeError" && error.message.includes("fetch")) {
           if (attempt < retries) {
-            console.log(`Network error, retrying in ${retryDelay}ms...`);
             await this.delay(retryDelay);
             attempt++;
             continue;
@@ -240,7 +220,6 @@ export class PaystackApi {
 
         // Generic network/execution error
         if (attempt < retries) {
-          console.log(`Request failed, retrying in ${retryDelay}ms...`);
           await this.delay(retryDelay);
           attempt++;
           continue;

@@ -68,6 +68,5 @@ export const fallbackBooksData: Book[] = [
 ];
 
 export const getFallbackBooks = (): Book[] => {
-  console.warn("Using fallback books data due to database connectivity issues");
   return fallbackBooksData;
 };

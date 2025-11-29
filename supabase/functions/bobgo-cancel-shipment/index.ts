@@ -22,8 +22,6 @@ serve(async (req) => {
 
     const { order_id, shipment_id, tracking_number, reason } = bodyResult.data!;
 
-    console.log("Cancel request:", { order_id, shipment_id, tracking_number, reason });
-
     if (!order_id && !shipment_id && !tracking_number) {
       return new Response(
         JSON.stringify({ success: false, error: "order_id, shipment_id, or tracking_number required" }),
@@ -49,7 +47,6 @@ serve(async (req) => {
     const { data: order, error: orderError } = await orderQuery.maybeSingle();
 
     if (orderError) {
-      console.error("Error fetching order:", orderError);
       return new Response(
         JSON.stringify({ success: false, error: `Database error: ${orderError.message}` }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -63,15 +60,6 @@ serve(async (req) => {
       );
     }
 
-    // Log the delivery combination for debugging
-    console.log("Order delivery configuration:", {
-      id: order.id,
-      tracking_number: order.tracking_number,
-      status: order.status,
-      pickup_type: order.pickup_type,
-      delivery_type: order.delivery_type,
-      combination: `${order.pickup_type || 'unknown'}-to-${order.delivery_type || 'unknown'}`
-    });
 
     // Validate cancellation is possible for this order status
     const cancellableStatuses = [
@@ -107,7 +95,6 @@ serve(async (req) => {
     const BOBGO_API_KEY = Deno.env.get("BOBGO_API_KEY");
 
     if (!BOBGO_API_KEY) {
-      console.warn("No BOBGO_API_KEY - simulating cancellation");
       const { error: updateError } = await supabase
         .from("orders")
         .update({
@@ -119,7 +106,6 @@ serve(async (req) => {
         .eq("id", order.id);
 
       if (updateError) {
-        console.error("Error updating order:", updateError);
         return new Response(
           JSON.stringify({ success: false, error: `Failed to update order: ${updateError.message}` }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -152,11 +138,6 @@ serve(async (req) => {
     }
 
     const BOBGO_BASE_URL = resolveBaseUrl();
-    console.log("Cancelling with BobGo:", {
-      url: BOBGO_BASE_URL,
-      tracking_number: identifier,
-      delivery_combination: `${order.pickup_type}-to-${order.delivery_type}`
-    });
 
     try {
       const resp = await fetch(`${BOBGO_BASE_URL}/shipments/cancel`, {
@@ -174,7 +155,6 @@ serve(async (req) => {
 
       if (!resp.ok) {
         const text = await resp.text().catch(() => "");
-        console.error("BobGo cancel HTTP error:", resp.status, text);
 
         // Still update the order in database even if API call fails
         await supabase
@@ -200,7 +180,6 @@ serve(async (req) => {
       }
 
       const data = await resp.json();
-      console.log("BobGo cancellation response:", data);
 
       // Update order in database with cancellation metadata
       const { error: updateError } = await supabase
@@ -219,7 +198,6 @@ serve(async (req) => {
         .eq("id", order.id);
 
       if (updateError) {
-        console.error("Error updating order:", updateError);
         return new Response(
           JSON.stringify({
             success: true,
@@ -244,7 +222,6 @@ serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     } catch (err: any) {
-      console.error("bobgo-cancel-shipment error:", err);
 
       // Mark as cancelled in DB even if API fails
       await supabase
@@ -269,7 +246,6 @@ serve(async (req) => {
       );
     }
   } catch (error: any) {
-    console.error("bobgo-cancel-shipment fatal error:", error);
     return new Response(
       JSON.stringify({ success: false, error: error.message || "Internal error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

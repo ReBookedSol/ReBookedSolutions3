@@ -43,7 +43,6 @@ export async function getUserOrderSummary(userId: string): Promise<OrderSummary>
       .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`);
 
     if (error) {
-      console.error("Error fetching order summary:", error);
       return {
         totalOrders: 0,
         pendingCommits: 0,
@@ -63,7 +62,6 @@ export async function getUserOrderSummary(userId: string): Promise<OrderSummary>
 
     return summary;
   } catch (error) {
-    console.error("Failed to get order summary:", error);
     return {
       totalOrders: 0,
       pendingCommits: 0,
@@ -117,7 +115,6 @@ export async function getUserOrdersWithDetails(
     const { data: orders, error } = await query;
 
     if (error) {
-      console.error("Error fetching detailed orders:", error);
       throw error;
     }
 
@@ -134,7 +131,6 @@ export async function getUserOrdersWithDetails(
       } : null,
     }));
   } catch (error) {
-    console.error("Failed to get user orders:", error);
     throw error;
   }
 }

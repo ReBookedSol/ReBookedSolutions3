@@ -174,7 +174,6 @@ export const sendWalletCreditNotificationEmail = async (
       text: template.text,
     });
   } catch (error) {
-    console.error("Failed to send wallet credit notification email:", error);
     throw error;
   }
 };

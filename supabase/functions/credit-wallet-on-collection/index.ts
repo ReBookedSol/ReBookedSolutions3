@@ -459,8 +459,6 @@ serve(async (req) => {
         }
       } catch (emailError) {
       }
-    } else {
-      console.log("⚠️ Seller email not found in order");
     }
 
     return new Response(

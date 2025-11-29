@@ -44,8 +44,6 @@ export class EmailServiceHealthChecker {
 
       return this.lastCheck;
     } catch (error) {
-      console.warn('Email service health check failed:', error);
-      
       this.lastCheck = {
         status: 'down',
         message: 'Unable to determine email service status',

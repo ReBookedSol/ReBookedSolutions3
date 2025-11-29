@@ -154,7 +154,6 @@ export const sendPendingCommitEmail = async (
       text: template.text,
     });
   } catch (error) {
-    console.error("Failed to send pending commit email:", error);
     throw error;
   }
 };

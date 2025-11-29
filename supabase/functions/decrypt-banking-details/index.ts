@@ -130,7 +130,6 @@ async function getUserFromRequest(req: Request) {
   const { data: { user }, error } = await supabase.auth.getUser(token);
 
   if (error) {
-    console.error('Auth error:', error);
     return null;
   }
 
@@ -143,18 +142,13 @@ serve(async (req) => {
   }
 
   try {
-    console.log('=== Decrypt Banking Details Request ===');
-
     const user = await getUserFromRequest(req);
     if (!user) {
-      console.error('Authentication failed - no user found');
       return new Response(
         JSON.stringify({ error: 'Unauthorized - please login first' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    console.log('Authenticated user:', user.id);
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -170,14 +164,11 @@ serve(async (req) => {
       .maybeSingle();
 
     if (fetchError || !bankingDetails) {
-      console.error('No banking details found for user:', user.id, 'Error:', fetchError);
       return new Response(
         JSON.stringify({ error: 'No banking details found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    console.log('Found banking details for user:', user.id);
 
     // Check if data is encrypted
     const hasEncryptedData = !!(
@@ -188,7 +179,6 @@ serve(async (req) => {
     );
 
     if (!hasEncryptedData) {
-      console.error('No encrypted banking data found for user:', user.id);
       return new Response(
         JSON.stringify({ error: 'Banking details incomplete - encryption required' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -198,7 +188,6 @@ serve(async (req) => {
     // Get encryption key for decryption
     const encryptionKey = getEncryptionKey()
     if (!encryptionKey) {
-      console.error('Encryption key not configured');
       return new Response(
         JSON.stringify({ error: 'Encryption key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -213,8 +202,6 @@ serve(async (req) => {
       const bankNameBundle = parseEncryptedBundle(bankingDetails.encrypted_bank_name)
       const businessNameBundle = parseEncryptedBundle(bankingDetails.encrypted_business_name)
 
-      console.log('Parsed encrypted bundles successfully');
-
       // Decrypt all fields
       const decryptedAccountNumber = await decryptGCM(accountBundle, encryptionKey);
       const decryptedBankCode = await decryptGCM(bankCodeBundle, encryptionKey);
@@ -227,12 +214,9 @@ serve(async (req) => {
           const emailBundle = parseEncryptedBundle(bankingDetails.encrypted_email)
           decryptedEmail = await decryptGCM(emailBundle, encryptionKey);
         } catch (emailError) {
-          console.warn('Failed to decrypt email:', emailError);
           decryptedEmail = null;
         }
       }
-
-      console.log('✅ Successfully decrypted banking details for user:', user.id);
 
       return new Response(
         JSON.stringify({
@@ -250,9 +234,7 @@ serve(async (req) => {
       );
 
     } catch (decryptError) {
-      console.error('Failed to decrypt banking details:', decryptError);
       const errorMessage = decryptError instanceof Error ? decryptError.message : 'Unknown decryption error'
-      console.error('Decryption error details:', errorMessage);
 
       return new Response(
         JSON.stringify({
@@ -264,7 +246,6 @@ serve(async (req) => {
     }
 
   } catch (error) {
-    console.error('Unexpected error in decrypt-banking-details:', error);
     return new Response(
       JSON.stringify({
         error: 'Internal server error',

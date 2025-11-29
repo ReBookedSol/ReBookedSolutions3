@@ -217,23 +217,5 @@ This email was sent regarding order ${data.orderId}. Please keep this email for 
 export const sendDenialEmail = async (emailData: DenialEmailData) => {
   const template = createDenialEmailTemplate(emailData);
   
-  // This would integrate with your email service
-  console.log("Sending denial email:", {
-    to: "seller@example.com", // Would be emailData.sellerEmail
-    subject: template.subject,
-    html: template.html,
-    text: template.text,
-  });
-  
-  // Example integration with Supabase Edge Function
-  // const response = await supabase.functions.invoke('send-email', {
-  //   body: {
-  //     to: emailData.sellerEmail,
-  //     subject: template.subject,
-  //     html: template.html,
-  //     text: template.text,
-  //   }
-  // });
-  
   return template;
 };

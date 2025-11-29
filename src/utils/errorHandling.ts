@@ -88,12 +88,6 @@ export const safeLogError = (
   const formattedError = formatErrorForLogging(error);
   const errorMessage = error instanceof Error ? error.message : String(error);
 
-  console.error(`[${context}] Error:`, {
-    message: errorMessage,
-    error: formattedError,
-    additionalData,
-    timestamp: new Date().toISOString(),
-  });
 
   return formattedError;
 };
@@ -103,7 +97,6 @@ export const safeLogError = (
  */
 export const logErrorSafely = (message: string, error: unknown) => {
   const errorInfo = formatErrorForLogging(error);
-  console.error(message, errorInfo);
   return errorInfo;
 };
 

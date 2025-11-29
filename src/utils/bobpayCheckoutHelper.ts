@@ -75,7 +75,6 @@ export const initializeBobPayCheckout = async (
     }
 
     const orderId = createData.order.id;
-    console.log('Order created:', orderId);
 
     // Step 2: Initialize BobPay payment
     const notifyUrl = `${window.location.origin}/api/bobpay-webhook`;
@@ -135,7 +134,6 @@ export const initializeBobPayCheckout = async (
 
     throw new Error('No payment URL received');
   } catch (error) {
-    console.error('BobPay checkout initialization error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     toast.error(errorMessage);
     return null;
@@ -191,7 +189,6 @@ export const initiateBobPayRefund = async (
     toast.success('Refund processed successfully');
     return true;
   } catch (err) {
-    console.error('BobPay refund error:', err);
     const errorMessage = err instanceof Error ? err.message : 'Refund failed';
     toast.error(errorMessage);
     return false;

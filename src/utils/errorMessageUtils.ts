@@ -115,14 +115,7 @@ export function logError(
 ): void {
   const errorInfo = getErrorInfo(error);
   
-  console.error(`[${context}] Error:`, {
-    message: errorInfo.message,
-    type: errorInfo.type,
-    code: errorInfo.code,
-    details: errorInfo.details,
-    additional: additionalData,
-    timestamp: new Date().toISOString(),
-  });
+  // Error logging disabled
 }
 
 /**

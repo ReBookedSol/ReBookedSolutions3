@@ -147,7 +147,6 @@ export const sendSellerCreditNotificationEmail = async (
       text: template.text,
     });
   } catch (error) {
-    console.error("Failed to send seller credit notification email:", error);
     throw error;
   }
 };

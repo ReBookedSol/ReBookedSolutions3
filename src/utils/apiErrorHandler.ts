@@ -39,8 +39,6 @@ export class ApiErrorHandler {
         shouldLogout: false
       };
     } catch (error) {
-      console.error(`[ApiErrorHandler] Unexpected error in ${context}:`, error instanceof Error ? error.message : (typeof error === 'object' ? JSON.stringify(error, null, 2) : String(error)));
-      
       const errorDetails: ApiErrorDetails = {
         message: error instanceof Error ? error.message : "Unknown error occurred",
         code: "UNEXPECTED_ERROR"
@@ -76,13 +74,6 @@ export class ApiErrorHandler {
       hint: error.hint,
       details: error.details
     };
-
-    console.error(`[ApiErrorHandler] Error in ${context}:`, JSON.stringify({
-      code: errorDetails.code,
-      message: errorDetails.message,
-      statusCode: errorDetails.statusCode,
-      hint: errorDetails.hint
-    }, null, 2));
 
     // Determine if this is a retry-able error
     const needsRetry = this.isRetryableError(errorDetails);
@@ -231,19 +222,16 @@ export class ApiErrorHandler {
     let lastError: ApiErrorDetails | null = null;
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      console.log(`[ApiErrorHandler] Attempt ${attempt}/${maxRetries} for ${context}`);
-      
       const result = await this.handleApiCall(apiCall, context, attempt === maxRetries);
-      
+
       if (!result.error || !result.needsRetry) {
         return result;
       }
-      
+
       lastError = result.error;
-      
+
       if (attempt < maxRetries) {
         const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
-        console.log(`[ApiErrorHandler] Retrying in ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
@@ -264,12 +252,10 @@ export class ApiErrorHandler {
       const { data: { session }, error } = await supabase.auth.getSession();
       
       if (error) {
-        console.error("[ApiErrorHandler] Session check failed:", error);
         return false;
       }
-      
+
       if (!session) {
-        console.log("[ApiErrorHandler] No active session");
         return false;
       }
       
@@ -279,20 +265,14 @@ export class ApiErrorHandler {
       const timeUntilExpiry = expiresAt - now;
       
       if (timeUntilExpiry < 300) { // Less than 5 minutes
-        console.log("[ApiErrorHandler] Token expiring soon, refreshing...");
-        
         const { error: refreshError } = await supabase.auth.refreshSession();
         if (refreshError) {
-          console.error("[ApiErrorHandler] Session refresh failed:", refreshError);
           return false;
         }
-        
-        console.log("[ApiErrorHandler] Session refreshed successfully");
       }
       
       return true;
     } catch (error) {
-      console.error("[ApiErrorHandler] Session validation error:", error);
       return false;
     }
   }

@@ -158,40 +158,19 @@ export function createSafeLog(
  * Safe console.log wrapper for development
  */
 export function safeLog(message: string, data?: unknown): void {
-  if (import.meta.env.DEV) {
-    if (data) {
-      const sanitized = sanitizeForLogging(data);
-      console.log(message, sanitized);
-    } else {
-      console.log(message);
-    }
-  }
+  // Logging disabled
 }
 
 /**
  * Safe console.error wrapper for development
  */
 export function safeError(message: string, error?: unknown): void {
-  if (import.meta.env.DEV) {
-    if (error) {
-      const sanitized = sanitizeForLogging(error);
-      console.error(message, sanitized);
-    } else {
-      console.error(message);
-    }
-  }
+  // Error logging disabled
 }
 
 /**
  * Safe console.warn wrapper for development
  */
 export function safeWarn(message: string, data?: unknown): void {
-  if (import.meta.env.DEV) {
-    if (data) {
-      const sanitized = sanitizeForLogging(data);
-      console.warn(message, sanitized);
-    } else {
-      console.warn(message);
-    }
-  }
+  // Warning logging disabled
 }
