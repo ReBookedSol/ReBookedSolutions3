@@ -659,11 +659,6 @@ const NotificationsNew = () => {
         await refreshNotifications();
       } catch (refreshError) {
         const safeRefreshErrorMessage = getSafeErrorMessage(refreshError, 'Failed to refresh notifications');
-        console.warn('⚠��� Failed to refresh notifications after deletion:', {
-          message: safeRefreshErrorMessage,
-          code: refreshError?.code,
-          details: refreshError?.details
-        });
         // Show warning but don't fail the operation since local state was updated
         toast.warning('Notification removed. Please refresh if the count seems off.');
       }
