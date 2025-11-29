@@ -278,7 +278,6 @@ class LockerShippingService {
       const lockers = await this.getLockers();
       return lockers.some(locker => locker.id === lockerId && locker.status === "active");
     } catch (error) {
-      console.error("Error validating locker:", error);
       return false;
     }
   }
@@ -291,7 +290,6 @@ class LockerShippingService {
       const lockers = await this.getLockers();
       return lockers.find(locker => locker.id === lockerId) || null;
     } catch (error) {
-      console.error("Error getting locker by ID:", error);
       return null;
     }
   }

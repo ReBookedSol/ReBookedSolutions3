@@ -80,18 +80,10 @@ export const registerUser = async (
     throw new Error(errorMessage);
   }
 
-  console.log("Registration successful for:", email);
-
   // Check if email verification is working
   if (data.user && !data.session) {
-    console.log("✅ Registration successful - email verification required");
-    console.log(
-      "ℹ️ Note: User should check their email inbox (including spam folder) for verification link",
-    );
+    // Email verification required
   } else if (data.user && data.session) {
-    console.log(
-      "✅ Registration successful - email verification disabled, user logged in",
-    );
 
     // Since email verification is disabled, send a welcome email
     try {
