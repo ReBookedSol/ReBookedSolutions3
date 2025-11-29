@@ -162,7 +162,6 @@ const OrderManagementView: React.FC<OrderManagementViewProps> = () => {
       const seenIds = new Set<string>();
       const realOrders = mappedOrders.filter((o: any) => {
         if (seenIds.has(o.id)) {
-          console.warn("Duplicate order detected and filtered:", o.id);
           return false;
         }
         seenIds.add(o.id);
