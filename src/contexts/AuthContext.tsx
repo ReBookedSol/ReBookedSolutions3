@@ -273,12 +273,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         if (data.user && data.session) {
           // User is immediately logged in - no email verification needed
-          console.log("✅ User immediately logged in - no email verification required");
           return { needsVerification: false };
         }
 
         // Fallback case
-        console.log("✅ Registration completed successfully");
         return { needsVerification: false };
       } catch (error) {
 
