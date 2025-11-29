@@ -164,7 +164,6 @@ const EnhancedShippingForm: React.FC<EnhancedShippingFormProps> = ({
       }
       setHasAutofilled(true);
     } catch (error) {
-      console.error("Error autofilling user info:", error);
     }
   };
 
@@ -179,7 +178,6 @@ const EnhancedShippingForm: React.FC<EnhancedShippingFormProps> = ({
   }, [watchedValues.city, watchedValues.province, watchedValues.postal_code]);
 
   if (!onComplete || !cartItems) {
-    console.error("EnhancedShippingForm: Invalid props");
     return <div>Loading shipping form...</div>;
   }
 
@@ -199,7 +197,6 @@ const EnhancedShippingForm: React.FC<EnhancedShippingFormProps> = ({
 
         if (addressData?.shipping_address) {
           savedShippingAddress = addressData.shipping_address;
-          console.log("🔐 Using encrypted shipping address");
         }
       } catch (error) {
       }
@@ -292,7 +289,6 @@ const EnhancedShippingForm: React.FC<EnhancedShippingFormProps> = ({
         },
       );
 
-      console.log("🚛 Setting delivery options:", fallbackOptions);
       setDeliveryOptions(fallbackOptions);
       if (fallbackOptions.length > 0) {
         setSelectedDeliveryOption(fallbackOptions[0]);
@@ -300,7 +296,6 @@ const EnhancedShippingForm: React.FC<EnhancedShippingFormProps> = ({
 
       toast.success(`${fallbackOptions.length} delivery options loaded`);
     } catch (error) {
-      console.error("Error getting delivery quotes:", error);
       toast.error("Failed to load delivery options");
     } finally {
       setIsLoadingQuotes(false);

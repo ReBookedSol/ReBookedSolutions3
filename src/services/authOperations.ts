@@ -26,12 +26,6 @@ export const loginUser = async (email: string, password: string) => {
   });
 
   if (error) {
-    console.error("Login error:", {
-      message: error.message,
-      code: error.name || error.code,
-      details: error.details || error.hint,
-    });
-
     // Create proper Error object with user-friendly message
     let errorMessage = error.message || 'Login failed';
 
@@ -47,7 +41,6 @@ export const loginUser = async (email: string, password: string) => {
     throw new Error(errorMessage);
   }
 
-  console.log("Login successful for:", email);
   return data;
 };
 
@@ -69,12 +62,6 @@ export const registerUser = async (
   });
 
   if (error) {
-    console.error("Registration error:", {
-      message: error.message,
-      code: error.name || error.code,
-      details: error.details || error.hint,
-    });
-
     // Create proper Error object with user-friendly message
     let errorMessage = error.message || 'Registration failed';
 
@@ -93,18 +80,10 @@ export const registerUser = async (
     throw new Error(errorMessage);
   }
 
-  console.log("Registration successful for:", email);
-
   // Check if email verification is working
   if (data.user && !data.session) {
-    console.log("✅ Registration successful - email verification required");
-    console.log(
-      "ℹ️ Note: User should check their email inbox (including spam folder) for verification link",
-    );
+    // Email verification required
   } else if (data.user && data.session) {
-    console.log(
-      "✅ Registration successful - email verification disabled, user logged in",
-    );
 
     // Since email verification is disabled, send a welcome email
     try {
@@ -118,10 +97,7 @@ export const registerUser = async (
         html: generateWelcomeEmailHTML(name, email),
         text: generateWelcomeEmailText(name, email),
       });
-
-      console.log("✅ Welcome email sent to new user");
     } catch (emailError) {
-      console.warn("⚠️ Welcome email failed (non-critical):", emailError);
       // Don't fail registration for email issues
     }
   }
@@ -201,24 +177,16 @@ const generateWelcomeEmailText = (name: string, email: string): string => `
 export const logoutUser = async () => {
   const { error } = await supabase.auth.signOut();
   if (error) {
-    console.error("Logout error:", {
-      message: error.message,
-      code: error.name || error.code,
-      details: error.details || error.hint,
-    });
-
     // Create proper Error object with user-friendly message
     const errorMessage = error.message || 'Logout failed. Please try again.';
     throw new Error(errorMessage);
   }
-  console.log("Logout successful");
 };
 
 export const fetchUserProfileQuick = async (
   user: User,
 ): Promise<Profile | null> => {
   try {
-    console.log("🔄 Quick profile fetch for user:", user.id);
 
     // Simplified approach with just one try and longer timeout
     const { data: profile, error: profileError } = (await withTimeout(
@@ -234,23 +202,13 @@ export const fetchUserProfileQuick = async (
     if (profileError) {
       // Profile not found is normal for new users
       if (profileError.code === "PGRST116") {
-        console.log(
-          "ℹ️ Profile not found in quick fetch, will create in background",
-        );
         return null; // Return null so fallback is used
       }
 
-      // For other errors, log details but don't spam
-      console.warn("⚠️ Quick profile fetch error:", {
-        message: profileError.message || "Unknown error",
-        code: profileError.code || "No code",
-        hint: profileError.hint || "No hint",
-      });
       return null; // Use fallback on any error
     }
 
     if (!profile) {
-      console.log("ℹ️ No profile data returned, using fallback");
       return null; // Use fallback profile
     }
 
@@ -271,19 +229,8 @@ export const fetchUserProfileQuick = async (
       bio: profile.bio,
     };
 
-    console.log("✅ Quick profile fetch successful");
     return profileData;
   } catch (error) {
-    // Enhanced error logging to debug the timeout issue
-    const errorDetails = {
-      message: error instanceof Error ? error.message : String(error),
-      name: error instanceof Error ? error.name : "Unknown",
-      isTimeout: (error as any)?.isTimeout || false,
-      stack: error instanceof Error ? error.stack?.split("\n")[0] : undefined,
-    };
-
-    console.warn("⚠️ Quick profile fetch failed:", errorDetails);
-
     // Don't log as error since this is expected to fail sometimes
     // Just use fallback profile
     return null;
@@ -292,7 +239,6 @@ export const fetchUserProfileQuick = async (
 
 export const fetchUserProfile = async (user: User): Promise<Profile | null> => {
   try {
-    console.log("🔄 Fetching full profile for user:", user.id);
 
     // Enhanced retry logic with better error handling
     const result = await retryWithExponentialBackoff(
@@ -323,7 +269,6 @@ export const fetchUserProfile = async (user: User): Promise<Profile | null> => {
       logError("Error fetching profile", profileError);
 
       if (profileError.code === "PGRST116") {
-        console.log("Profile not found, creating new profile...");
         return await createUserProfile(user);
       }
 
@@ -333,7 +278,6 @@ export const fetchUserProfile = async (user: User): Promise<Profile | null> => {
     }
 
     if (!profile) {
-      console.log("No profile found, creating new profile...");
       return await createUserProfile(user);
     }
 
@@ -342,7 +286,6 @@ export const fetchUserProfile = async (user: User): Promise<Profile | null> => {
 
     if (profile.is_admin === true) {
       isAdmin = true;
-      console.log("✅ Admin status from profile flag:", isAdmin);
     } else {
       // Quick email-based admin check without additional database calls
       const adminEmails = ["AdminSimnLi@gmail.com", "adminsimnli@gmail.com"];
@@ -350,26 +293,17 @@ export const fetchUserProfile = async (user: User): Promise<Profile | null> => {
       isAdmin = adminEmails.includes(userEmail.toLowerCase());
 
       if (isAdmin) {
-        console.log("✅ Admin status from email check:", isAdmin);
         // Update admin flag in background (non-blocking)
         supabase
           .from("profiles")
           .update({ is_admin: true })
           .eq("id", user.id)
-          .then(() => console.log("✅ Admin flag updated in background"))
-          .catch(() =>
-            console.warn("⚠️ Failed to update admin flag in background"),
-          );
+          .then(() => {})
+          .catch(() => {});
       }
     }
 
     const displayName = buildDisplayName({ ...profile, email: profile.email || user.email });
-    console.log(
-      "Profile loaded successfully:",
-      displayName,
-      "isAdmin:",
-      isAdmin,
-    );
 
     return {
       id: profile.id,
@@ -388,7 +322,6 @@ export const fetchUserProfile = async (user: User): Promise<Profile | null> => {
 
 export const createUserProfile = async (user: User): Promise<Profile> => {
   try {
-    console.log("Creating profile for user:", user.id);
 
     // Check if user should be admin based on email
     const adminEmails = ["AdminSimnLi@gmail.com", "adminsimnli@gmail.com"];
@@ -432,12 +365,6 @@ export const createUserProfile = async (user: User): Promise<Profile> => {
     }
 
     const createdDisplayName = buildDisplayName(newProfile);
-    console.log(
-      "Profile created successfully:",
-      createdDisplayName,
-      "Admin:",
-      isAdmin,
-    );
 
     // Welcome notification removed as requested - users will get guidance through the UI instead
 

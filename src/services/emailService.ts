@@ -102,7 +102,6 @@ class EmailService {
 
       return result;
     } catch (error) {
-      console.error("Email service error:", error);
       throw error;
     }
   }
@@ -116,13 +115,11 @@ class EmailService {
         if (attempt > 1) {
           // Add increasing delay for retries
           await new Promise(resolve => setTimeout(resolve, attempt * 500));
-          console.log(`🔄 Email retry attempt ${attempt}/3`);
         }
 
         return await this.makeRequest("send-email", request);
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        console.warn(`⚠️ Email attempt ${attempt} failed:`, lastError.message);
 
         // Don't retry for authentication errors
         if (lastError.message.includes('Authorization') || lastError.message.includes('401')) {
@@ -146,7 +143,6 @@ class EmailService {
     options?: Partial<EmailRequest>,
   ): Promise<EmailResponse> {
     // Since templates are deprecated, convert to direct HTML email
-    console.warn(`⚠️ Template system deprecated: ${templateName}. Converting to direct HTML email.`);
 
     const { html, text } = this.generateEmailFromTemplate(templateName, templateData);
 
@@ -624,10 +620,6 @@ support@rebookedsolutions.co.za`;
         verificationData,
       );
     } catch (templateError) {
-      console.warn(
-        "Template system unavailable, using simple HTML fallback:",
-        templateError,
-      );
 
       // Fallback to simple HTML email
       const {

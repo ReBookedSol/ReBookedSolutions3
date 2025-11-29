@@ -29,8 +29,6 @@ export class EnhancedAuthService {
     email: string,
   ): Promise<VerificationCheckResult> {
     try {
-      console.log("🔍 Checking user verification status for:", email);
-
       // Check if user exists in profiles table
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
@@ -49,14 +47,11 @@ export class EnhancedAuthService {
       }
 
       if (!profile) {
-        console.log("❌ User not found in profiles table");
         return {
           userExists: false,
           emailConfirmed: false,
         };
       }
-
-      console.log("✅ User found in profiles table");
 
       // Since we can't access admin functions from the client side,
       // we'll make an educated guess based on profile creation time
@@ -104,12 +99,9 @@ export class EnhancedAuthService {
       const daysSinceCreation =
         (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
 
-      console.log("📅 Profile created", daysSinceCreation, "days ago");
-
       // Recent profiles are more likely to have verification issues
       return daysSinceCreation <= 7;
     } catch (error) {
-      console.log("⚠️ Could not check profile creation time");
       return true; // Default to suggesting verification if we can't check
     }
   }
@@ -121,8 +113,6 @@ export class EnhancedAuthService {
     email: string,
   ): Promise<{ success: boolean; message: string; error?: any }> {
     try {
-      console.log("📧 Resending verification email to:", email);
-
       const { error } = await supabase.auth.resend({
         type: "signup",
         email,
@@ -140,7 +130,6 @@ export class EnhancedAuthService {
         };
       }
 
-      console.log("✅ Verification email sent successfully");
       return {
         success: true,
         message:

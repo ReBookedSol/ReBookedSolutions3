@@ -27,7 +27,6 @@ export class EnhancedSignupService {
     const { name, email, password } = data;
 
     try {
-      console.log("🔄 Starting enhanced signup process for:", email);
 
       // Step 1: Try Supabase auth signup
       const authResult = await this.attemptSupabaseSignup(data);
@@ -35,18 +34,12 @@ export class EnhancedSignupService {
       if (authResult.success) {
         // Step 2: If Supabase signup successful, check if email verification is needed
         if (authResult.user && !authResult.session) {
-          console.log(
-            "✅ Supabase signup successful - email verification required",
-          );
           return {
             success: true,
             user: authResult.user,
             needsVerification: true,
           };
         } else if (authResult.user && authResult.session) {
-          console.log(
-            "✅ Supabase signup successful - auto-login (email confirmation disabled)",
-          );
           // Send welcome email since Supabase email confirmation is disabled
           await this.sendWelcomeEmail(email, name);
           return {
@@ -64,7 +57,6 @@ export class EnhancedSignupService {
         error: authResult.error || "Registration failed",
       };
     } catch (error) {
-      console.error("❌ Enhanced signup failed:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Registration failed",
@@ -91,7 +83,6 @@ export class EnhancedSignupService {
       });
 
       if (error) {
-        console.error("❌ Supabase signup error:", error);
         return {
           success: false,
           error: error.message,
@@ -104,7 +95,6 @@ export class EnhancedSignupService {
         session: authData.session,
       };
     } catch (error) {
-      console.error("❌ Supabase signup exception:", error);
       return {
         success: false,
         error:
@@ -121,7 +111,6 @@ export class EnhancedSignupService {
     name: string,
   ): Promise<void> {
     try {
-      console.log("📧 Sending welcome email to:", email);
 
       const emailResult = await emailService.sendEmail({
         to: email,
@@ -131,13 +120,8 @@ export class EnhancedSignupService {
         text: this.generateWelcomeEmailText(name),
       });
 
-      if (emailResult.success) {
-        console.log("✅ Welcome email sent successfully");
-      } else {
-        console.warn("⚠️ Welcome email failed:", emailResult.error);
-      }
+      // Email sent
     } catch (error) {
-      console.warn("⚠️ Welcome email exception:", error);
       // Don't fail signup for email issues
     }
   }
@@ -151,7 +135,6 @@ export class EnhancedSignupService {
     verificationToken: string,
   ): Promise<boolean> {
     try {
-      console.log("📧 Sending custom verification email to:", email);
 
       const verificationUrl = `${window.location.origin}/verify?token=${verificationToken}&email=${encodeURIComponent(email)}`;
 
@@ -165,7 +148,6 @@ export class EnhancedSignupService {
 
       return emailResult.success;
     } catch (error) {
-      console.error("❌ Custom verification email failed:", error);
       return false;
     }
   }
@@ -175,7 +157,6 @@ export class EnhancedSignupService {
    */
   static async resendVerificationEmail(email: string): Promise<boolean> {
     try {
-      console.log("🔄 Resending verification email for:", email);
 
       // Try Supabase resend first
       const { error } = await supabase.auth.resend({
@@ -184,14 +165,10 @@ export class EnhancedSignupService {
       });
 
       if (!error) {
-        console.log("✅ Supabase verification email resent");
         return true;
       }
-
-      console.warn("⚠️ Supabase resend failed:", error.message);
       return false;
     } catch (error) {
-      console.error("❌ Resend verification email failed:", error);
       return false;
     }
   }

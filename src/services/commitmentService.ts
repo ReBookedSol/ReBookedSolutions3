@@ -49,7 +49,6 @@ export const createSaleCommitment = async (
     });
 
     if (error) {
-      console.log("Sale commitment system not available:", error.message);
       // If the function doesn't exist, return a mock commitment ID
       if (
         error.message?.includes("function") ||
@@ -62,7 +61,6 @@ export const createSaleCommitment = async (
 
     return data as string;
   } catch (error) {
-    console.log("Sale commitment system not available, using mock system");
     // Return a mock commitment ID if the system isn't set up yet
     return `mock_commitment_${Date.now()}`;
   }
@@ -79,7 +77,6 @@ export const commitToSale = async (
     });
 
     if (error) {
-      console.log("Commit to sale function not available:", error.message);
       // If the function doesn't exist, return mock success
       if (
         error.message?.includes("function") ||
@@ -92,7 +89,6 @@ export const commitToSale = async (
 
     return data as boolean;
   } catch (error) {
-    console.log("Commit to sale system not available, using mock system");
     // Return mock success if the system isn't set up yet
     return true;
   }
@@ -109,7 +105,6 @@ export const declineSale = async (
     });
 
     if (error) {
-      console.log("Decline sale function not available:", error.message);
       // If the function doesn't exist, return mock success
       if (
         error.message?.includes("function") ||
@@ -122,7 +117,6 @@ export const declineSale = async (
 
     return data as boolean;
   } catch (error) {
-    console.log("Decline sale system not available, using mock system");
     // Return mock success if the system isn't set up yet
     return true;
   }
@@ -141,7 +135,6 @@ export const getPendingCommitments = async (
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.log("Pending commitments table not available:", error.message);
       // If table doesn't exist, return empty array
       if (
         error.message?.includes("relation") ||
@@ -192,7 +185,6 @@ export const getPendingCommitments = async (
       };
     });
   } catch (error) {
-    console.error("Error in getPendingCommitments:", error);
     throw error;
   }
 };
@@ -209,7 +201,6 @@ export const getAllCommitments = async (
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.log("All commitments table not available:", error.message);
       // If table doesn't exist, return empty array
       if (
         error.message?.includes("relation") ||
@@ -263,7 +254,6 @@ export const getAllCommitments = async (
       };
     });
   } catch (error) {
-    console.error("Error in getAllCommitments:", error);
     throw error;
   }
 };
@@ -292,11 +282,9 @@ export const expireOldCommitments = async (): Promise<void> => {
     const { error } = await supabase.rpc("expire_old_commitments");
 
     if (error) {
-      console.error("Error expiring old commitments:", error);
       throw new Error(error.message || "Failed to expire old commitments");
     }
   } catch (error) {
-    console.error("Error in expireOldCommitments:", error);
     // Don't throw here as this is a background operation
   }
 };
@@ -309,7 +297,6 @@ export const getCommitmentStats = async (sellerId: string) => {
       .eq("seller_id", sellerId);
 
     if (error) {
-      console.log("Commitment stats table not available:", error.message);
       // Always return default stats if there's any error
       return {
         totalCommitments: 0,
@@ -356,7 +343,6 @@ export const getCommitmentStats = async (sellerId: string) => {
       reliabilityScore: Math.round(reliabilityScore),
     };
   } catch (error) {
-    console.error("Error in getCommitmentStats:", error);
     return {
       totalCommitments: 0,
       committedCount: 0,
