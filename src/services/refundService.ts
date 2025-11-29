@@ -128,7 +128,6 @@ export class RefundService {
           created_at: new Date().toISOString(),
         });
       } catch (dbError) {
-        console.error("Failed to store failed refund:", dbError);
       }
 
       return {
@@ -193,7 +192,6 @@ export class RefundService {
         paystackData: result.data,
       };
     } catch (error) {
-      console.error("Paystack refund API error:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Paystack API error",
@@ -238,7 +236,6 @@ export class RefundService {
         processedAt: result.data.created_at,
       };
     } catch (error) {
-      console.error("Failed to check refund status:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Status check failed",
@@ -281,7 +278,6 @@ export class RefundService {
         refunds: refunds || [],
       };
     } catch (error) {
-      console.error("Failed to fetch user refunds:", error);
       return {
         success: false,
         error:
