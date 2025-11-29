@@ -107,7 +107,6 @@ const BankingProfileTab = () => {
         toast.error(result.error || "Failed to decrypt banking details");
       }
     } catch (error) {
-      console.error("Decryption error:", error);
       toast.error("Failed to decrypt banking details");
     } finally {
       setIsDecrypting(false);
@@ -134,7 +133,6 @@ const BankingProfileTab = () => {
 
       if (error) {
         toast.error("Failed to delete banking details");
-        console.error("Delete error:", error);
         return;
       }
 
@@ -149,7 +147,6 @@ const BankingProfileTab = () => {
         .eq("id", user.id);
 
       if (profileError) {
-        console.error("Profile update error:", profileError);
       }
 
       setShowDeleteDialog(false);
@@ -158,7 +155,6 @@ const BankingProfileTab = () => {
       refreshBankingDetails();
       toast.success("Banking details deleted successfully");
     } catch (error) {
-      console.error("Delete error:", error);
       toast.error("An unexpected error occurred");
     } finally {
       setIsDeletingBanking(false);

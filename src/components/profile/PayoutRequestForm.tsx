@@ -65,7 +65,6 @@ const PayoutRequestForm: React.FC<PayoutRequestFormProps> = ({
         toast.error(result.error || "Failed to create payout request");
       }
     } catch (error) {
-      console.error("Error creating payout request:", error);
       toast.error("An error occurred while creating the payout request");
     } finally {
       setLoading(false);

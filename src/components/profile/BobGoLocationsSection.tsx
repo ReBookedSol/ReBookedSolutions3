@@ -58,7 +58,6 @@ const BobGoLocationsSection: React.FC<BobGoLocationsSectionProps> = ({ onLockerS
         setSuggestions(results);
         setShowDropdown(results.length > 0);
       } catch (error) {
-        console.error("Error fetching suggestions:", error);
         setSuggestions([]);
       } finally {
         setIsSearching(false);
@@ -82,11 +81,9 @@ const BobGoLocationsSection: React.FC<BobGoLocationsSectionProps> = ({ onLockerS
         setLocations(nearbyLocations);
         setShowLocations(true);
       } else {
-        console.error("Failed to get coordinates from address");
         setLocations([]);
       }
     } catch (error) {
-      console.error("Error fetching locations:", error);
       setLocations([]);
     } finally {
       setIsLoadingLocations(false);
@@ -167,7 +164,6 @@ const BobGoLocationsSection: React.FC<BobGoLocationsSectionProps> = ({ onLockerS
         setTimeout(() => onLockerSaved(), 100);
       }
     } catch (error) {
-      console.error("Error saving locker:", error);
       toast.error("Failed to save locker to profile");
     } finally {
       setSavingLockerId(null);

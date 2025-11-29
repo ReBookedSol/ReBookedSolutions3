@@ -80,7 +80,6 @@ const AccountInformation = ({
         .is("phone_number", null);
 
       if (error) {
-        console.error("Failed to save phone:", error);
         toast.error("Could not save phone number. Try again.");
         return;
       }
