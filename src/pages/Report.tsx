@@ -97,7 +97,6 @@ const Report = () => {
         navigate("/");
       }, 2000);
     } catch (error) {
-      console.error("Error submitting report:", error);
       toast.error("Failed to submit report. Please try again.");
     } finally {
       setIsSubmitting(false);

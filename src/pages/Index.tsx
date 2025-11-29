@@ -21,7 +21,6 @@ const Index = () => {
       (searchParams.has("type") && searchParams.has("email"));
 
     if (hasVerificationParams) {
-      console.log("🔄 Detected verification parameters on homepage, redirecting to /verify");
       // Preserve all search parameters and redirect to verify page
       navigate(`/verify?${searchParams.toString()}`, { replace: true });
       return;

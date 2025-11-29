@@ -74,7 +74,6 @@ const ActivityLog = () => {
       );
       setActivities(userActivities);
     } catch (error) {
-      console.error("Error loading activities:", error);
       setError("Failed to load activities. Please try again.");
     } finally {
       setIsLoading(false);
@@ -89,12 +88,9 @@ const ActivityLog = () => {
 
     setIsLoadingBooks(true);
     try {
-      console.log("Loading user books for:", user.id);
       const books = await getUserBooks(user.id);
-      console.log("Loaded user books:", books.length);
       setUserBooks(books);
     } catch (error) {
-      console.error("Error loading user books:", error);
       setUserBooks([]);
     } finally {
       setIsLoadingBooks(false);
@@ -108,8 +104,8 @@ const ActivityLog = () => {
 
   useEffect(() => {
     if (user) {
-      refreshPendingCommits().catch((error) => {
-        console.warn("Could not load pending commits:", error);
+      refreshPendingCommits().catch(() => {
+        // Silently fail to load pending commits
       });
     }
   }, [user, refreshPendingCommits]);
@@ -622,7 +618,7 @@ const ActivityLog = () => {
                                     // Use order ID for declining, not book ID
                                     await declineBook(commit.id);
                                   } catch (error) {
-                                    console.error("Decline error:", error);
+                                    // Decline failed silently
                                   }
                                 }}
                                 disabled={isCommitting || isDeclining}
