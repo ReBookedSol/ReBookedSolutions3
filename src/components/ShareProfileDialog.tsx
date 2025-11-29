@@ -50,7 +50,6 @@ const ShareProfileDialog = ({
         toast.success("Profile link copied! 📋 Share it everywhere to sell faster!");
       }
     } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
       toast.error("Couldn't copy link automatically. Please copy it manually from the input field.");
     }
   };
@@ -94,7 +93,6 @@ const ShareProfileDialog = ({
             "Text and link copied! Paste it in your Instagram story or post.",
           );
         } catch (error) {
-          console.error('Failed to copy Instagram text:', error);
           toast.success("Opening Instagram... You can manually copy the profile link from above!");
         }
         return;

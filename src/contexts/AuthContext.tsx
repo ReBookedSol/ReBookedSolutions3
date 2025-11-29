@@ -244,9 +244,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         // Handle successful Supabase signup
         if (data.user && !data.session) {
           // Email verification is required - Supabase should send confirmation email automatically
-          console.log("✅ Supabase signup successful - email confirmation required");
-          console.log("📧 Attempting to ensure confirmation email is sent...");
-
           try {
             // Use the same reliable method as password reset - resend confirmation email
             const { error: resendError } = await supabase.auth.resend({
@@ -258,13 +255,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             });
 
             if (resendError) {
-              console.warn("��️ Resend confirmation email failed:", resendError);
               // Don't fail registration, just log the warning
-            } else {
-              console.log("✅ Confirmation email sent successfully using resend method");
             }
           } catch (resendException) {
-            console.warn("⚠️ Exception during confirmation email resend:", resendException);
             // Don't fail registration, just log the warning
           }
 
@@ -273,12 +266,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         if (data.user && data.session) {
           // User is immediately logged in - no email verification needed
-          console.log("✅ User immediately logged in - no email verification required");
           return { needsVerification: false };
         }
 
         // Fallback case
-        console.log("✅ Registration completed successfully");
         return { needsVerification: false };
       } catch (error) {
 

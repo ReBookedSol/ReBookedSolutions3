@@ -90,8 +90,6 @@ serve(async (req) => {
       }
 
       // If no URL found in shipment data, try to download the waybill directly
-      console.log("No waybill URL in shipment data, attempting direct download...");
-      
       const waybillResp = await fetch(`${BOBGO_BASE_URL}/shipments/${identifier}/waybill`, {
         method: "GET",
         headers: {
@@ -102,8 +100,7 @@ serve(async (req) => {
 
       if (!waybillResp.ok) {
         const text = await waybillResp.text().catch(() => "");
-        console.error("BobGo waybill download HTTP error:", waybillResp.status, text);
-        
+
         // Return shipment data even if waybill download fails
         return new Response(
           JSON.stringify({ 

@@ -51,7 +51,6 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
 
         if (error && error.code !== "PGRST116") {
           // PGRST116 means no rows found, which is expected
-          console.error("Error checking existing feedback:", error);
           setIsLoading(false);
           return;
         }
@@ -67,7 +66,6 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
 
         setIsLoading(false);
       } catch (err) {
-        console.error("Error checking existing feedback:", err);
         setIsLoading(false);
       }
     };
@@ -105,20 +103,11 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
         .single();
 
       if (orderFetchError || !order) {
-        console.error("Error fetching order:", {
-          error: orderFetchError,
-          orderId
-        });
         toast.error("Could not find order details");
         return;
       }
 
       if (!order.seller_id || !order.book_id) {
-        console.error("Order missing required data:", {
-          seller_id: order.seller_id,
-          book_id: order.book_id,
-          orderId
-        });
         toast.error("Order data incomplete. Please contact support.");
         return;
       }
@@ -159,14 +148,6 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
       );
 
       if (error) {
-        console.error("Error submitting feedback:", {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-          hint: error.hint,
-          fullError: JSON.stringify(error, null, 2)
-        });
-
         // Provide specific error messages
         let errorMessage = "Failed to submit feedback";
         if (error.code === "23503") {
@@ -197,13 +178,7 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
             totalAmount
           );
 
-          if (walletResult.success) {
-            console.log("✅ Seller wallet credited successfully");
-          } else {
-            console.warn("Failed to credit seller wallet:", walletResult.error);
-          }
         } catch (walletErr) {
-          console.warn("Error crediting wallet:", walletErr);
         }
       }
 
@@ -217,13 +192,11 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
           message: `Thank you for confirming delivery of ${bookTitle}.`,
         });
       } catch (notifErr) {
-        console.warn("Failed to create notification:", notifErr);
       }
 
       // Send transactional emails based on buyer response
       (async () => {
         try {
-          console.log("🚀 Starting email sending process...");
           const { emailService } = await import("@/services/emailService");
           const { createWalletCreditNotificationEmail } = await import(
             "@/utils/emailTemplates/walletCreditNotificationTemplate"
@@ -246,9 +219,7 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
                 .single();
               buyerEmail = buyerData?.email || buyerEmail;
               buyerFullName = buyerData?.full_name || buyerFullName;
-              console.log("✅ Fetched buyer email:", buyerEmail);
             } catch (e) {
-              console.warn("Failed to fetch buyer email:", e);
             }
           }
 
@@ -261,17 +232,13 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
                 .single();
               sellerEmail = sellerData?.email || sellerEmail;
               sellerFullName = sellerData?.full_name || sellerFullName;
-              console.log("✅ Fetched seller email:", sellerEmail);
             } catch (e) {
-              console.warn("Failed to fetch seller email:", e);
             }
           }
 
           if (receivedStatus === "received") {
-            console.log("📬 Order marked as received, sending emails...");
             // Buyer: Thank you and next steps
             if (buyerEmail) {
-              console.log("📧 Sending buyer thank you email to:", buyerEmail);
               const html = `<!DOCTYPE html>
 <html>
 <head>
@@ -373,18 +340,14 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
               const text = `Thank you — Order Received\n\nHello ${buyerFullName},\n\nThanks for confirming receipt of ${bookTitle}. We will release payment to the seller shortly.\n\nView order: https://rebookedsolutions.co.za/orders/${orderId}\n\n— ReBooked Solutions`;
 
               try {
-                console.log("📤 Attempting to send buyer thank you email...");
                 await emailService.sendEmail({ to: buyerEmail, subject: "Thank you — Order Received", html, text });
-                console.log("✅ Buyer thank you email sent successfully");
               } catch (emailErr) {
-                console.error("❌ Failed to send buyer received email:", emailErr);
               }
             }
 
             // Seller: Check if they have banking details and send appropriate email
             if (sellerEmail && order.seller_id) {
               try {
-                console.log("🔍 Checking seller banking details for seller_id:", order.seller_id);
                 // Check if seller has banking details set up
                 const { data: sellerProfile, error: profileError } = await supabase
                   .from("profiles")
@@ -392,15 +355,10 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
                   .eq("id", order.seller_id)
                   .single();
 
-                console.log("📋 Seller profile query result - error:", profileError, "data:", sellerProfile);
-
                 const hasBankingDetails = !profileError &&
                   sellerProfile?.preferences?.banking_setup_complete === true;
 
-                console.log("💳 Seller has banking details?", hasBankingDetails);
-
                 if (hasBankingDetails) {
-                  console.log("💰 Seller HAS banking details - sending 'Payment on the way' email");
                   // Seller has banking details - send "Payment on the way" email
                   const html = `<!DOCTYPE html>
 <html>
@@ -505,10 +463,8 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
                     html,
                     text,
                   });
-                  console.log("✅ 'Payment on the way' email sent successfully");
                 } else {
                   // Seller does NOT have banking details - send wallet credit notification email
-                  console.log("💰 Seller DOES NOT have banking details - sending wallet credit email");
                   const creditAmount = totalAmount * 0.9; // 90% of total amount
                   const walletTemplate = createWalletCreditNotificationEmail({
                     sellerName: sellerFullName,
@@ -526,13 +482,10 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
                     html: walletTemplate.html,
                     text: walletTemplate.text,
                   });
-                  console.log("✅ Wallet credit email sent successfully");
                 }
               } catch (bankingCheckErr) {
-                console.error("❌ Error checking banking details:", bankingCheckErr);
                 // If there's an error checking banking details, default to wallet credit email
                 try {
-                  console.log("⚠️ Banking check failed, defaulting to wallet credit email");
                   const creditAmount = totalAmount * 0.9;
                   const walletTemplate = createWalletCreditNotificationEmail({
                     sellerName: sellerFullName,
@@ -550,9 +503,7 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
                     html: walletTemplate.html,
                     text: walletTemplate.text,
                   });
-                  console.log("✅ Fallback wallet credit email sent successfully");
                 } catch (emailErr) {
-                  console.error("❌ Failed to send fallback wallet credit email:", emailErr);
                 }
               }
             }
@@ -655,7 +606,6 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
               try {
                 await emailService.sendEmail({ to: buyerEmail, subject: "We've received your report — ReBooked Solutions", html, text });
               } catch (emailErr) {
-                console.warn("Failed to send buyer issue email:", emailErr);
               }
             }
 
@@ -757,16 +707,12 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
               try {
                 await emailService.sendEmail({ to: sellerEmail, subject: "Issue finalising order — ReBooked Solutions", html, text });
               } catch (emailErr) {
-                console.warn("Failed to send seller issue email:", emailErr);
               }
             }
           }
         } catch (e) {
-          console.error("❌ CRITICAL: Error sending transactional emails:", e);
         }
       })();
-
-      console.log("✨ Email sending process initiated (async, may continue in background)");
 
       if (onFeedbackSubmitted) {
         onFeedbackSubmitted({
@@ -775,11 +721,6 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
         });
       }
     } catch (err: any) {
-      console.error("Error submitting feedback:", {
-        message: err?.message,
-        stack: err?.stack,
-        fullError: JSON.stringify(err, null, 2)
-      });
       toast.error(err?.message || "Failed to submit feedback");
     } finally {
       setIsSubmitting(false);

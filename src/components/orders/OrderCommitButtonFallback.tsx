@@ -58,10 +58,6 @@ const OrderCommitButtonFallback: React.FC<OrderCommitButtonFallbackProps> = ({
     setIsDialogOpen(false);
 
     try {
-      console.log(
-        `🚀 Committing to sale for order: ${orderId} using fallback service`,
-      );
-
       // Use fallback service for commit-to-sale
       const response = await fallbackService.commitToSale({
         order_id: orderId,
@@ -72,11 +68,6 @@ const OrderCommitButtonFallback: React.FC<OrderCommitButtonFallbackProps> = ({
         throw new Error(response.error || "Failed to commit to sale");
       }
 
-      console.log(
-        "Commit successful:",
-        response.data,
-      );
-
       // Show success messages
       toast.success("Order committed! Check your email for pickup details.", {
         duration: 5000,
@@ -86,7 +77,6 @@ const OrderCommitButtonFallback: React.FC<OrderCommitButtonFallbackProps> = ({
       onCommitSuccess?.(response);
     } catch (error: unknown) {
       const errorObj = error as Error;
-      console.error("Commit error:", error);
 
       let errorMessage = "Failed to commit to sale";
 

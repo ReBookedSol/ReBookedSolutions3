@@ -31,21 +31,9 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("ErrorBoundary caught an error:", error, errorInfo);
-
     this.setState({
       error,
       errorInfo,
-    });
-
-    // Log error details for debugging
-    console.error("Error details:", {
-      message: error.message,
-      stack: error.stack,
-      componentStack: errorInfo.componentStack,
-      level: this.props.level || "unknown",
-      timestamp: new Date().toISOString(),
-      url: window.location.href,
     });
   }
 

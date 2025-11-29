@@ -30,8 +30,6 @@ export class EnhancedPurchaseEmailService {
     buyerEmailSent: boolean;
     message: string;
   }> {
-    console.log("📧 Enhanced purchase emails: Starting guaranteed email delivery");
-    
     let sellerEmailSent = false;
     let buyerEmailSent = false;
     
@@ -40,18 +38,14 @@ export class EnhancedPurchaseEmailService {
       try {
         await this.sendSellerPurchaseNotification(purchaseData);
         sellerEmailSent = true;
-        console.log("✅ Seller purchase notification sent");
       } catch (sellerError) {
-        console.warn("⚠️ Seller email failed, queuing for fallback:", sellerError);
         await this.queueSellerEmailForFallback(purchaseData);
       }
 
       // Create in-app notification for seller (regardless of email success)
       try {
         await this.createSellerNotification(purchaseData);
-        console.log("✅ Seller in-app notification created");
       } catch (notifError) {
-        console.warn("⚠️ Seller notification failed:", notifError);
       }
 
       // Add small delay to prevent stream conflicts
@@ -61,18 +55,14 @@ export class EnhancedPurchaseEmailService {
       try {
         await this.sendBuyerPurchaseReceipt(purchaseData);
         buyerEmailSent = true;
-        console.log("✅ Buyer purchase receipt sent");
       } catch (buyerError) {
-        console.warn("⚠️ Buyer email failed, queuing for fallback:", buyerError);
         await this.queueBuyerEmailForFallback(purchaseData);
       }
 
       // Create in-app notification for buyer (regardless of email success)
       try {
         await this.createBuyerNotification(purchaseData);
-        console.log("✅ Buyer in-app notification created");
       } catch (notifError) {
-        console.warn("⚠️ Buyer notification failed:", notifError);
       }
       
       // Additional fallback: Queue verification email
@@ -83,9 +73,8 @@ export class EnhancedPurchaseEmailService {
         buyerEmailSent,
         message: `Purchase emails sent - Seller: ${sellerEmailSent ? 'sent' : 'queued'}, Buyer: ${buyerEmailSent ? 'sent' : 'queued'}`
       };
-      
+
     } catch (error) {
-      console.error("❌ Purchase email system failed:", error);
       
       // Final fallback: Queue urgent manual processing
       await this.queueUrgentManualProcessing(purchaseData);
@@ -105,7 +94,6 @@ export class EnhancedPurchaseEmailService {
     try {
       await this.sendSellerPurchaseNotificationDirect(purchaseData);
     } catch (error) {
-      console.warn("Direct seller email failed, trying mail queue fallback:", error);
       await this.queueSellerEmailForFallback(purchaseData);
       throw error; // Re-throw to maintain error handling flow
     }
@@ -172,7 +160,6 @@ export class EnhancedPurchaseEmailService {
     try {
       await this.sendBuyerPurchaseReceiptDirect(purchaseData);
     } catch (error) {
-      console.warn("Direct buyer email failed, trying mail queue fallback:", error);
       await this.queueBuyerEmailForFallback(purchaseData);
       throw error; // Re-throw to maintain error handling flow
     }
@@ -246,9 +233,7 @@ export class EnhancedPurchaseEmailService {
         priority: "urgent",
         email_type: "seller_purchase_notification"
       });
-      console.log("📧 Seller email queued for fallback processing");
     } catch (error) {
-      console.error("❌ Failed to queue seller email:", error);
     }
   }
   
@@ -271,9 +256,7 @@ export class EnhancedPurchaseEmailService {
         priority: "high",
         email_type: "buyer_purchase_receipt"
       });
-      console.log("📧 Buyer email queued for fallback processing");
     } catch (error) {
-      console.error("❌ Failed to queue buyer email:", error);
     }
   }
   
@@ -303,7 +286,6 @@ export class EnhancedPurchaseEmailService {
         email_type: "purchase_verification"
       });
     } catch (error) {
-      console.warn("⚠️ Failed to queue verification email:", error);
     }
   }
   
@@ -335,9 +317,7 @@ export class EnhancedPurchaseEmailService {
         priority: "urgent",
         email_type: "urgent_manual_processing"
       });
-      console.log("📧 Urgent manual processing notification queued");
     } catch (error) {
-      console.error("❌ Failed to queue urgent processing notification:", error);
     }
   }
 
@@ -347,7 +327,6 @@ export class EnhancedPurchaseEmailService {
    */
   private static async createSellerNotification(purchaseData: PurchaseEmailData): Promise<void> {
     // Notifications are created in CheckoutSuccess.tsx to prevent duplicate notifications
-    console.log("ℹ️ Seller notification creation skipped - handled by CheckoutSuccess");
   }
 
   /**
@@ -356,7 +335,6 @@ export class EnhancedPurchaseEmailService {
    */
   private static async createBuyerNotification(purchaseData: PurchaseEmailData): Promise<void> {
     // Notifications are created in CheckoutSuccess.tsx to prevent duplicate notifications
-    console.log("ℹ️ Buyer notification creation skipped - handled by CheckoutSuccess");
   }
 }
 

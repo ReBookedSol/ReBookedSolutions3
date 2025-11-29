@@ -9,8 +9,6 @@ interface EncryptionStatus {
 
 export const checkEncryptionStatus = async (): Promise<EncryptionStatus> => {
   try {
-    console.log("🔍 Checking encryption service status...");
-
     // Test if encryption function is available
     const { data: encryptData, error: encryptError } = await supabase.functions.invoke('encrypt-address', {
       body: {
@@ -19,7 +17,6 @@ export const checkEncryptionStatus = async (): Promise<EncryptionStatus> => {
     });
 
     if (encryptError) {
-      console.warn("❌ Encryption service not available:", encryptError.message);
       return {
         available: false,
         encryptionWorking: false,
@@ -29,7 +26,6 @@ export const checkEncryptionStatus = async (): Promise<EncryptionStatus> => {
     }
 
     if (!encryptData?.success) {
-      console.warn("❌ Encryption function failed");
       return {
         available: true,
         encryptionWorking: false,
@@ -50,7 +46,6 @@ export const checkEncryptionStatus = async (): Promise<EncryptionStatus> => {
     });
 
     if (decryptError || !decryptData?.success) {
-      console.warn("❌ Decryption service failed:", decryptError?.message);
       return {
         available: true,
         encryptionWorking: true,
@@ -59,7 +54,6 @@ export const checkEncryptionStatus = async (): Promise<EncryptionStatus> => {
       };
     }
 
-    console.log("✅ Encryption services are working correctly");
     return {
       available: true,
       encryptionWorking: true,
@@ -67,7 +61,6 @@ export const checkEncryptionStatus = async (): Promise<EncryptionStatus> => {
     };
 
   } catch (error) {
-    console.error("🚨 Error checking encryption status:", error);
     return {
       available: false,
       encryptionWorking: false,

@@ -70,29 +70,8 @@ export const checkSupabaseConnection = async (): Promise<boolean> => {
  * Perform comprehensive health checks
  */
 export const performHealthChecks = async () => {
-  console.log("🔍 Starting health checks...");
-
   const dbHealth = await checkDatabaseHealth();
   const canConnect = await checkSupabaseConnection();
-
-  console.log("📊 Health Check Results:");
-  console.log(
-    "- Database:",
-    dbHealth.isHealthy ? "✅ Healthy" : "❌ Unhealthy",
-  );
-  console.log("- Response Time:", dbHealth.responseTime, "ms");
-  console.log("- Connection:", canConnect ? "✅ Connected" : "❌ Disconnected");
-
-  if (!dbHealth.isHealthy) {
-    console.error("- Database Health Error:", {
-      error: dbHealth.error instanceof Error ? {
-        name: dbHealth.error.name,
-        message: dbHealth.error.message,
-        stack: dbHealth.error.stack
-      } : dbHealth.error,
-      timestamp: new Date().toISOString()
-    });
-  }
 
   return {
     database: dbHealth,

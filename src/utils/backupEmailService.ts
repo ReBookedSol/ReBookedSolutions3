@@ -66,8 +66,6 @@ export class BackupEmailService {
     method?: string;
   }> {
     try {
-      console.log("📧 Sending backup confirmation email to:", options.to);
-      
       // Generate confirmation URL if not provided - use proper Supabase callback
       const confirmationUrl = options.confirmationUrl || `${window.location.origin}/auth/callback`;
       
@@ -87,20 +85,16 @@ export class BackupEmailService {
       });
 
       if (error) {
-        console.warn("Email service failed, trying fallback:", error);
         return await this.sendFallbackEmail(options);
       }
 
       if (data?.success) {
-        console.log("✅ Backup confirmation email sent successfully");
         return { success: true, method: "primary" };
       } else {
-        console.warn("Email service returned unsuccessful result:", data);
         return await this.sendFallbackEmail(options);
       }
 
     } catch (error) {
-      console.error("Primary email service failed:", error);
       return await this.sendFallbackEmail(options);
     }
   }
@@ -114,8 +108,6 @@ export class BackupEmailService {
     method?: string;
   }> {
     try {
-      console.log("🔄 Using fallback email method");
-      
       // Store verification request in localStorage for fallback
       const verificationData = {
         email: options.to,
@@ -124,12 +116,10 @@ export class BackupEmailService {
       };
       
       localStorage.setItem(`verification_${options.to}`, JSON.stringify(verificationData));
-      
+
       // Create a simple verification URL - use proper Supabase callback
       const verificationUrl = `${window.location.origin}/auth/callback`;
-      
-      console.log("📧 Fallback verification URL created:", verificationUrl);
-      
+
       // Try one more time with a simpler payload
       const { data, error } = await supabase.functions.invoke("send-email", {
         body: {
@@ -150,20 +140,18 @@ export class BackupEmailService {
       if (data?.success) {
         return { success: true, method: "fallback" };
       } else {
-        // Even fallback failed, return success anyway but log it
-        console.warn("All email methods failed, but registration will continue");
-        return { 
-          success: true, 
+        // Even fallback failed, return success anyway but don't block registration
+        return {
+          success: true,
           method: "local",
           error: "Email service unavailable, but account created successfully"
         };
       }
 
     } catch (error) {
-      console.error("Fallback email also failed:", error);
       // Still return success - don't block registration for email issues
-      return { 
-        success: true, 
+      return {
+        success: true,
         method: "local",
         error: "Email service temporarily unavailable"
       };

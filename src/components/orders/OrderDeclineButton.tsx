@@ -54,10 +54,6 @@ const OrderDeclineButton: React.FC<OrderDeclineButtonProps> = ({
     setIsDeclining(true);
 
     try {
-      console.log(
-        `🚫 Declining order: ${orderId} with reason: ${declineReason}`,
-      );
-
       // Call the decline-commit Supabase Edge Function
       const { data, error } = await supabase.functions.invoke(
         "decline-commit",
@@ -71,17 +67,6 @@ const OrderDeclineButton: React.FC<OrderDeclineButtonProps> = ({
       );
 
       if (error) {
-        console.error("Supabase function error:", {
-          message: error?.message || 'Unknown error',
-          code: error?.code || 'NO_CODE',
-          details: error?.details || 'No details'
-        });
-        console.error("Error details:", {
-          errorType: typeof error,
-          dataReceived: data,
-          timestamp: new Date().toISOString()
-        });
-
         // More specific error handling for edge functions
         let errorMessage = "Failed to call decline function";
         if (error.message?.includes('FunctionsHttpError')) {
@@ -96,11 +81,8 @@ const OrderDeclineButton: React.FC<OrderDeclineButtonProps> = ({
       }
 
       if (!data?.success) {
-        console.error("Decline function returned error:", data);
         throw new Error(data?.error || "Failed to decline order");
       }
-
-      console.log("✅ Order declined successfully:", data);
 
       // Show success messages
       toast.success("Order declined successfully", {
@@ -120,8 +102,6 @@ const OrderDeclineButton: React.FC<OrderDeclineButtonProps> = ({
       // Call success callback
       onDeclineSuccess?.();
     } catch (error: unknown) {
-      console.error("💥 Decline error:", error);
-
       let errorMessage = "Failed to decline order";
       const errorObj = error as Error;
 

@@ -22,17 +22,13 @@ const EmailConfirmationFix: React.FC<EmailConfirmationFixProps> = ({
     setFixResult(null);
 
     try {
-      console.log("🔧 Starting email confirmation diagnosis...");
-
       // Step 1: Test email service configuration
-      console.log("📧 Testing email service...");
       const { data: configTest, error: configError } =
         await supabase.functions.invoke("send-email", {
           body: { test: true },
         });
 
       if (configError) {
-        console.error("❌ Email service configuration error:", configError);
         setFixResult(`❌ Email Service Error: ${configError.message}`);
         toast.error(
           `Email service configuration issue: ${configError.message}`,
@@ -41,7 +37,6 @@ const EmailConfirmationFix: React.FC<EmailConfirmationFixProps> = ({
       }
 
       if (!configTest?.success) {
-        console.error("❌ Email service not working:", configTest);
         setFixResult(
           `❌ Email Service Not Working: ${configTest?.error || "Unknown issue"}`,
         );
@@ -49,11 +44,8 @@ const EmailConfirmationFix: React.FC<EmailConfirmationFixProps> = ({
         return;
       }
 
-      console.log("✅ Email service configuration is working");
-
       // Step 2: If user email is provided, send a test confirmation
       if (userEmail) {
-        console.log("📨 Sending test confirmation email to:", userEmail);
 
         const { data: emailTest, error: emailError } =
           await supabase.functions.invoke("send-email", {
@@ -67,7 +59,6 @@ const EmailConfirmationFix: React.FC<EmailConfirmationFixProps> = ({
           });
 
         if (emailError) {
-          console.error("❌ Test confirmation email failed:", emailError);
           setFixResult(`❌ Confirmation Email Failed: ${emailError.message}`);
           toast.error(
             `Failed to send confirmation email: ${emailError.message}`,
@@ -76,7 +67,6 @@ const EmailConfirmationFix: React.FC<EmailConfirmationFixProps> = ({
         }
 
         if (!emailTest?.success) {
-          console.error("❌ Confirmation email unsuccessful:", emailTest);
           setFixResult(
             `❌ Confirmation Email Failed: ${emailTest?.error || "Unknown error"}`,
           );
@@ -84,7 +74,6 @@ const EmailConfirmationFix: React.FC<EmailConfirmationFixProps> = ({
           return;
         }
 
-        console.log("✅ Test confirmation email sent successfully");
         setFixResult(
           "✅ Email confirmation system is working! Check your inbox.",
         );
@@ -98,7 +87,6 @@ const EmailConfirmationFix: React.FC<EmailConfirmationFixProps> = ({
         toast.success("Email service is functioning properly");
       }
     } catch (error) {
-      console.error("❌ Email diagnosis failed:", error);
       const errorMsg = error instanceof Error ? error.message : "Unknown error";
       setFixResult(`❌ Diagnosis Failed: ${errorMsg}`);
       toast.error(`Email diagnosis failed: ${errorMsg}`);

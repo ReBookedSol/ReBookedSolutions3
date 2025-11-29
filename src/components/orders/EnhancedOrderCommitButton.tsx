@@ -71,7 +71,6 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
         .single();
 
       if (error) {
-        console.warn("Failed to load order details:", error);
         setPickupType("door");
         setDeliveryType("door");
         return;
@@ -80,10 +79,8 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
       if (order) {
         setPickupType(order.pickup_type || "door");
         setDeliveryType(order.delivery_type || "door");
-        console.log("✅ Order details loaded:", { pickup_type: order.pickup_type, delivery_type: order.delivery_type });
       }
     } catch (error) {
-      console.error("Error loading order details:", error);
       setPickupType("door");
       setDeliveryType("door");
     } finally {
@@ -102,8 +99,6 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
     setIsDialogOpen(false);
 
     try {
-      console.log(`🚀 Committing to sale for order: ${orderId} with pickup type: ${pickupType}`);
-
       // Prepare the commit data
       const commitData = {
         order_id: orderId,
@@ -114,8 +109,6 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
 
       // Use the basic commit-to-sale function directly
       try {
-        console.log("📞 Using commit-to-sale function...");
-
         const result = await supabase.functions.invoke(
           "commit-to-sale",
           {
@@ -126,7 +119,6 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
         error = result.error;
 
       } catch (originalError) {
-        console.warn("⚠️ Commit function failed, using fallback service:", originalError);
 
         // Final fallback to direct database service
         const fallbackResult = await FallbackCommitService.commitToSale({
@@ -147,8 +139,6 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
       }
 
       if (error) {
-        console.error("Supabase function error:", error);
-
         // More specific error handling for edge functions
         let errorMessage = "Failed to call commit function";
         if (error.message?.includes('FunctionsFetchError')) {
@@ -163,11 +153,8 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
       }
 
       if (!data?.success) {
-        console.error("Commit function returned error:", data);
         throw new Error(data?.error || "Failed to commit to sale");
       }
-
-      console.log("Commit successful:", data);
 
       // Show success message based on pickup type
       if (pickupType === "locker") {
@@ -197,8 +184,6 @@ const EnhancedOrderCommitButton: React.FC<EnhancedOrderCommitButtonProps> = ({
       // Call success callback
       onCommitSuccess?.();
     } catch (error: unknown) {
-      console.error("Commit error:", error);
-
       let errorMessage = "Failed to commit to sale";
       const errorObj = error as Error;
 

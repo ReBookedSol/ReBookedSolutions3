@@ -400,25 +400,9 @@ export const declineBookSale = async (orderIdOrBookId: string): Promise<void> =>
     }
 
     if (!data?.success) {
-      console.error("[CommitService] Decline function returned error:", data);
       throw new Error(data?.error || "Failed to decline order");
     }
-
-    // Log the decline action
-    console.log("[CommitService] Decline action completed via edge function:", {
-      userId: user.id,
-      action: "decline_sale",
-      orderId: order.id,
-      timestamp: new Date().toISOString(),
-    });
-
-    console.log("[CommitService] Sale declined successfully");
   } catch (error) {
-    console.error("[CommitService] Error declining book sale:", {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      error: error,
-      timestamp: new Date().toISOString()
-    });
     throw error;
   }
 };
@@ -431,10 +415,6 @@ export const processRefund = async (
   reason: "declined_by_seller" | "overdue_commit",
 ): Promise<void> => {
   try {
-    console.log(
-      `[CommitService] Processing refund for book ${bookId}, reason: ${reason}`,
-    );
-
     // In a real system, this would:
     // 1. Call payment processor (Paystack) to issue refund
     // 2. Update order status to "refunded"
@@ -442,34 +422,21 @@ export const processRefund = async (
     // 4. Update seller reputation metrics
     // 5. Log the refund activity
 
-    // For now, we'll log the refund action
+    // For now, we'll process the refund action
     const {
       data: { user },
       error: userError,
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      console.warn("[CommitService] No user found for refund processing");
       return;
     }
-
-    // Log the refund action
-    console.log("[CommitService] Refund processed:", {
-      bookId,
-      reason,
-      timestamp: new Date().toISOString(),
-      processingTime: "immediate", // In production, this would be actual processing time
-      refundAmount: "full_purchase_amount", // Would be actual amount from order
-      status: "completed",
-    });
 
     // In production, you would:
     // 1. Call Paystack refund API
     // 2. Send email notifications
     // 3. Update database records
     // 4. Log to activity service
-
-    console.log(`[CommitService] Refund completed for book ${bookId}`);
   } catch (error) {
     logCommitError("Error processing refund", error, { bookId, reason });
     // Don't throw error to prevent blocking other operations
@@ -501,14 +468,7 @@ export const handleOverdueCommits = async (): Promise<void> => {
           })
           .eq("id", book.bookId);
 
-        if (cancelError) {
-          console.error(
-            `Failed to cancel overdue commit for book ${book.bookId}:`,
-            cancelError,
-          );
-        } else {
-          console.log(`Cancelled overdue commit for book ${book.bookId}`);
-
+        if (!cancelError) {
           // Trigger refund process for overdue commitment
           await processRefund(book.bookId, "overdue_commit");
         }
@@ -529,8 +489,6 @@ export const enforceCommitDeadlines = async (): Promise<{
   refunded: number;
   errors: number;
 }> => {
-  console.log("[CommitService] Starting automated commit deadline enforcement");
-
   let processed = 0;
   let refunded = 0;
   let errors = 0;
@@ -549,13 +507,8 @@ export const enforceCommitDeadlines = async (): Promise<{
       );
 
     if (error) {
-      console.error("[CommitService] Error fetching overdue books:", error);
       return { processed: 0, refunded: 0, errors: 1 };
     }
-
-    console.log(
-      `[CommitService] Found ${overdueBooks?.length || 0} potentially overdue books`,
-    );
 
     for (const book of overdueBooks || []) {
       try {
@@ -570,10 +523,6 @@ export const enforceCommitDeadlines = async (): Promise<{
             .eq("id", book.id);
 
           if (updateError) {
-            console.error(
-              `[CommitService] Failed to update book ${book.id}:`,
-              updateError,
-            );
             errors++;
             continue;
           }
@@ -581,23 +530,11 @@ export const enforceCommitDeadlines = async (): Promise<{
           // Process refund
           await processRefund(book.id, "overdue_commit");
           refunded++;
-
-          console.log(
-            `[CommitService] Processed overdue commit for book: ${book.title} (ID: ${book.id})`,
-          );
         }
       } catch (bookError) {
-        console.error(
-          `[CommitService] Error processing book ${book.id}:`,
-          bookError,
-        );
         errors++;
       }
     }
-
-    console.log(
-      `[CommitService] Deadline enforcement completed: ${processed} processed, ${refunded} refunded, ${errors} errors`,
-    );
 
     return { processed, refunded, errors };
   } catch (error) {

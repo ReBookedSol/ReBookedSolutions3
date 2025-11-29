@@ -81,7 +81,6 @@ export class RealCourierPricing {
 
       return quotes;
     } catch (error) {
-      console.error("Error getting Courier Guy quotes:", error);
       return [];
     }
   }
