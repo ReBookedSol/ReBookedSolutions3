@@ -186,7 +186,6 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
             if (lockerData.id && lockerData.name && lockerData.provider_slug) {
               sellerLockerData = lockerData;
               sellerPreferredPickupMethod = "locker";
-              // console removed"�� Using locker as default preference");
             }
           }
         }
@@ -483,7 +482,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
       // Don't block the checkout success flow if cart removal fails
     }
 
-    // 📧 GUARANTEED EMAIL FALLBACK SYSTEM
+    // Email fallback system
     // Send purchase confirmation emails with multiple fallback layers
     try {
       const purchaseEmailData = {
@@ -504,16 +503,16 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
 
       // Show user feedback about email status
       if (emailResult.sellerEmailSent && emailResult.buyerEmailSent) {
-        toast.success("📧 Confirmation emails sent to all parties");
+        toast.success("Confirmation emails sent to all parties");
       } else {
-        toast.info("📧 Confirmation emails are being processed", {
+        toast.info("Confirmation emails are being processed", {
           description: "You'll receive your receipt shortly via our backup system."
         });
       }
 
     } catch (emailError) {
       // Don't block checkout completion if emails fail
-      toast.warning("📧 Emails are being processed manually", {
+      toast.warning("Emails are being processed manually", {
         description: "Your purchase is complete but notifications may be delayed."
       });
     }
@@ -521,7 +520,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
     goToStep(5);
   };
 
-    const handlePaymentError = (error: string) => {
+  const handlePaymentError = (error: string) => {
     const errorMessage = typeof error === 'string' ? error : String(error || 'Unknown error');
     const safeMessage = errorMessage === '[object Object]' ? 'Payment processing failed' : errorMessage;
     toast.error(`Payment failed: ${safeMessage}`);
@@ -588,7 +587,6 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({ book }) => {
 
       toast.success("Address saved to your profile!");
     } catch (error) {
-      console.error("Failed to save address to profile:", error);
       toast.error(
         "Failed to save address to profile, but proceeding with order",
       );
