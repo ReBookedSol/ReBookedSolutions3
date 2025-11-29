@@ -157,7 +157,6 @@ const Step1point5DeliveryMethod: React.FC<Step1point5DeliveryMethodProps> = ({
         description: `${selectedLocker.name} is now saved to your profile`,
       });
     } catch (error) {
-      console.error("Error saving locker:", error);
       toast.error("Failed to save locker to profile");
     } finally {
       setIsSavingLocker(false);
