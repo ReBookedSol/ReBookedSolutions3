@@ -34,14 +34,12 @@ export const createBook = async (bookData: BookFormData): Promise<Book> => {
 
       if (encryptedAddressData && encryptedAddressData.success && encryptedAddressData.data) {
         pickupAddress = encryptedAddressData.data;
-        console.log("✅ Using encrypted pickup address from profile for book listing");
 
         // Extract province from encrypted address
         if (pickupAddress?.province) {
           province = pickupAddress.province;
         }
       } else {
-        console.error("❌ No encrypted pickup address found in profile");
         throw new Error("You must set up your pickup address in your profile before listing a book. Please go to your profile and add your address.");
       }
 
@@ -55,13 +53,10 @@ export const createBook = async (bookData: BookFormData): Promise<Book> => {
 
         if (referralData?.affiliate_id) {
           affiliateRefId = referralData.affiliate_id;
-          console.log("✅ Found affiliate referral for book listing:", affiliateRefId);
         }
       } catch (referralError) {
-        console.log("ℹ️ No affiliate referral found (user was not referred):", referralError);
-      }
+    }
     } catch (addressError) {
-      console.error("Could not fetch encrypted user address:", addressError);
       // Re-throw error since address is required for book creation
       throw addressError;
     }
@@ -95,10 +90,6 @@ export const createBook = async (bookData: BookFormData): Promise<Book> => {
       sold_quantity: 0,
     };
 
-    console.log("📍 Creating book with address info:", {
-      province,
-      hasPickupAddress: !!pickupAddress,
-    });
 
     const { data: book, error } = await supabase
       .from("books")
@@ -125,12 +116,9 @@ export const createBook = async (bookData: BookFormData): Promise<Book> => {
         });
 
         if (encryptResult && encryptResult.success) {
-          console.log("✅ Book pickup address encrypted and saved successfully");
         } else {
-          console.warn("⚠️ Failed to encrypt book pickup address:", encryptResult?.error);
         }
       } catch (encryptError) {
-        console.warn("⚠️ Exception encrypting book pickup address:", encryptError);
       }
     }
 
@@ -162,21 +150,12 @@ export const createBook = async (bookData: BookFormData): Promise<Book> => {
         bookData.title,
         bookData.price,
       );
-      console.log("✅ Activity logged for book listing:", book.id);
     } catch (activityError) {
-      console.warn(
-        "⚠️ Failed to log activity for book listing:",
-        activityError,
-      );
       // Don't throw here - book creation was successful, activity logging is secondary
     }
 
     return mappedBook;
   } catch (error) {
-    console.error(
-      "Error in createBook:",
-      error instanceof Error ? error.message : String(error),
-    );
     handleBookServiceError(error, "create book");
     throw error; // This line will never be reached due to handleBookServiceError throwing, but TypeScript needs it
   }
@@ -278,10 +257,6 @@ export const updateBook = async (
 
     return mapBookFromDatabase(bookWithProfile);
   } catch (error) {
-    console.error(
-      "Error in updateBook:",
-      error instanceof Error ? error.message : String(error),
-    );
     handleBookServiceError(error, "update book");
     return null; // This line will never be reached due to handleBookServiceError throwing, but TypeScript needs it
   }
@@ -296,8 +271,6 @@ export const deleteBook = async (bookId: string, forceDelete: boolean = false): 
     if (!user) {
       throw new Error("User not authenticated");
     }
-
-    console.log("Attempting to delete book:", bookId);
 
     // First verify the user owns this book or is an admin
     const { data: existingBook, error: fetchError } = await supabase
@@ -327,7 +300,6 @@ export const deleteBook = async (bookId: string, forceDelete: boolean = false): 
       throw new Error("User not authorized to delete this book");
     }
 
-    console.log("User authorized to delete book. Proceeding with deletion...");
 
     // Delete related records first to maintain referential integrity
 
@@ -342,10 +314,8 @@ export const deleteBook = async (bookId: string, forceDelete: boolean = false): 
 
       if (!directOrdersError && directOrders) {
         relatedOrders = directOrders;
-        console.log(`Found ${relatedOrders.length} orders with direct book_id reference`);
       }
     } catch (error) {
-      console.log("No direct book_id column in orders, checking items JSON...");
     }
 
     // If no direct book_id column, check items JSON
@@ -359,7 +329,6 @@ export const deleteBook = async (bookId: string, forceDelete: boolean = false): 
           if (!order.items || !Array.isArray(order.items)) return false;
           return order.items.some((item: any) => item.book_id === bookId);
         });
-        console.log(`Found ${relatedOrders.length} orders with book_id in items JSON`);
       }
     }
 
@@ -378,8 +347,6 @@ export const deleteBook = async (bookId: string, forceDelete: boolean = false): 
 
       // Admin force delete: Cancel active orders first
       if (isAdmin && forceDelete) {
-        console.log(`Admin force delete: Cancelling ${activeOrders.length} active orders...`);
-
         for (const order of activeOrders) {
           try {
             // Cancel the order by updating its status
@@ -393,16 +360,11 @@ export const deleteBook = async (bookId: string, forceDelete: boolean = false): 
               .eq("id", order.id);
 
             if (cancelError) {
-              console.warn(`Failed to cancel order ${order.id}:`, cancelError);
-            } else {
-              console.log(`Successfully cancelled order ${order.id}`);
             }
           } catch (error) {
-            console.warn(`Error cancelling order ${order.id}:`, error);
           }
         }
 
-        console.log("All active orders cancelled. Proceeding with book deletion...");
       } else {
         throw new Error(
           `Cannot force delete: Only admins can force delete books with active orders.`
@@ -417,14 +379,7 @@ export const deleteBook = async (bookId: string, forceDelete: boolean = false): 
           .from("orders")
           .delete()
           .eq("book_id", bookId);
-
-        if (ordersDeleteError) {
-          console.log("Could not delete orders by book_id, they might be in items JSON only");
-        } else {
-          console.log(`Deleted ${relatedOrders.length} completed orders`);
-        }
       } catch (error) {
-        console.log("Orders cleanup failed, proceeding with book deletion");
       }
     }
 
@@ -434,10 +389,7 @@ export const deleteBook = async (bookId: string, forceDelete: boolean = false): 
       .delete()
       .eq("book_id", bookId);
 
-    if (reportsDeleteError) {
-      console.warn("Error deleting related reports:", reportsDeleteError);
-      // Continue with deletion even if reports cleanup fails
-    }
+    // Continue with deletion even if reports cleanup fails
 
     // Delete any transactions related to this book
     const { error: transactionsDeleteError } = await supabase
@@ -445,13 +397,7 @@ export const deleteBook = async (bookId: string, forceDelete: boolean = false): 
       .delete()
       .eq("book_id", bookId);
 
-    if (transactionsDeleteError) {
-      console.warn(
-        "Error deleting related transactions:",
-        transactionsDeleteError,
-      );
-      // Continue with deletion even if transactions cleanup fails
-    }
+    // Continue with deletion even if transactions cleanup fails
 
     // Finally delete the book itself
     const { error: deleteError } = await supabase
@@ -460,19 +406,9 @@ export const deleteBook = async (bookId: string, forceDelete: boolean = false): 
       .eq("id", bookId);
 
     if (deleteError) {
-      console.error(
-        "Error deleting book:",
-        deleteError.message || String(deleteError),
-      );
       throw new Error(`Failed to delete book: ${deleteError.message}`);
     }
-
-    console.log("Book deleted successfully:", existingBook.title);
   } catch (error) {
-    console.error(
-      "Error in deleteBook:",
-      error instanceof Error ? error.message : String(error),
-    );
     handleBookServiceError(error, "delete book");
     throw error; // This line will never be reached due to handleBookServiceError throwing, but TypeScript needs it
   }
