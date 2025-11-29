@@ -111,13 +111,6 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
         }
       }
 
-      console.log("📍 Calculating rates to locker:", {
-        locker_name: locker.name,
-        location_id: locker.id,
-        provider_slug: locker.provider_slug,
-        sellerHasOnlyLocker,
-      });
-
       const quoteRequest: any = {
         to: {
           streetAddress: buyerAddress.street,
@@ -176,11 +169,9 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
       }));
 
       if (options.length > 0) {
-        console.log("✅ Updated rates for locker delivery:", options);
         setDeliveryOptions(options);
       }
     } catch (err) {
-      console.error("Error recalculating locker rates:", err);
       setError("Failed to recalculate rates for locker delivery");
       toast.warning("Could not update rates for locker");
     } finally {
@@ -204,15 +195,6 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
       const sellerHasOnlyLocker = !sellerAddress && sellerLockerData;
 
       if ((useLockerForRates || sellerHasOnlyLocker) && sellerLockerData?.id && sellerLockerData?.provider_slug) {
-        console.log("🚚 Fetching Bob Go delivery options from seller's locker...", {
-          sellerLocker: {
-            name: sellerLockerData.name,
-            id: sellerLockerData.id,
-            provider_slug: sellerLockerData.provider_slug,
-          },
-          to: buyerAddress,
-        });
-
         const quotesResp = await getAllDeliveryQuotes({
           from: {
             streetAddress: "",
@@ -254,14 +236,8 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
           throw new Error("No quotes available");
         }
 
-        console.log("✅ Bob Go options from seller locker:", options);
         setDeliveryOptions(options);
       } else if (useAddressForRates || (sellerAddress && !sellerHasOnlyLocker)) {
-        console.log("🚚 Fetching Bob Go delivery options from seller address...", {
-          from: sellerAddress,
-          to: buyerAddress,
-        });
-
         const quotesResp = await getAllDeliveryQuotes({
           from: {
             streetAddress: sellerAddress.street,
@@ -302,13 +278,11 @@ const Step2DeliveryOptions: React.FC<Step2DeliveryOptionsProps> = ({
           throw new Error("No quotes available");
         }
 
-        console.log("✅ Bob Go options:", options);
         setDeliveryOptions(options);
       } else {
         throw new Error("No seller address or locker location available");
       }
     } catch (err) {
-      console.error("Error fetching Bob Go options:", err);
       setError("Failed to load delivery options");
 
       // Determine zone for fallback
