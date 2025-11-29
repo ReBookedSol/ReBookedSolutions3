@@ -123,46 +123,30 @@ const BookListing = () => {
       if (priceRange[0] > 0) filters.minPrice = priceRange[0];
       if (priceRange[1] < 1000) filters.maxPrice = priceRange[1];
 
-      console.log("📋 BookListing: Applying filters:", filters);
 
       const loadedBooks = await getBooks(filters);
-      console.log("📚 BookListing: Received books from service:", loadedBooks?.length || 0);
 
       // Ensure we have an array
       let booksArray = Array.isArray(loadedBooks) ? loadedBooks : [];
 
       // Apply book type specific filtering
       if (bookType !== "all") {
-        console.log(`🔍 BookListing: Filtering ${bookType} books (before: ${booksArray.length})`);
         booksArray = filterBooksByType(booksArray, bookType);
-        console.log(`🔍 BookListing: Filtered ${bookType} books (after: ${booksArray.length})`);
       }
 
       setTotalBooks(booksArray.length);
-      console.log("📊 BookListing: Total books set to:", booksArray.length);
 
       // Calculate pagination
       const startIndex = (currentPage - 1) * booksPerPage;
       const endIndex = startIndex + booksPerPage;
       const paginatedBooks = booksArray.slice(startIndex, endIndex);
-      console.log("📄 BookListing: Paginated books for display:", paginatedBooks.length);
 
       setBooks(paginatedBooks);
-      console.log("✅ BookListing: Books loaded successfully, displaying:", paginatedBooks.length, "books");
 
       if (booksArray.length === 0) {
         console.log("��️ BookListing: No books found with current filters");
       }
     } catch (error) {
-      const errorDetails = {
-        message: error instanceof Error ? error.message : String(error),
-        name: error instanceof Error ? error.name : "Unknown",
-        stack: error instanceof Error ? error.stack : undefined,
-        timestamp: new Date().toISOString(),
-      };
-
-
-
       const userMessage =
         error instanceof Error && error.message.includes("Failed to fetch")
           ? "Unable to connect to the book database. Please check your internet connection and try again."
@@ -171,16 +155,13 @@ const BookListing = () => {
       toast.error(userMessage);
       setBooks([]);
       setError(error instanceof Error ? error.message : String(error));
-      console.error("❌ BookListing: Error loading books:", errorDetails);
     } finally {
       setIsLoading(false);
-      console.log("🏁 BookListing: Loading complete, isLoading set to false");
     }
   }, [searchParams, selectedCondition, selectedUniversity, selectedProvince, selectedCurriculum, selectedGenre, priceRange, currentPage, bookType]);
 
   // Initial load
   useEffect(() => {
-    console.log("🎬 BookListing: Component mounted, starting initial book load...");
     loadBooks();
   }, [loadBooks]);
 
