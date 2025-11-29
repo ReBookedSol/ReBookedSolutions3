@@ -101,7 +101,6 @@ const PaystackPopupMobile: React.FC<PaystackPopupMobileProps> = ({
       const timeout = isMobile ? 15000 : 10000;
       
       script.onload = () => {
-        console.log("Paystack script loaded successfully (mobile optimized)");
         
         // Mobile: Wait a bit longer for PaystackPop to be available
         const checkPaystackReady = () => {
@@ -122,7 +121,6 @@ const PaystackPopupMobile: React.FC<PaystackPopupMobileProps> = ({
       };
       
       script.onerror = () => {
-        console.error("Failed to load Paystack script");
         const errorMsg = isMobile 
           ? "Payment system failed to load. Please check your internet connection and try again."
           : "Failed to load payment system";
@@ -133,7 +131,6 @@ const PaystackPopupMobile: React.FC<PaystackPopupMobileProps> = ({
       // Set timeout for script loading
       setTimeout(() => {
         if (!scriptLoaded && !window.PaystackPop) {
-          console.error("Paystack script loading timeout");
           onError?.("Payment system loading timeout");
           toast.error("Payment system took too long to load. Please try again.");
         }
@@ -185,14 +182,6 @@ const PaystackPopupMobile: React.FC<PaystackPopupMobileProps> = ({
       const amountInKobo = Math.round(amount * 100); // Convert Rands to kobo
       const reference = generateReference();
 
-      console.log("Initiating mobile-optimized Paystack payment:", {
-        email,
-        amount: amountInKobo,
-        reference,
-        subaccountCode,
-        metadata,
-        isMobile,
-      });
 
       const config: PaystackConfig = {
         key: PAYSTACK_CONFIG.getPublicKey(),
@@ -219,7 +208,6 @@ const PaystackPopupMobile: React.FC<PaystackPopupMobileProps> = ({
           ],
         },
         callback: (response: PaystackResponse) => {
-          console.log("Mobile payment successful:", response);
           setIsLoading(false);
 
           toast.success("Payment successful!", {
@@ -230,7 +218,6 @@ const PaystackPopupMobile: React.FC<PaystackPopupMobileProps> = ({
           onSuccess(response);
         },
         onClose: () => {
-          console.log("Mobile payment popup closed");
           setIsLoading(false);
 
           // On mobile, be more understanding about payment cancellation
@@ -252,7 +239,6 @@ const PaystackPopupMobile: React.FC<PaystackPopupMobileProps> = ({
       // Add subaccount if provided
       if (subaccountCode) {
         config.subaccount = subaccountCode;
-        console.log("Payment will be split to subaccount:", subaccountCode);
       }
 
       // Mobile-specific iframe setup
@@ -279,7 +265,6 @@ const PaystackPopupMobile: React.FC<PaystackPopupMobileProps> = ({
       }
       
     } catch (error) {
-      console.error("Mobile payment initiation error:", error);
       setIsLoading(false);
 
       const errorMessage = error instanceof Error 
@@ -300,7 +285,6 @@ const PaystackPopupMobile: React.FC<PaystackPopupMobileProps> = ({
   const handleRetry = () => {
     if (retryCount < 3) {
       setRetryCount(prev => prev + 1);
-      console.log(`Mobile payment retry attempt ${retryCount + 1}`);
       
       // Reset script loading state and retry
       setScriptLoaded(false);
