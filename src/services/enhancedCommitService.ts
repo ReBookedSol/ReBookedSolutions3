@@ -136,9 +136,7 @@ export class EnhancedCommitService {
       try {
         await this.queueCommitEmailsForManualProcessing(orderId, sellerId);
         emailsSent = true;
-      } catch (queueError) {
-        console.error("❌ Email queue fallback also failed:", queueError);
-      }
+      } catch (queueError) {}
       
       return {
         success: false,
@@ -168,7 +166,6 @@ export class EnhancedCommitService {
         .single();
       
       if (bookError || !book) {
-        console.error("Failed to get book data:", bookError);
         return null;
       }
       
@@ -187,7 +184,6 @@ export class EnhancedCommitService {
       };
       
     } catch (error) {
-      console.error("Error getting order data:", error);
       return null;
     }
   }
@@ -196,8 +192,6 @@ export class EnhancedCommitService {
    * Manual commit processing with direct email sending
    */
   private static async manualCommitWithEmails(orderData: CommitEmailData): Promise<void> {
-    console.log("📧 Manual commit: Sending emails directly");
-    
     // Update order status manually
     await supabase
       .from("books")
@@ -207,10 +201,8 @@ export class EnhancedCommitService {
     // Send seller email
     await this.sendSellerCommitEmail(orderData);
     
-    // Send buyer email  
+    // Send buyer email
     await this.sendBuyerCommitEmail(orderData);
-    
-    console.log("✅ Manual commit and emails completed");
   }
   
   /**
@@ -252,9 +244,7 @@ export class EnhancedCommitService {
         html: sellerEmailHtml,
         text: `Sale Committed! Book: ${orderData.bookTitle}, Price: R${orderData.bookPrice}`
       });
-      console.log("✅ Seller commit email sent successfully");
     } catch (error) {
-      console.error("❌ Failed to send seller commit email:", error);
       // Queue for manual processing
       await this.queueEmailForManualProcessing({
         to: orderData.sellerEmail,
@@ -305,9 +295,7 @@ export class EnhancedCommitService {
         html: buyerEmailHtml,
         text: `Order Confirmed! Book: ${orderData.bookTitle}, Price: R${orderData.bookPrice}`
       });
-      console.log("✅ Buyer commit email sent successfully");
     } catch (error) {
-      console.error("❌ Failed to send buyer commit email:", error);
       // Queue for manual processing
       await this.queueEmailForManualProcessing({
         to: orderData.buyerEmail,
@@ -337,9 +325,7 @@ export class EnhancedCommitService {
         email_type: "commit_verification"
       });
       
-      console.log("✅ Email fallback verification queued");
     } catch (error) {
-      console.warn("⚠️ Failed to queue email verification:", error);
     }
   }
   
@@ -371,9 +357,7 @@ export class EnhancedCommitService {
         email_type: "manual_processing_required"
       });
       
-      console.log("📧 Queued emails for manual processing");
     } catch (error) {
-      console.error("❌ Failed to queue emails for manual processing:", error);
     }
   }
   
@@ -395,9 +379,7 @@ export class EnhancedCommitService {
         email_type: emailData.type
       });
       
-      console.log(`📧 Queued ${emailData.type} email for manual processing`);
     } catch (error) {
-      console.error("❌ Failed to queue email for manual processing:", error);
     }
   }
 
@@ -422,9 +404,7 @@ export class EnhancedCommitService {
         message: `Great news! The seller has committed to your order for "${orderData.bookTitle}". Your book will be shipped soon.`,
       });
 
-      console.log("✅ Commit notifications created for both seller and buyer");
     } catch (error) {
-      console.error("❌ Failed to create commit notifications:", error);
     }
   }
 }

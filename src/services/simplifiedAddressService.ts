@@ -40,7 +40,6 @@ const retryWithBackoff = async <T>(
       }
 
       const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 500;
-      console.log(`🔄 Retry attempt ${attempt + 1}/${maxAttempts} after ${delay}ms delay`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
@@ -50,7 +49,6 @@ const retryWithBackoff = async <T>(
 
 const decryptAddress = async (params: { table: string; target_id: string; address_type?: string }) => {
   const isMobile = isMobileDevice();
-  console.log(`🔐 Fetching encrypted data for decryption (${isMobile ? 'MOBILE' : 'DESKTOP'}) with params:`, params);
 
   try {
     const { table, target_id, address_type } = params;
@@ -70,7 +68,6 @@ const decryptAddress = async (params: { table: string; target_id: string; addres
         throw new Error('Invalid address_type');
     }
 
-    console.log(`🔍 Fetching encrypted data from ${table}.${encryptedColumn} for ID: ${target_id}`);
 
     const { data: record, error: fetchError } = await supabase
       .from(table)
@@ -79,29 +76,23 @@ const decryptAddress = async (params: { table: string; target_id: string; addres
       .maybeSingle();
 
     if (fetchError) {
-      const errorMsg = fetchError instanceof Error ? fetchError.message : JSON.stringify(fetchError);
-      console.error("❌ Error fetching encrypted data:", errorMsg);
       return null;
     }
 
     if (!record || !record[encryptedColumn]) {
-      console.log("❌ No encrypted data found");
       return null;
     }
 
     const encryptedData = record[encryptedColumn];
-    console.log("✅ Found encrypted data, preparing to decrypt...");
 
     let bundle;
     try {
       bundle = typeof encryptedData === 'string' ? JSON.parse(encryptedData) : encryptedData;
     } catch (parseError) {
-      console.error("❌ Invalid encrypted data format:", parseError);
       return null;
     }
 
     if (!bundle.ciphertext || !bundle.iv || !bundle.authTag) {
-      console.error("❌ Encrypted bundle missing required fields:", Object.keys(bundle));
       return null;
     }
 
@@ -117,13 +108,6 @@ const decryptAddress = async (params: { table: string; target_id: string; addres
           aad: bundle.aad,
           version: bundle.version || record.address_encryption_version || 1
         };
-
-        console.log("🔍 Sending encrypted data to edge function:", {
-          ...requestBody,
-          encryptedData: `${requestBody.encryptedData.substring(0, 20)}...`,
-          iv: `${requestBody.iv.substring(0, 12)}...`,
-          authTag: `${requestBody.authTag.substring(0, 12)}...`
-        });
 
         const { data, error } = await supabase.functions.invoke('decrypt-address', {
           body: requestBody,
@@ -144,32 +128,19 @@ const decryptAddress = async (params: { table: string; target_id: string; addres
     try {
       const { data, error } = await (isMobile ? retryWithBackoff(makeRequest, 3, 1000) : makeRequest());
 
-      console.log("🔐 Edge function response:", {
-        data: data ? { success: data.success, hasData: !!data.data } : null,
-        error: error ? { message: (error as any).message, status: (error as any).status } : null
-      });
-
       if (error) {
-        const errorMsg = error instanceof Error ? error.message : JSON.stringify(error);
-        console.warn("❌ Decryption error:", errorMsg);
         return null;
       }
 
       if (data?.success && data?.data) {
-        console.log("✅ Decryption successful");
         return data.data;
       } else {
-        console.warn("❌ Decryption failed:", data?.error?.message || "Unknown error");
         return null;
       }
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      console.warn(`🔐 Decryption service error on ${isMobile ? 'mobile' : 'desktop'}:`, errorMsg);
       return null;
     }
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    console.warn(`🔐 Decryption service error on ${isMobile ? 'mobile' : 'desktop'}:`, errorMsg);
     return null;
   }
 };
@@ -184,13 +155,11 @@ const encryptAddress = async (address: SimpleAddress, options?: { save?: { table
     });
 
     if (error) {
-      console.warn("Encryption not available:", (error as any).message);
       return null;
     }
 
     return data as any;
   } catch (error) {
-    console.warn("Encryption service unavailable:", error instanceof Error ? error.message : String(error));
     return null;
   }
 };
@@ -199,10 +168,7 @@ export const getSellerDeliveryAddress = async (
   sellerId: string,
 ): Promise<CheckoutAddress | null> => {
   try {
-    console.log("🔍 getSellerDeliveryAddress called for seller:", sellerId);
-
     if (!sellerId || typeof sellerId !== 'string' || sellerId.length < 10) {
-      console.error("❌ Invalid seller ID provided:", sellerId);
       return null;
     }
 
@@ -223,7 +189,6 @@ export const getSellerDeliveryAddress = async (
       return address;
     }
 
-    console.log("❌ No encrypted address found for seller, attempting alternative encrypted source (books)...");
 
     try {
       const { getSellerPickupAddress } = await import("@/services/addressService");
@@ -241,13 +206,10 @@ export const getSellerDeliveryAddress = async (
         }
       }
     } catch (fallbackError) {
-      console.error("❌ Alternative encrypted address source failed:", fallbackError);
     }
 
-    console.log("❌ No physical address found for seller");
     return null;
   } catch (error) {
-    console.error("❌ Error getting seller address:", error);
     return null;
   }
 };
@@ -266,10 +228,8 @@ export const getSimpleUserAddresses = async (userId: string) => {
       };
     }
 
-    console.log("❌ No encrypted addresses found for user");
     return null;
   } catch (error) {
-    console.error("Error getting addresses:", error);
     return null;
   }
 };
@@ -293,7 +253,6 @@ export const saveSimpleUserAddresses = async (
           pickupEncrypted = true;
         }
       } catch (encryptError) {
-        console.error("❌ Pickup address encryption failed:", encryptError);
       }
     }
 
@@ -306,7 +265,6 @@ export const saveSimpleUserAddresses = async (
           shippingEncrypted = true;
         }
       } catch (encryptError) {
-        console.error("❌ Shipping address encryption failed:", encryptError);
       }
     } else {
       shippingEncrypted = pickupEncrypted;
@@ -331,10 +289,8 @@ export const saveSimpleUserAddresses = async (
       throw error;
     }
 
-    console.log("✅ Addresses encrypted and saved successfully");
     return { success: true };
   } catch (error) {
-    console.error("Error saving addresses:", error);
     throw error;
   }
 };
@@ -352,10 +308,8 @@ export const saveOrderShippingAddress = async (
       throw new Error("Failed to encrypt shipping address for order");
     }
 
-    console.log("✅ Order shipping address encrypted successfully");
     return { success: true };
   } catch (error) {
-    console.error("Error saving order shipping address:", error);
     throw error;
   }
 };
