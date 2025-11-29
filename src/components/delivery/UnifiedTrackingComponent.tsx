@@ -57,8 +57,6 @@ const UnifiedTrackingComponent: React.FC<UnifiedTrackingComponentProps> = ({
       setLoading(true);
       setError(null);
 
-      console.log("Tracking shipment:", { trackingNumber, provider });
-
       const data = await trackUnifiedShipment(trackingNumber.trim(), provider);
       setTrackingData(data);
 
@@ -66,7 +64,6 @@ const UnifiedTrackingComponent: React.FC<UnifiedTrackingComponentProps> = ({
         toast.success("Package delivered!");
       }
     } catch (err) {
-      console.error("Error tracking shipment:", err);
       setError(
         "Unable to track this shipment. Please check the tracking number and try again.",
       );
