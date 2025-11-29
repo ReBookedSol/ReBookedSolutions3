@@ -72,7 +72,6 @@ async function verifySignature(
 
     return calculatedSignature === webhookData.signature;
   } catch (error) {
-    console.error('Signature verification error:', error);
     return false;
   }
 }
@@ -102,8 +101,7 @@ Deno.serve(async (req) => {
     const isProduction = Deno.env.get('BOBPAY_ENV') === 'production';
 
     if (isProduction && !allowedIPs.includes(clientIp)) {
-      console.warn('Webhook from unauthorized IP:', clientIp);
-      // Still process but log the warning
+      // Webhook from unauthorized IP
     }
 
     const webhookData: BobPayWebhook = await req.json();
@@ -117,7 +115,6 @@ Deno.serve(async (req) => {
 
     const isValidSignature = await verifySignature(webhookData, passphrase);
     if (!isValidSignature) {
-      console.error('Invalid signature for webhook');
       return new Response('Invalid signature', { status: 400 });
     }
 
@@ -139,7 +136,6 @@ Deno.serve(async (req) => {
       );
 
       if (!validationResponse.ok) {
-        console.error('BobPay validation failed');
         return new Response('Payment validation failed', { status: 400 });
       }
     }
@@ -152,12 +148,10 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (orderError) {
-      console.error('Order not found:', orderError);
       return new Response('Order not found', { status: 404 });
     }
 
     if (!orders) {
-      console.error('No order found for payment_reference:', webhookData.custom_payment_id);
       return new Response('Order not found', { status: 404 });
     }
 
@@ -175,7 +169,7 @@ Deno.serve(async (req) => {
       .eq('reference', webhookData.custom_payment_id);
 
     if (txUpdateError) {
-      console.error('Error updating transaction:', txUpdateError);
+      // Handle transaction update error silently
     }
 
     // Update order based on payment status
@@ -190,7 +184,7 @@ Deno.serve(async (req) => {
         .eq('id', orders.id);
 
       if (orderUpdateError) {
-        console.error('Error updating order:', orderUpdateError);
+        // Handle order update error silently
       }
 
       // Mark book as sold (PRIMARY MECHANISM for BobPay)
@@ -207,12 +201,10 @@ Deno.serve(async (req) => {
             .single();
 
           if (bookFetchError) {
-            console.error('❌ Failed to fetch book data:', bookFetchError);
             throw bookFetchError;
           }
 
           if (!bookData) {
-            console.error('❌ Book not found:', bookId);
             throw new Error(`Book ${bookId} not found`);
           }
 
@@ -220,7 +212,7 @@ Deno.serve(async (req) => {
 
           // Check if already marked as sold (prevents double-selling)
           if (bookData.sold) {
-            console.log('ℹ️ Book already marked as sold, skipping update:', bookId);
+            // Book already marked as sold
           } else {
             // Mark as sold with ALL required fields
             const { error: bookUpdateError } = await supabaseClient
@@ -235,21 +227,16 @@ Deno.serve(async (req) => {
               .eq('id', bookId);
 
             if (bookUpdateError) {
-              console.error('❌ Error marking book as sold:', bookUpdateError);
               throw bookUpdateError;
             }
 
             // Book marked as sold
           }
         } catch (bookError) {
-          console.error('❌ Critical error in book marking:', bookError);
           // Continue processing - book marking failure shouldn't prevent order update
         }
       } else {
-        console.warn('⚠️ No book ID found in order:', {
-          book_id: orders.book_id,
-          items: orders.items
-        });
+        // No book ID found in order
       }
 
       // Log activity for buyer's purchase
