@@ -146,7 +146,6 @@ const AuthCallback = () => {
         // Handle errors first
         if (error) {
           setStatus("error");
-          setStatus("error");
           const safeErrorMsg = getSafeErrorMessage(error_description || error, 'Authentication failed');
           setMessage(safeErrorMsg);
           toast.error(`Authentication failed: ${safeErrorMsg}`);
@@ -292,12 +291,6 @@ const AuthCallback = () => {
         }
 
         // Try manual verification as a last resort
-        
-        console.log("Available parameters:", {
-          searchParams: Object.fromEntries(searchParams.entries()),
-          hashParams: window.location.hash ? Object.fromEntries(new URLSearchParams(window.location.hash.substring(1)).entries()) : {}
-        });
-
         try {
           const manualResult = await attemptManualVerification({
             token_hash,
