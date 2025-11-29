@@ -30,7 +30,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         setItems(JSON.parse(savedCart));
       } catch (error) {
-        console.error("Error loading cart:", error);
+        // Error loading cart - use empty state
       }
     }
 
@@ -38,7 +38,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         setSellerCarts(JSON.parse(savedSellerCarts));
       } catch (error) {
-        console.error("Error loading seller carts:", error);
+        // Error loading seller carts - use empty state
       }
     }
 
