@@ -113,7 +113,6 @@ const SaleSuccessPopup = ({
         read: false,
       });
     } catch (error) {
-      console.error("Error saving sale notification:", error);
       // Don't show error to user as this is background operation
     } finally {
       setIsAddingNotification(false);

@@ -125,7 +125,6 @@ const SubaccountEditForm: React.FC<SubaccountEditFormProps> = ({
           if (onCancel) onCancel();
         }
       } catch (error) {
-        console.error("Error loading subaccount data:", error);
         toast.error("Failed to load subaccount details");
         if (onCancel) onCancel();
       } finally {
@@ -272,7 +271,6 @@ const SubaccountEditForm: React.FC<SubaccountEditFormProps> = ({
         updateData.settlement_schedule = formData.settlement_schedule;
       }
 
-      console.log("Updating subaccount with data:", updateData);
 
       const result = await PaystackSubaccountService.updateSubaccountDetails(
         subaccountCode,
@@ -290,7 +288,6 @@ const SubaccountEditForm: React.FC<SubaccountEditFormProps> = ({
         throw new Error(result.error || "Failed to update subaccount");
       }
     } catch (error) {
-      console.error("Subaccount update error:", error);
 
       let errorMessage = "There was an error updating your subaccount details.";
 

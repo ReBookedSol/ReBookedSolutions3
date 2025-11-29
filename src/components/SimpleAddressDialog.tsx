@@ -101,7 +101,6 @@ const SimpleAddressDialog = ({
       await onSave(pickupAddress, shippingAddress, sameAsPickup);
       onClose();
     } catch (error) {
-      console.error("Error saving addresses:", error);
     } finally {
       setIsSaving(false);
     }

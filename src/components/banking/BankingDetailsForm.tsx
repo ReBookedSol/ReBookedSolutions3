@@ -278,16 +278,11 @@ const BankingDetailsForm: React.FC<BankingDetailsFormProps> = ({
         throw new Error("Account number is invalid");
       }
 
-      console.log("Submitting banking details:", {
-        ...subaccountDetails,
-        account_number: "***" + subaccountDetails.account_number.slice(-4),
-      });
 
       // 📡 ENCRYPT AND SAVE BANKING DETAILS
       if (!user) throw new Error("User not authenticated");
 
       // Encrypt banking details before saving
-      console.log("🔒 Starting banking details encryption...");
       const encryptionResult = await BankingEncryptionService.encryptBankingDetails(
         subaccountDetails.account_number,
         subaccountDetails.bank_code,
@@ -300,7 +295,6 @@ const BankingDetailsForm: React.FC<BankingDetailsFormProps> = ({
         throw new Error(encryptionResult.error || "Failed to encrypt banking details");
       }
 
-      console.log("✅ Banking details encrypted successfully");
 
       // Generate encryption key hash for identification
       const encryptionKeyHash = await BankingEncryptionService.generateKeyHash();
@@ -357,7 +351,6 @@ const BankingDetailsForm: React.FC<BankingDetailsFormProps> = ({
 
       if (error) throw new Error(error.message || "Failed to save banking details");
 
-      console.log("✅ Banking details saved to database with encryption");
 
       // Update profile with subaccount code
       await supabase
@@ -387,9 +380,7 @@ const BankingDetailsForm: React.FC<BankingDetailsFormProps> = ({
       // Log the banking update activity
       try {
         await ActivityService.logBankingUpdate(user.id, editMode);
-        console.log("✅ Banking update activity logged");
       } catch (activityError) {
-        console.warn("⚠️ Failed to log banking update activity:", activityError);
         // Don't fail the entire operation for activity logging issues
       }
 
@@ -397,7 +388,6 @@ const BankingDetailsForm: React.FC<BankingDetailsFormProps> = ({
         onSuccess?.();
       }, 2000);
     } catch (error) {
-      console.error("Banking setup error:", error);
 
       let errorMessage = "There was an error setting up your banking details.";
 
