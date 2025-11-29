@@ -318,7 +318,6 @@ export class BankingService {
               }
             }
           } catch (err) {
-            console.warn("addressService.getUserAddresses failed:", err);
           }
 
           if (!hasPickupAddress) {
@@ -394,14 +393,6 @@ export class BankingService {
       }
 
     } catch (error) {
-      console.error("Error linking books to subaccount:", {
-        message: error instanceof Error ? error.message : "Unknown error",
-        // @ts-ignore
-        code: (error as any)?.code,
-        // @ts-ignore
-        details: (error as any)?.details,
-        fullError: error,
-      });
 
       throw new Error("Failed to link books to payment account");
     }
@@ -435,7 +426,6 @@ export class BankingService {
         accountName: data.data?.account_name,
       };
     } catch (error) {
-      console.error("Account validation error:", error);
       return { valid: false, error: "Validation service unavailable" };
     }
   }
@@ -468,9 +458,6 @@ export class BankingService {
         missingRequirements,
       };
 
-      if (import.meta.env.DEV) {
-        console.log("🏦 Banking requirements check result completed");
-      }
 
       return status;
     } catch (error) {
