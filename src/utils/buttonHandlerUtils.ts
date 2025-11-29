@@ -95,7 +95,6 @@ export const createSafeFormHandler = (
     e.stopPropagation();
 
     if (isSubmitting) {
-      console.log("Form already submitting, ignoring submission");
       return;
     }
 
@@ -109,8 +108,6 @@ export const createSafeFormHandler = (
         await result;
       }
     } catch (error) {
-      console.error("Form submission error:", error);
-
       if (onError) {
         onError(error);
       }
@@ -148,7 +145,6 @@ export const createSafeNavigationHandler = (
         loadingSetter?.(false);
       }
     } catch (error) {
-      console.error("Navigation error:", error);
       loadingSetter?.(false);
     }
   };
