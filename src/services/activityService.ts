@@ -123,9 +123,6 @@ export class ActivityService {
             notificationError.message?.includes("does not exist") ||
             notificationError.message?.includes("schema cache")
           ) {
-            console.log(
-              "📝 Notifications table not available, activity logged to console only",
-            );
             return { success: true };
           }
           throw notificationError;
@@ -212,28 +209,15 @@ export class ActivityService {
             notifError.message?.includes("does not exist") ||
             notifError.message?.includes("schema cache")
           ) {
-            console.log(
-              "📝 Notifications table not available, using sample activities",
-            );
             return [];
           }
 
-          // Only log errors that aren't table-not-found issues
-          console.warn(
-            "⚠️ Non-critical error fetching notifications, falling back to sample data:",
-            notifError.message || notifError,
-          );
           // Return empty array as fallback
           return [];
         }
 
-        console.log(
-          `✅ Found ${notifications?.length || 0} activities in notifications table`,
-        );
-
         // If no notifications found, return empty array
         if (!notifications || notifications.length === 0) {
-          console.log("No activities found, returning empty array");
           return [];
         }
 

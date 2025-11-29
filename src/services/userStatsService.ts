@@ -31,20 +31,12 @@ export const getUserStats = async (
       .select("*", { count: "exact", head: true })
       .eq("seller_id", userId);
 
-    if (booksError) {
-      console.error("Error counting books listed:", booksError);
-    }
-
     // Count books sold by user
     const { count: booksSold, error: soldError } = await supabase
       .from("books")
       .select("*", { count: "exact", head: true })
       .eq("seller_id", userId)
       .eq("sold", true);
-
-    if (soldError) {
-      console.error("Error counting books sold:", soldError);
-    }
 
     return {
       totalBooksListed: booksListed || 0,
@@ -54,7 +46,6 @@ export const getUserStats = async (
       lastActive: new Date().toISOString(),
     };
   } catch (error) {
-    console.error("Error in getUserStats:", error);
     return null;
   }
 };
@@ -66,10 +57,6 @@ export const updateLastActive = async (userId: string) => {
       .update({ updated_at: new Date().toISOString() })
       .eq("id", userId);
 
-    if (error) {
-      console.error("Error updating last active:", error);
-    }
   } catch (error) {
-    console.error("Error in updateLastActive:", error);
   }
 };
