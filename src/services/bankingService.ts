@@ -13,7 +13,6 @@ export class BankingService {
     retryCount = 0,
   ): Promise<BankingSubaccount | null> {
     try {
-      console.log("Fetching banking details for user:", userId, "attempt:", retryCount + 1);
 
       const timeout = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Request timeout')), 10000)
@@ -25,9 +24,6 @@ export class BankingService {
           .select("*")
           .eq("user_id", userId);
 
-        if (import.meta.env.DEV) {
-          console.log("🔍 [Banking Debug] Banking records count:", allRecords?.length || 0);
-        }
 
         const query = await supabase
           .from("banking_subaccounts")
@@ -39,7 +35,6 @@ export class BankingService {
           .single();
 
         if (query.error && query.error.code === "42P01") {
-          console.log("⚠️ Banking table not available, checking profile for subaccount...");
           const { data: profileData } = await supabase
             .from("profiles")
             .select("subaccount_code, preferences")
@@ -67,7 +62,6 @@ export class BankingService {
 
       if (error) {
         if (error.code === "PGRST116") {
-          console.log("No active/pending banking record found, checking for any record...");
 
           const { data: anyRecord, error: anyError } = await supabase
             .from("banking_subaccounts")
@@ -79,14 +73,11 @@ export class BankingService {
 
           if (anyError) {
             if (anyError.code === "PGRST116") {
-              console.log("No banking details found for user - this is normal for new users");
               return null;
             }
-            console.error("Error fetching any banking record:", anyError);
             return null;
           }
 
-          console.log("🔍 Found banking record with status:", anyRecord?.status);
           return anyRecord as any;
         }
 
@@ -99,17 +90,8 @@ export class BankingService {
           );
         }
 
-        console.error("Database error fetching banking details:", {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          userId,
-          fullError: JSON.stringify(error, null, 2),
-        });
 
         if (error.message?.includes("Failed to fetch") || error.message?.includes("NetworkError")) {
-          console.log("Network error detected, user may be offline or database unreachable");
           throw new Error("Connection error - please check your internet and try again");
         }
 
@@ -122,13 +104,11 @@ export class BankingService {
     } catch (error) {
       if (error instanceof Error) {
         if (error.message === 'Request timeout' && retryCount < 2) {
-          console.log(`Request timeout, retrying... (${retryCount + 1}/3)`);
           await new Promise(resolve => setTimeout(resolve, 1000));
           return this.getUserBankingDetails(userId, retryCount + 1);
         }
 
         if ((error.message?.includes("Failed to fetch") || error.message?.includes("NetworkError")) && retryCount < 2) {
-          console.log(`Network error, retrying... (${retryCount + 1}/3)`);
           await new Promise(resolve => setTimeout(resolve, 1000));
           return this.getUserBankingDetails(userId, retryCount + 1);
         }
@@ -143,7 +123,6 @@ export class BankingService {
           );
         }
 
-        console.error("Error fetching banking details:", error.message);
 
         if (error.message?.includes("Failed to fetch") || error.message?.includes("NetworkError") || error.message === 'Request timeout') {
           throw new Error("Connection error - please check your internet and try again");
@@ -156,7 +135,6 @@ export class BankingService {
         if (typeof error === 'object' && error !== null && 'message' in error) {
           const errorMessage = (error as any).message;
           if ((errorMessage?.includes("Failed to fetch") || errorMessage?.includes("NetworkError")) && retryCount < 2) {
-            console.log(`Network error, retrying... (${retryCount + 1}/3)`);
             await new Promise(resolve => setTimeout(resolve, 1000));
             return this.getUserBankingDetails(userId, retryCount + 1);
           }
@@ -177,17 +155,12 @@ export class BankingService {
     bankingDetails: BankingDetails,
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      console.log("⚠️ createOrUpdateBankingDetails: Banking details must be encrypted via edge function");
 
       throw new Error(
         "Banking details encryption must be handled via the encrypt-banking-details edge function. " +
         "Please use BankingEncryptionService.encryptBankingDetails() before saving."
       );
     } catch (error) {
-      console.error("Banking service error:", {
-        message: error instanceof Error ? error.message : "Unknown error",
-        fullError: error,
-      });
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to save banking details. Banking details require encryption.",
@@ -199,9 +172,6 @@ export class BankingService {
     userId: string,
     bankingDetails: BankingDetails & { subaccountCode: string },
   ): Promise<void> {
-    if (import.meta.env.DEV) {
-      console.log("💾 Saving banking details to database for user:", userId);
-    }
 
     const bankingRecord = {
       user_id: userId,
@@ -243,13 +213,6 @@ export class BankingService {
     }
 
     if (error) {
-      console.error("❌ Error saving banking details:", {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        fullError: JSON.stringify(error, null, 2),
-      });
 
       if (error.code === "23505") {
         throw new Error("Banking account already exists for this user");
@@ -264,9 +227,6 @@ export class BankingService {
       );
     }
 
-    if (import.meta.env.DEV) {
-      console.log("✅ Banking details saved successfully");
-    }
 
     const { error: profileError } = await supabase
       .from("profiles")
@@ -286,7 +246,6 @@ export class BankingService {
     if (profileError) {
       console.error("⚠️ Warning: Failed to update profile with banking info:", profileError);
     } else {
-      console.log("✅ Profile updated with banking info");
     }
   }
 
@@ -302,9 +261,6 @@ export class BankingService {
         (bankingDetails.status === "active" || bankingDetails.status === "pending")
       );
 
-      if (import.meta.env.DEV) {
-        console.log("🏦 [Banking Setup Check] Banking validation complete");
-      }
 
       const hasBankingSetup = hasBankingFromTable;
 
@@ -325,7 +281,6 @@ export class BankingService {
           if (hasPickupAddress) console.log("🔐 Using simplifiedAddressService decrypted pickup address for banking validation");
         }
       } catch (error) {
-        console.warn("Failed to check simplified encrypted pickup address:", error);
       }
 
       // 2) Fallback: check user_addresses via fallbackAddressService
@@ -344,7 +299,6 @@ export class BankingService {
             }
           }
         } catch (error) {
-          console.warn("Fallback user_addresses check failed:", error);
         }
       }
 
@@ -372,20 +326,14 @@ export class BankingService {
               const bookPickup = await getSellerPickupAddress(userId);
               if (bookPickup && (bookPickup.street || bookPickup.streetAddress) && bookPickup.city && bookPickup.province && (bookPickup.postal_code || bookPickup.postalCode)) {
                 hasPickupAddress = true;
-                console.log("📦 Using books table pickup address for banking validation");
               }
             } catch (err) {
-              console.warn("addressService.getSellerPickupAddress failed:", err);
             }
           }
         } catch (error) {
-          console.warn("Legacy addressService fallback failed:", error);
         }
       }
 
-      if (!hasPickupAddress) {
-        console.log("📍 [Address Debug] No pickup address found for user:", userId);
-      }
 
       const { data: books } = await supabase
         .from("books")
@@ -411,7 +359,6 @@ export class BankingService {
         setupCompletionPercentage,
       };
     } catch (error) {
-      console.error("Error checking seller requirements:", JSON.stringify(error, null, 2));
 
       if (error instanceof Error && error.message?.includes("Connection error")) {
         console.log("Connection issue while checking seller requirements, will retry on next check");
@@ -446,9 +393,6 @@ export class BankingService {
         throw error;
       }
 
-      if (import.meta.env.DEV) {
-        console.log("✅ Successfully linked books to subaccount for user:", userId);
-      }
     } catch (error) {
       console.error("Error linking books to subaccount:", {
         message: error instanceof Error ? error.message : "Unknown error",
