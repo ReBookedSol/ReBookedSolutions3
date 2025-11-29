@@ -27,7 +27,6 @@ export function EmailDiagnosticPanel() {
       ];
       setDiagnosticResults(results);
     } catch (error) {
-      console.error('Diagnostic error:', error);
     } finally {
       setIsRunning(false);
     }
@@ -44,7 +43,6 @@ export function EmailDiagnosticPanel() {
       const result = await emailDiagnosticsService.addTestEmailToQueue(testEmail);
       setDiagnosticResults(prev => [...prev, result]);
     } catch (error) {
-      console.error('Email test error:', error);
     } finally {
       setIsRunning(false);
     }
@@ -66,7 +64,6 @@ export function EmailDiagnosticPanel() {
       };
       setDiagnosticResults(prev => [...prev, diagnosticResult]);
     } catch (error) {
-      console.error('Mail queue processing error:', error);
     } finally {
       setIsRunning(false);
     }

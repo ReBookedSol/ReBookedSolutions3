@@ -37,10 +37,8 @@ const CheckoutCancel: React.FC = () => {
         .eq("reference", cleanReference);
 
       if (updateError) {
-        console.warn("Could not update payment transaction:", updateError);
       }
     } catch (err) {
-      console.error("Error recording cancellation:", err);
     } finally {
       setLoading(false);
     }

@@ -22,7 +22,6 @@ const ProtectedRoute = ({
     isLoading = auth.isLoading;
     initError = auth.initError;
   } catch (error) {
-    console.warn("Auth context not available in ProtectedRoute, redirecting to login");
     // Fallback to unauthenticated state and redirect
     isAuthenticated = false;
     isLoading = false;
@@ -36,7 +35,6 @@ const ProtectedRoute = ({
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (isLoading) {
-        console.warn("[ProtectedRoute] Auth loading timeout - forcing render");
         setForceRender(true);
       }
     }, 10000); // 10 second timeout
@@ -46,7 +44,6 @@ const ProtectedRoute = ({
 
   // If there's an auth error or we've hit the timeout, and auth is required, redirect to login
   if ((initError || forceRender) && requireAuth) {
-    console.warn("[ProtectedRoute] Auth failed, redirecting to login");
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
