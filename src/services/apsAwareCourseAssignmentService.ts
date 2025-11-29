@@ -248,9 +248,6 @@ export function getCoursesForUniversityWithAPS(
 
         // Log successful processing in dev mode
         if (import.meta.env.DEV && isApplicable) {
-          console.log(
-            `✓ Course "${course.name}" applicable to ${sanitizedUniversityId}`,
-          );
         }
 
         return isApplicable;

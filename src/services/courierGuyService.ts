@@ -86,8 +86,6 @@ export const createCourierGuyShipment = async (
   shipmentData: CourierGuyShipmentData,
 ): Promise<CourierGuyShipment> => {
   try {
-    console.log("Creating Courier Guy shipment:", shipmentData);
-
     const { data, error } = await supabase.functions.invoke(
       "courier-guy-shipment",
       {
@@ -96,7 +94,6 @@ export const createCourierGuyShipment = async (
     );
 
     if (error) {
-      console.error("Error creating shipment:", error);
       throw new Error(`Failed to create shipment: ${error.message}`);
     }
 
@@ -104,10 +101,8 @@ export const createCourierGuyShipment = async (
       throw new Error(data.error || "Failed to create shipment");
     }
 
-    console.log("Shipment created successfully:", data.shipment);
     return data.shipment;
   } catch (error) {
-    console.error("Error in createCourierGuyShipment:", error);
 
     if (error instanceof Error) {
       throw error;
@@ -124,8 +119,6 @@ export const trackCourierGuyShipment = async (
   trackingNumber: string,
 ): Promise<CourierGuyTrackingInfo> => {
   try {
-    console.log("Tracking Courier Guy shipment:", trackingNumber);
-
     const { data, error } = await supabase.functions.invoke(
       `courier-guy-track/${trackingNumber}`,
       {
@@ -134,7 +127,6 @@ export const trackCourierGuyShipment = async (
     );
 
     if (error) {
-      console.error("Error tracking shipment:", error);
       throw new Error(`Failed to track shipment: ${error.message}`);
     }
 
@@ -142,10 +134,8 @@ export const trackCourierGuyShipment = async (
       throw new Error(data.error || "Failed to track shipment");
     }
 
-    console.log("Tracking data received:", data.tracking);
     return data.tracking;
   } catch (error) {
-    console.error("Error in trackCourierGuyShipment:", error);
 
     if (error instanceof Error) {
       throw error;
@@ -164,7 +154,6 @@ export const getCourierGuyQuote = async (
   weight: number,
 ): Promise<{ price: number; estimatedDays: number }> => {
   try {
-    console.log("Getting Courier Guy quote:", { fromCity, toCity, weight });
 
     // Enhanced quote calculation based on real world factors
     let basePrice = 75; // Base price for textbooks
@@ -233,20 +222,11 @@ export const getCourierGuyQuote = async (
       estimatedDays = 3; // Involving smaller cities
     }
 
-    console.log("Courier Guy quote calculated:", {
-      basePrice,
-      weightMultiplier,
-      distanceMultiplier,
-      finalPrice: price,
-      estimatedDays,
-    });
-
     return {
       price,
       estimatedDays,
     };
   } catch (error) {
-    console.error("Error getting Courier Guy quote:", error);
 
     // Return fallback quote
     return {

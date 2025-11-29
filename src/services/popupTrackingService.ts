@@ -20,7 +20,6 @@ export const getPopupTrackingData = (userId: string): PopupTrackingData => {
       return JSON.parse(stored);
     }
   } catch (error) {
-    console.warn('Error reading popup tracking data:', error);
   }
   
   // Default state - no popups shown
@@ -43,7 +42,6 @@ export const updatePopupTrackingData = (userId: string, updates: Partial<PopupTr
     };
     localStorage.setItem(`${POPUP_TRACKING_KEY}_${userId}`, JSON.stringify(newData));
   } catch (error) {
-    console.warn('Error saving popup tracking data:', error);
   }
 };
 
@@ -61,7 +59,6 @@ export const resetPopupTracking = (userId: string): void => {
   try {
     localStorage.removeItem(`${POPUP_TRACKING_KEY}_${userId}`);
   } catch (error) {
-    console.warn('Error resetting popup tracking:', error);
   }
 };
 
