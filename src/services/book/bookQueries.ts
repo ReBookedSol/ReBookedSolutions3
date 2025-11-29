@@ -59,9 +59,6 @@ const shouldLogBookError = (): boolean => {
 
   // Log warning about suppressing errors (only once)
   if (bookQueryErrorCount === ERROR_SPAM_THRESHOLD) {
-    console.warn(
-      "[BookQueries] Too many errors - suppressing further error logs for 1 minute",
-    );
     bookQueryErrorCount++;
   }
 
@@ -75,27 +72,11 @@ const logDetailedError = (context: string, error: unknown) => {
     return;
   }
 
-  // Use safe error logging to prevent [object Object] issues
+  // Safe error handling without logging
   const errorMessage = error instanceof Error ? error.message :
                       (typeof error === 'object' && error !== null) ?
                       JSON.stringify(error, Object.getOwnPropertyNames(error)) :
                       String(error);
-
-  console.error(`[BookQueries - ${context}]`, {
-    message: errorMessage,
-    error_type: error instanceof Error ? 'Error' : typeof error,
-    error_details: error instanceof Error ? {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
-    } : error,
-    timestamp: new Date().toISOString()
-  });
-
-  // Also log to our error utility with safe message extraction (but don't spam it)
-  if (logError && bookQueryErrorCount <= 3) {
-    logError(context, new Error(errorMessage));
-  }
 };
 
 export const getBooks = async (filters?: BookFilters): Promise<Book[]> => {
@@ -296,7 +277,7 @@ export const getBooks = async (filters?: BookFilters): Promise<Book[]> => {
 
               console.warn(`Continuing without profile data due to error: ${profilesError.message || 'Unknown error'}`);
             } else if (profilesData) {
-              profilesData.forEach((profile: any) => {
+            profilesData.forEach((profile: any) => {
                 const displayName = [profile.first_name, profile.last_name].filter(Boolean).join(" ") || profile.name || (profile.email ? profile.email.split("@")[0] : "Anonymous");
                 profilesMap.set(profile.id, {
                   id: profile.id,
@@ -306,7 +287,6 @@ export const getBooks = async (filters?: BookFilters): Promise<Book[]> => {
                   has_pickup_address: !!profile.pickup_address_encrypted
                 });
               });
-              console.log(`Successfully fetched ${profilesData.length} profiles`);
             }
           } catch (innerError) {
             if (retryCount < 2) {
