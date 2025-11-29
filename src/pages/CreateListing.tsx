@@ -573,7 +573,6 @@ const CreateListing = () => {
                   setShowShareProfileDialog(true);
                 }
               } catch (error) {
-                console.warn('Could not check if first book listing:', error);
                 setShowShareProfileDialog(true);
               }
             }}
