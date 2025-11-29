@@ -199,13 +199,7 @@ const Register = () => {
         }, 1000);
       }
     } catch (error: unknown) {
-      // Better error logging
-      if (import.meta.env.DEV) {
-        console.group("📝 Registration Error Details");
-        console.error("Error:", error);
-        console.error("Message:", error instanceof Error ? error.message : String(error));
-        console.groupEnd();
-      }
+      // Handle registration errors
 
       const errorMessage =
         error instanceof Error
@@ -254,7 +248,6 @@ const Register = () => {
           }
         );
 
-        console.log("📧 Email service configuration needed - user informed");
       } else {
         // Show the error to the user
         toast.error(errorMessage, {

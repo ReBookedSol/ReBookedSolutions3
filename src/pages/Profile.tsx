@@ -83,7 +83,6 @@ const Profile = () => {
         : [];
       setActiveListings(activeBooks);
     } catch (error) {
-      console.error("Error loading active listings:", error);
       toast.error("Failed to load active listings");
       setActiveListings([]);
     } finally {
@@ -122,7 +121,6 @@ const Profile = () => {
       }
     } catch (error) {
       const formattedError = handleAddressError(error, "load");
-      console.error(formattedError.developerMessage, formattedError.originalError);
       toast.error(formattedError.userMessage);
     } finally {
       setIsLoadingAddress(false);
@@ -226,14 +224,12 @@ const Profile = () => {
           console.log(`Updated ${updateResult.updatedCount} book listings with new address and province`);
         }
       } catch (bookUpdateError) {
-        console.warn("Failed to update book listings with new address:", bookUpdateError);
         // Don't fail the whole operation if book updates fail
       }
 
       toast.success("Addresses saved successfully");
     } catch (error) {
       const formattedError = handleAddressError(error, "save");
-      console.error(formattedError.developerMessage, formattedError.originalError);
       toast.error(formattedError.userMessage);
       throw error;
     } finally {
