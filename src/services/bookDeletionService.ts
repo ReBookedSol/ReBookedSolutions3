@@ -21,7 +21,6 @@ export class BookDeletionService {
     data: BookDeletionNotificationData,
   ): Promise<void> {
     try {
-      console.log("Sending book deletion notification:", data);
 
       // Prepare notification message based on deletion reason
       const subject = "Book Listing Removed";
@@ -49,11 +48,6 @@ export class BookDeletionService {
       });
 
       // Log the notification for potential email/push notification processing
-      console.log("Book deletion notification sent successfully:", {
-        sellerId: data.sellerId,
-        bookTitle: data.bookTitle,
-        reason: data.reason,
-      });
     } catch (error) {
       logError("BookDeletionService.notifyBookDeletion", error, {
         bookId: data.bookId,
@@ -93,7 +87,6 @@ export class BookDeletionService {
           results.activeOrders = orders;
         }
       } catch (error) {
-        console.warn('Could not fetch order details:', error);
       }
 
       // Get sale commitments
@@ -129,7 +122,6 @@ export class BookDeletionService {
 
       return results;
     } catch (error) {
-      console.warn('Error fetching book deletion blockers:', error);
       return {
         activeOrders: [],
         saleCommitments: [],
@@ -177,7 +169,6 @@ export class BookDeletionService {
           }
         }
       } catch (orderCheckError) {
-        console.warn('Could not check orders table:', orderCheckError);
       }
 
       // Check for sale commitments
@@ -248,11 +239,6 @@ export class BookDeletionService {
     forceDelete: boolean = false,
   ): Promise<void> {
     try {
-      console.log("Deleting book with notification:", {
-        bookId,
-        reason,
-        adminId,
-      });
 
       // First, get book details before deletion
       const { data: book, error: bookError } = await supabase
@@ -274,7 +260,6 @@ export class BookDeletionService {
       }
 
       // Check for foreign key constraints before deletion
-      console.log('Checking deletion constraints for book:', bookId);
       const constraintCheck = await BookDeletionService.checkBookDeletionConstraints(bookId);
 
       if (!constraintCheck.canDelete) {
@@ -287,11 +272,9 @@ export class BookDeletionService {
         }
 
         // Force delete: Handle active orders and commitments
-        console.log('Force delete requested, cancelling active orders and commitments...');
 
         // Cancel active orders using multiple approaches
         if (constraintCheck.details.activeOrders > 0) {
-          console.log('Cancelling active orders...');
 
           // Approach 1: Try orders with direct book_id column (if it exists)
           try {
@@ -313,10 +296,8 @@ export class BookDeletionService {
                   })
                   .eq('id', order.id);
               }
-              console.log(`Cancelled ${directOrders.length} orders with direct book_id`);
-            }
+              }
           } catch (error) {
-            console.log('No direct book_id column, trying items JSON approach...');
           }
 
           // Approach 2: Try orders with book_id in items JSON
@@ -343,10 +324,8 @@ export class BookDeletionService {
                   })
                   .eq('id', order.id);
               }
-              console.log(`Cancelled ${relevantOrders.length} orders with book_id in items`);
-            }
+              }
           } catch (error) {
-            console.warn('Error cancelling orders via items JSON:', error);
           }
         }
 
@@ -362,16 +341,11 @@ export class BookDeletionService {
               .eq('book_id', bookId)
               .neq('status', 'cancelled');
 
-            console.log(`Cancelled ${constraintCheck.details.saleCommitments} sale commitments`);
-          } catch (error) {
-            console.warn('Error cancelling commitments during force delete:', error);
+            } catch (error) {
           }
         }
 
-        console.log('Force delete cleanup completed, proceeding with deletion...');
       }
-
-      console.log('Book is safe to delete, proceeding...');
 
       // Delete the book
       const { error: deleteError } = await supabase
@@ -380,21 +354,11 @@ export class BookDeletionService {
         .eq("id", bookId);
 
       if (deleteError) {
-        // Log the error with proper serialization
-        console.error("[BookDeletionService.deleteBookWithNotification - delete]", {
-          message: deleteError.message || 'Unknown error',
-          code: deleteError.code,
-          details: deleteError.details,
-          hint: deleteError.hint,
-          bookId,
-          timestamp: new Date().toISOString()
-        });
 
         // Handle foreign key constraint errors specifically
         if (deleteError.code === '23503' && deleteError.message?.includes('orders_book_id_fkey')) {
           if (forceDelete) {
             // If this is a force delete, try additional cleanup approaches
-            console.log('Foreign key constraint still blocking, trying additional cleanup...');
 
             try {
               // Try to delete orders with book_id column directly (if it exists)
@@ -404,7 +368,6 @@ export class BookDeletionService {
                 .eq("book_id", bookId);
 
               if (!directDeleteError) {
-                console.log('Successfully deleted orders with direct book_id reference');
 
                 // Try book deletion again
                 const { error: retryDeleteError } = await supabase
@@ -413,7 +376,6 @@ export class BookDeletionService {
                   .eq("id", bookId);
 
                 if (!retryDeleteError) {
-                  console.log('Book deleted successfully after additional cleanup');
                   // Continue to notification logic
                 } else {
                   throw new Error(`Force delete failed even after cleanup: ${retryDeleteError.message}`);
@@ -443,25 +405,9 @@ export class BookDeletionService {
           adminId,
         });
       } catch (notificationError) {
-        console.warn(
-          "Book deleted but notification failed:",
-          notificationError,
-        );
         // Don't fail the entire operation if notification fails
       }
-
-      console.log("Book deleted and notification sent successfully:", bookId);
     } catch (error) {
-      // Log error with proper serialization instead of using logError
-      console.error("[BookDeletionService.deleteBookWithNotification]", {
-        message: error instanceof Error ? error.message : String(error),
-        name: error instanceof Error ? error.name : undefined,
-        stack: error instanceof Error ? error.stack : undefined,
-        bookId,
-        reason,
-        adminId,
-        timestamp: new Date().toISOString()
-      });
 
       // Ensure we're throwing proper error messages
       if (error instanceof Error) {
@@ -494,10 +440,8 @@ export class BookDeletionService {
             encryptedAddress.province &&
             encryptedAddress.postal_code) {
           hasValidAddress = true;
-          console.log("🔐 Using encrypted pickup address for book listing validation");
         }
       } catch (error) {
-        console.warn("Failed to check encrypted pickup address:", error);
       }
 
       // No plaintext fallback allowed
@@ -526,7 +470,6 @@ export class BookDeletionService {
    */
   static async deactivateUserListings(userId: string): Promise<void> {
     try {
-      console.log("Deactivating all listings for user:", userId);
 
       // Update all active listings to be unavailable
       const { error: updateError } = await supabase
@@ -556,7 +499,6 @@ export class BookDeletionService {
         read: false,
       });
 
-      console.log("Successfully deactivated all listings for user:", userId);
     } catch (error) {
       logError("BookDeletionService.deactivateUserListings", error, {
         userId,
@@ -570,7 +512,6 @@ export class BookDeletionService {
    */
   static async reactivateUserListings(userId: string): Promise<void> {
     try {
-      console.log("Reactivating listings for user:", userId);
 
       // Update unavailable listings back to active
       const { error: updateError } = await supabase
@@ -601,7 +542,6 @@ export class BookDeletionService {
         read: false,
       });
 
-      console.log("Successfully reactivated listings for user:", userId);
     } catch (error) {
       logError("BookDeletionService.reactivateUserListings", error, {
         userId,

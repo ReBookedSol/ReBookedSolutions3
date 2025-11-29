@@ -36,7 +36,6 @@ export class WalletService {
         .rpc("get_wallet_summary", { p_user_id: user.id });
 
       if (error) {
-        console.warn("Error fetching wallet balance:", error);
         // Return default zero balances if wallet doesn't exist yet
         return {
           available_balance: 0,
@@ -61,7 +60,6 @@ export class WalletService {
         total_earned: balance.total_earned,
       };
     } catch (error) {
-      console.error("Error in getWalletBalance:", error);
       // Return safe defaults on error
       return {
         available_balance: 0,
@@ -80,7 +78,6 @@ export class WalletService {
         .rpc("get_wallet_summary", { p_user_id: userId });
 
       if (error) {
-        console.warn("Error fetching user wallet balance:", error);
         // Return default zero balances if wallet doesn't exist yet
         return {
           available_balance: 0,
@@ -105,7 +102,6 @@ export class WalletService {
         total_earned: balance.total_earned,
       };
     } catch (error) {
-      console.error("Error in getUserWalletBalance:", error);
       // Return safe defaults on error
       return {
         available_balance: 0,
@@ -131,7 +127,6 @@ export class WalletService {
         .range(offset, offset + limit - 1);
 
       if (error) {
-        console.error("Error fetching transaction history:", error);
         return [];
       }
 
@@ -146,7 +141,6 @@ export class WalletService {
         created_at: tx.created_at,
       }));
     } catch (error) {
-      console.error("Error in getTransactionHistory:", error);
       return [];
     }
   }
@@ -174,22 +168,13 @@ export class WalletService {
       });
 
       if (error) {
-        console.error("❌ Edge function error:", error);
-        console.error("Error details:", {
-          message: error.message,
-          status: (error as any).status,
-          context: (error as any).context,
-        });
         return {
           success: false,
           error: error.message || "Failed to credit wallet",
         };
       }
 
-      console.log("Edge function response:", data);
-
       if (!data) {
-        console.error("❌ No response from wallet credit function");
         return {
           success: false,
           error: "No response received from wallet credit function",
@@ -197,14 +182,11 @@ export class WalletService {
       }
 
       if (!data.success) {
-        console.error("❌ Wallet credit failed:", data);
         return {
           success: false,
           error: data.message || data.error || "Failed to credit wallet",
         };
       }
-
-      console.log("✅ Wallet credited successfully");
 
       // Edge function handles credit_amount calculation (90% of book price)
       const creditAmount = data.credit_amount ? data.credit_amount / 100 : undefined;
@@ -214,8 +196,6 @@ export class WalletService {
         creditAmount,
       };
     } catch (error) {
-      console.error("❌ Error in creditWalletOnCollection:", error);
-      console.error("Full error object:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",

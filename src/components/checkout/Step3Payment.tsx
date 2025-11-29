@@ -50,7 +50,6 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
         const email = await getUserEmail();
         setUserEmail(email);
       } catch (err) {
-        console.error("Failed to fetch user email:", err);
       }
     };
     fetchUserEmail();
@@ -60,8 +59,6 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
     setProcessing(true);
     setError(null);
     try {
-      console.log("Initiating BobPay payment for order:", orderSummary);
-
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData.user?.email) {
         throw new Error("User authentication error");
@@ -71,7 +68,6 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
       const baseUrl = window.location.origin;
 
       // Step 1: Fetch buyer and seller profiles for denormalized data
-      console.log("🔍 Fetching buyer and seller profiles...");
       const { data: buyerProfile, error: buyerError } = await supabase
         .from("profiles")
         .select("id, full_name, name, first_name, last_name, email, phone_number")
@@ -103,7 +99,6 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
       // Step 2: Encrypt the shipping address (only for door deliveries)
       let shipping_address_encrypted = "";
       if (deliveryType === "door") {
-        console.log("🔐 Encrypting shipping address...");
         const shippingObject = {
           streetAddress: orderSummary.buyer_address.street,
           city: orderSummary.buyer_address.city,
@@ -124,12 +119,9 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
         }
 
         shipping_address_encrypted = JSON.stringify(encResult.data);
-      } else {
-        console.log("📦 Locker delivery selected - skipping address encryption");
       }
 
       // Step 3: Create the order (before payment)
-      console.log("📦 Creating order before payment initialization...");
 
       const { data: createdOrder, error: orderError } = await supabase
         .from("orders")
@@ -200,11 +192,8 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
         .single();
 
       if (orderError) {
-        console.error("❌ Failed to create order:", orderError);
         throw new Error(`Failed to create order: ${orderError.message}`);
       }
-
-      console.log("✅ Order created successfully:", createdOrder.id);
 
       // Step 3.5: Process affiliate earning if seller was referred
       supabase.functions.invoke('process-affiliate-earning', {
@@ -214,10 +203,7 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
           seller_id: orderSummary.book.seller_id,
         },
       }).then(() => {
-        console.log('✅ Affiliate earning processed successfully');
       }).catch((affiliateErr) => {
-        console.warn('Warning: Failed to process affiliate earning:', affiliateErr);
-        // Non-blocking error - affiliate processing is secondary
       });
 
       // Step 4: Initialize BobPay payment with the order_id
@@ -236,8 +222,6 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
         buyer_id: userId,
       };
 
-      console.log("Calling bobpay-initialize-payment with order_id:", paymentRequest.order_id);
-
       const { data: bobpayResult, error: bobpayError } = await supabase.functions.invoke(
         "bobpay-initialize-payment",
         { body: paymentRequest }
@@ -254,13 +238,11 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
         throw new Error("No payment URL received from BobPay");
       }
 
-      console.log("BobPay payment URL:", paymentUrl);
       toast.success("Redirecting to payment page...");
 
       // Open payment page in the same tab
       window.location.href = paymentUrl;
     } catch (err) {
-      console.error("BobPay initialization error:", err);
       const errorMessage = err instanceof Error ? err.message : "Payment initialization failed";
       const classifiedError = classifyPaymentError(errorMessage);
       setError(classifiedError);
@@ -284,8 +266,6 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
   }) => {
     setProcessing(true);
     try {
-      console.log("Paystack payment successful:", paystackResponse);
-
       // Encrypt buyer shipping address AFTER payment
       const buyer = orderSummary.buyer_address;
       const shippingObject = {
@@ -331,8 +311,6 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
         throw new Error(createErr?.message || 'Failed to create order');
       }
 
-      console.log('✅ Order created successfully:', createData.order.id);
-
       // Invoke process-affiliate-earning immediately after order creation (in parallel/background)
       supabase.functions.invoke('process-affiliate-earning', {
         body: {
@@ -341,10 +319,7 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
           seller_id: orderSummary.book.seller_id,
         },
       }).then(() => {
-        console.log('✅ Affiliate earning processed successfully');
       }).catch((affiliateErr) => {
-        console.warn('Warning: Failed to process affiliate earning:', affiliateErr);
-        // Non-blocking error - affiliate processing is secondary
       });
 
       onPaymentSuccess({
@@ -362,29 +337,9 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
         status: 'paid',
       });
       toast.success('Payment successful. Order created.');
-
-      // Order created; backend will handle any further status transitions.
-
-                                    if (error) {
-        // Direct error logging for debugging
-        console.log("🔍 DIRECT ERROR LOG - Type:", typeof error);
-        console.log("🔍 DIRECT ERROR LOG - Constructor:", error?.constructor?.name);
-        console.log("🔍 DIRECT ERROR LOG - Raw:", error);
-        console.log("�� DIRECT ERROR LOG - Message:", error?.message);
-        console.log("�� DIRECT ERROR LOG - Details:", error?.details);
-        console.log("🔍 DIRECT ERROR LOG - Code:", error?.code);
-        console.log("🔍 DIRECT ERROR LOG - Hint:", error?.hint);
-        console.log("🔍 DIRECT ERROR LOG - Stringified:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
-
-        const errorDetails = logError("Edge Function Error", error, {
-          requestBody,
-          orderSummary: orderSummary.book.id
-        });
-
-                                // Fixed error message extraction for Supabase FunctionsError
+    } catch (error) {
+      if (error) {
         const extractErrorMessage = (err: any): string => {
-          console.log('🔍 Extracting error message from:', err);
-
           // Handle null/undefined
           if (err === null || err === undefined) {
             return 'Edge function returned null error';
@@ -441,18 +396,11 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
 
         const userFriendlyMessage = extractErrorMessage(error);
 
-        console.log("🔍 RAW ERROR:", error);
-        console.log("🔍 EXTRACTED MESSAGE:", userFriendlyMessage);
-        console.log("🔍 MESSAGE TYPE:", typeof userFriendlyMessage);
-
-        // Fallback: Create order directly in database when Edge Function fails
-        console.log("🔄 Attempting fallback order creation...");
-
         try {
           const fallbackOrderData = {
-            buyer_email: userData.user.email,
+            buyer_email: (await supabase.auth.getUser()).data.user?.email,
             seller_id: orderSummary.book.seller_id,
-            amount: Math.round(orderSummary.total_price * 100), // Convert to kobo
+            amount: Math.round(orderSummary.total_price * 100),
             paystack_ref: paystackResponse.reference,
             status: "pending",
             items: [
@@ -476,7 +424,7 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
             metadata: {
               buyer_id: userId,
               fallback_creation: true,
-              edge_function_error: error.message,
+              edge_function_error: error?.message,
               platform_fee: 2000,
               seller_amount: Math.round(orderSummary.book_price * 100) - 2000,
             },
@@ -492,11 +440,9 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
             throw new Error(`Fallback order creation failed: ${fallbackError.message}`);
           }
 
-          console.log("✅ Fallback order created successfully:", fallbackOrder);
-
           // Mark book as sold (non-blocking - order is already created)
           try {
-            const { error: bookUpdateError } = await supabase
+            await supabase
               .from("books")
               .update({
                 sold: true,
@@ -504,29 +450,8 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
                 availability: "sold",
               })
               .eq("id", orderSummary.book.id);
-
-            if (bookUpdateError) {
-              console.warn("⚠️ Book update failed (non-critical):", bookUpdateError.message);
-              // Don't throw - order is already created successfully
-            } else {
-              console.log("✅ Book marked as sold");
-            }
           } catch (bookError) {
-            console.warn("⚠️ Book update error (non-critical):", bookError);
-            // Don't throw - order is already created successfully
           }
-
-          // Use fallback order data for success handler
-          const fallbackData = {
-            order_id: fallbackOrder.id,
-            success: true,
-            details: {
-              order: fallbackOrder,
-              fallback_used: true,
-            },
-          };
-
-          console.log("✅ Using fallback order data:", fallbackData);
 
           // Continue with success flow using fallback data
           onPaymentSuccess({
@@ -545,26 +470,18 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
           });
 
           toast.success("Payment completed successfully! (Fallback mode)");
-          return; // Exit early on fallback success
-
-                } catch (fallbackError) {
+          return;
+        } catch (fallbackError) {
           logError("Fallback order creation failed", fallbackError);
-          // Fall through to original error throwing
         }
 
-                        // Final safety check and throw
-        // BULLETPROOF ERROR MESSAGE CONSTRUCTION
+        // Final safety check and throw
         let finalMessage: string;
 
         try {
-          // Convert to string safely
           const messageStr = String(userFriendlyMessage || 'Unknown error');
 
-          // Check for [object Object] pattern
           if (messageStr === '[object Object]' || messageStr.includes('[object Object]')) {
-            console.error('🚨 [object Object] detected! Using immediate error instead');
-
-            // Use the immediate error we captured earlier
             const immediateError = (window as any).lastEdgeFunctionError;
             if (immediateError && typeof immediateError === 'string') {
               finalMessage = immediateError;
@@ -575,35 +492,24 @@ const Step3Payment: React.FC<Step3PaymentProps> = ({
             finalMessage = messageStr;
           }
         } catch (stringError) {
-          console.error('🚨 Error stringification failed:', stringError);
           finalMessage = 'Edge function error stringification failed';
         }
 
-        // Final safety check - ensure it's a proper string
         if (typeof finalMessage !== 'string') {
           finalMessage = 'Edge function returned non-string error';
         }
 
-        // One more check for [object Object]
         if (finalMessage.includes('[object Object]')) {
           finalMessage = 'Edge function returned unprocessable error object';
         }
 
-        // Add context if needed
         const contextualMessage = finalMessage.includes('Edge function')
           ? finalMessage
           : `Edge function (process-book-purchase) error: ${finalMessage}`;
 
-        console.log("🔍 BULLETPROOF FINAL MESSAGE:", contextualMessage);
-
-        // Instead of throwing, show toast and continue with fallback
         toast.error(contextualMessage, { duration: 10000 });
-        console.error("🚨 Edge function error handled:", contextualMessage);
       }
 
-      // Already handled via onPaymentSuccess above.
-    } catch (error) {
-      console.error("Post-payment handler error:", error);
       toast.error('Payment captured but there was a client error. Check your orders.');
     } finally {
       setProcessing(false);
@@ -659,11 +565,6 @@ Time: ${new Date().toISOString()}
     setError(null);
 
     try {
-      console.log(
-        "💳 POST /api/payment/initiate - Initiating payment for order:",
-        orderSummary,
-      );
-
       // Verify user authentication first
       const { data: authCheck, error: authError } =
         await supabase.auth.getSession();
@@ -671,18 +572,10 @@ Time: ${new Date().toISOString()}
         throw new Error("User authentication failed. Please log in again.");
       }
 
-      console.log("User authenticated:", {
-        userId: userId,
-        email: authCheck.session.user?.email,
-        authenticated: !!authCheck.session,
-      });
-
       // Debug mode: Test payment initialization with simplified data
       const debugMode = import.meta.env.DEV && false; // Set to true for debugging
 
       if (debugMode) {
-        console.log("🔍 DEBUG MODE: Testing payment initialization directly");
-
         const simplePaymentRequest = {
           order_id: "test-order-" + Date.now(),
           email: authCheck.session.user?.email,
@@ -696,14 +589,10 @@ Time: ${new Date().toISOString()}
           },
         };
 
-        console.log("🔍 DEBUG: Testing payment with:", simplePaymentRequest);
-
         const { data: testData, error: testError } =
           await supabase.functions.invoke("initialize-paystack-payment", {
             body: simplePaymentRequest,
           });
-
-        console.log("🔍 DEBUG: Payment test result:", { testData, testError });
 
         if (testError) {
           throw new Error(`DEBUG: Payment test failed - ${testError.message}`);
@@ -711,21 +600,6 @@ Time: ${new Date().toISOString()}
 
         return; // Exit early in debug mode
       }
-
-      // Create order data
-      const orderRequest = {
-        book_id: orderSummary.book.id,
-        seller_id: orderSummary.book.seller_id,
-        buyer_id: userId,
-        book_price: orderSummary.book_price,
-        delivery_price: orderSummary.delivery_price,
-        total_amount: orderSummary.total_price,
-        delivery_method: orderSummary.delivery.service_name,
-        delivery_courier: orderSummary.delivery.courier,
-        buyer_address: orderSummary.buyer_address,
-        seller_address: orderSummary.seller_address,
-        estimated_delivery_days: orderSummary.delivery.estimated_days,
-      };
 
       // Get user email first
       const { data: userData, error: userError } =
@@ -746,8 +620,6 @@ Time: ${new Date().toISOString()}
         phone: orderSummary.buyer_address.phone,
         additional_info: orderSummary.buyer_address.additional_info,
       };
-
-      console.log("🔐 Encrypting shipping address...");
 
       const { data: encResult, error: encError } = await supabase.functions.invoke(
         'encrypt-address',
@@ -774,20 +646,13 @@ Time: ${new Date().toISOString()}
         selected_shipping_cost: orderSummary.delivery.price,
       };
 
-      console.log("📦 Creating order with data:", createOrderRequest);
-
       // Create the order first
-      console.log("📦 Calling create-order function...");
-
       let orderInvokeResult;
       try {
         orderInvokeResult = await supabase.functions.invoke("create-order", {
           body: createOrderRequest,
         });
-        console.log("📎 Raw create-order response:", orderInvokeResult);
       } catch (invokeError) {
-        console.error("🚫 Function invoke failed:", invokeError);
-
         let errorMessage = "Function call failed";
         if (invokeError.message) {
           errorMessage = invokeError.message;
@@ -808,15 +673,6 @@ Time: ${new Date().toISOString()}
       const { data: orderData, error: orderError } = orderInvokeResult;
 
       if (orderError) {
-        console.error("Order creation error details:", {
-          error: orderError.message || orderError,
-          errorCode: orderError.code,
-          details: orderError.details,
-          hint: orderError.hint,
-          request: createOrderRequest,
-          userId: userId,
-        });
-
         // Extract more specific error information
         let errorMessage = "Failed to create order";
 
@@ -837,12 +693,9 @@ Time: ${new Date().toISOString()}
         throw new Error("Failed to create order - no order ID returned");
       }
 
-      console.log("Order created successfully:", orderData);
-
       // Step 1.5: Process affiliate earning if seller was referred
       try {
-        console.log("📊 Processing affiliate earning...");
-        const { data: affiliateResult, error: affiliateError } = await supabase.functions.invoke(
+        await supabase.functions.invoke(
           "process-affiliate-earning",
           {
             body: {
@@ -852,16 +705,7 @@ Time: ${new Date().toISOString()}
             },
           }
         );
-
-        if (affiliateError) {
-          console.warn("⚠️ Affiliate earning processing error (non-blocking):", affiliateError);
-        } else if (affiliateResult?.success) {
-          console.log("✅ Affiliate earning processed:", affiliateResult.earning);
-        } else {
-          console.log("���️ Affiliate earning info:", affiliateResult?.message);
-        }
       } catch (affiliateException) {
-        console.warn("⚠️ Exception processing affiliate earning:", affiliateException);
         // Don't throw - affiliate earning is not critical to order completion
       }
 
@@ -890,11 +734,7 @@ Time: ${new Date().toISOString()}
         },
       };
 
-      console.log("Initializing payment with data:", paymentRequest);
-
       // Initialize Paystack payment with correct format
-      console.log("📦 Calling initialize-paystack-payment function...");
-
       let paymentInvokeResult;
       try {
         paymentInvokeResult = await supabase.functions.invoke(
@@ -903,13 +743,7 @@ Time: ${new Date().toISOString()}
             body: paymentRequest,
           },
         );
-        console.log(
-          "📎 Raw payment initialization response:",
-          paymentInvokeResult,
-        );
       } catch (invokeError) {
-        console.error("🚫 Payment function invoke failed:", invokeError);
-
         let errorMessage = "Payment function call failed";
         if (invokeError.message) {
           errorMessage = invokeError.message;
@@ -931,15 +765,6 @@ Time: ${new Date().toISOString()}
       const { data: paymentData, error: paymentError } = paymentInvokeResult;
 
       if (paymentError) {
-        console.error("Payment initialization error details:", {
-          error: paymentError.message || paymentError,
-          errorCode: paymentError.code,
-          details: paymentError.details,
-          hint: paymentError.hint,
-          request: paymentRequest,
-          orderData: orderData,
-        });
-
         // Extract more specific error information
         let errorMessage = "Failed to initialize payment";
 
@@ -965,19 +790,11 @@ Time: ${new Date().toISOString()}
       }
 
       // Use Paystack popup instead of redirect
-      console.log("🔍 Payment data received:", paymentData);
-
       if (!paymentData.data?.reference) {
-        console.error("❌ No reference in payment data:", paymentData);
         throw new Error("No payment reference received from Paystack");
       }
 
       if (paymentData.data?.access_code && paymentData.data?.reference) {
-        console.log(
-          "Opening Paystack popup with access code:",
-          paymentData.data.access_code,
-        );
-
         // Import and use PaystackPop for modal experience
         const { PaystackPaymentService } = await import(
           "@/services/paystackPaymentService"
@@ -993,17 +810,6 @@ Time: ${new Date().toISOString()}
         ) {
           throw new Error("Missing required order data");
         }
-
-        console.log("🔄 Creating order with data:", {
-          buyer_id: userId,
-          buyer_email: userData.user.email,
-          seller_id: orderSummary.book.seller_id,
-          book_id: orderSummary.book.id,
-          paystack_ref: paymentData.data.reference,
-          book_price: orderSummary.book_price,
-          delivery_price: orderSummary.delivery_price,
-          total_price: orderSummary.total_price,
-        });
 
         const { data: createdOrder, error: orderError } = await supabase
           .from("orders")
@@ -1058,15 +864,6 @@ Time: ${new Date().toISOString()}
           .single();
 
         if (orderError) {
-          console.error(
-            "❌ Failed to create order - Full error object:",
-            orderError,
-          );
-          console.error("❌ Error message:", orderError.message);
-          console.error("❌ Error details:", orderError.details);
-          console.error("❌ Error code:", orderError.code);
-          console.error("❌ Error hint:", orderError.hint);
-
           let errorMessage = "Unknown database error";
           if (orderError.message) {
             errorMessage = orderError.message;
@@ -1086,8 +883,6 @@ Time: ${new Date().toISOString()}
           throw new Error(`Failed to create order: ${errorMessage}`);
         }
 
-        console.log("✅ Order created in database:", createdOrder);
-
         try {
           const result = await PaystackPaymentService.initializePayment({
             email: userData.user.email,
@@ -1103,19 +898,16 @@ Time: ${new Date().toISOString()}
           });
 
           if (result.cancelled) {
-            console.log("❌ Paystack payment cancelled by user");
             toast.warning("Payment cancelled");
             setProcessing(false);
             return;
           }
 
-          console.log("✅ Paystack payment successful:", result);
-
           // Extract book item data for processing
           const bookItem = createdOrder.items[0]; // Get the book item
 
           // Update order status to paid
-          const { error: updateError } = await supabase
+          await supabase
             .from("orders")
             .update({
               status: "paid",
@@ -1126,11 +918,6 @@ Time: ${new Date().toISOString()}
               },
             })
             .eq("id", createdOrder.id);
-
-          if (updateError) {
-            console.warn("Failed to update order status:", updateError);
-          }
-
 
           // Create order confirmation data using the database order
           const orderConfirmation = {
@@ -1153,10 +940,8 @@ Time: ${new Date().toISOString()}
           onPaymentSuccess(orderConfirmation);
           toast.success("Payment completed successfully! 🎉");
         } catch (paymentError) {
-          console.error("Payment processing error:", paymentError);
-
           // Clean up pending order if payment failed/cancelled
-          const { error: cleanupError } = await supabase
+          await supabase
             .from("orders")
             .update({
               status: "cancelled",
@@ -1168,10 +953,6 @@ Time: ${new Date().toISOString()}
               },
             })
             .eq("id", createdOrder.id);
-
-          if (cleanupError) {
-            console.warn("Failed to update cancelled order:", cleanupError);
-          }
 
           let errorMessage = "Payment failed";
           if (paymentError.message?.includes("cancelled")) {
@@ -1197,12 +978,9 @@ Time: ${new Date().toISOString()}
           setProcessing(false);
         }
       } else {
-        console.error("Payment response:", paymentData);
         throw new Error("No payment access code received from Paystack");
       }
     } catch (err) {
-      console.error("Payment initialization error:", err);
-
       let errorMessage = "Payment failed";
       if (err instanceof Error) {
         errorMessage = err.message;
