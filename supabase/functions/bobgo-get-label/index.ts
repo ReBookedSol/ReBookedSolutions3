@@ -117,12 +117,10 @@ serve(async (req) => {
       }
 
       const contentType = waybillResp.headers.get("content-type") || "";
-      console.log("Waybill response content type:", contentType);
 
       if (contentType.includes("application/pdf")) {
         const arrayBuffer = await waybillResp.arrayBuffer();
         const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-        console.log("Received PDF label, size:", arrayBuffer.byteLength);
         
         return new Response(
           JSON.stringify({ 
@@ -135,7 +133,6 @@ serve(async (req) => {
         );
       } else if (contentType.includes("application/json")) {
         const json = await waybillResp.json();
-        console.log("Received JSON response:", json);
         
         return new Response(
           JSON.stringify({ 
@@ -150,14 +147,12 @@ serve(async (req) => {
         throw new Error(`Unexpected content type: ${contentType}`);
       }
     } catch (err: any) {
-      console.error("bobgo-get-label error:", err);
       return new Response(
         JSON.stringify({ success: false, error: err.message || "Failed to get label" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
   } catch (error: any) {
-    console.error("bobgo-get-label fatal:", error);
     return new Response(
       JSON.stringify({ success: false, error: error.message || "Internal error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
