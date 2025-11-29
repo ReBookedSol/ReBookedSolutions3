@@ -22,7 +22,6 @@ export class FallbackCommitService {
   
   static async commitToSale(commitData: CommitData): Promise<CommitResult> {
     try {
-      console.log("🔄 Using fallback commit service...");
       
       const { order_id, seller_id, delivery_method = "home", locker_id } = commitData;
 
@@ -43,7 +42,6 @@ export class FallbackCommitService {
         .single();
 
       if (orderError || !order) {
-        console.error("Order not found or access denied:", orderError);
         return {
           success: false,
           error: "Order not found or access denied"
@@ -83,7 +81,6 @@ export class FallbackCommitService {
         .single();
 
       if (updateError) {
-        console.error("Failed to update order:", updateError);
         return {
           success: false,
           error: "Failed to update order status"
@@ -110,10 +107,8 @@ export class FallbackCommitService {
             }
           });
       } catch (notifError) {
-        console.warn("Could not create notification (non-critical):", notifError);
+        // Notification creation failed - non-critical
       }
-
-      console.log("✅ Fallback commit completed successfully");
 
       return {
         success: true,
@@ -125,7 +120,6 @@ export class FallbackCommitService {
       };
 
     } catch (error) {
-      console.error("❌ Fallback commit service error:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error occurred"
@@ -144,7 +138,6 @@ export class FallbackCommitService {
       
       return !error;
     } catch (error) {
-      console.log("Edge functions not available:", error);
       return false;
     }
   }
