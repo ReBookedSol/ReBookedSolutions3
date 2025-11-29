@@ -154,6 +154,4 @@ export const analyzeBundleSize = () => {
   scripts.forEach((script) => {
     const src = (script as HTMLScriptElement).src;
   });
-
-  console.groupEnd();
 };
