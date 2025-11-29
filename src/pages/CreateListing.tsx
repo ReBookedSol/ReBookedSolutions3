@@ -287,7 +287,7 @@ const CreateListing = () => {
           message: `Your book "${bookData.title}" has been listed successfully. Students can now find and purchase your book.`,
         });
       } catch (notificationError) {
-        console.warn('Failed to create listing notification:', notificationError);
+        // Handle notification error silently
       }
 
       toast.success("Your book has been listed successfully!", {
@@ -310,10 +310,7 @@ const CreateListing = () => {
             setShowShareProfileDialog(true);
           }
         } catch (prefError) {
-          console.warn(
-            "Could not track first upload preference:",
-            prefError,
-          );
+          // Handle preference tracking error silently
           // Fallback: check if it's first book before showing post-listing dialog
           try {
             const isFirstBook = await isFirstBookListing(user.id);
@@ -323,7 +320,6 @@ const CreateListing = () => {
               setShowShareProfileDialog(true);
             }
           } catch (bookError) {
-            console.warn("Could not check if first book:", bookError);
             setShowShareProfileDialog(true);
           }
         }
@@ -345,7 +341,6 @@ const CreateListing = () => {
         }
       } catch (prefError) {
         // Don't fail the whole process if preference tracking fails
-        console.warn("Could not track first upload preference:", prefError);
       }
 
       // Reset form
@@ -379,7 +374,6 @@ const CreateListing = () => {
 
       setErrors({});
     } catch (error) {
-      console.error("Error creating listing:", error);
       const errorMessage =
         error instanceof Error
           ? error.message
