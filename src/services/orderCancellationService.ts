@@ -54,8 +54,6 @@ export class OrderCancellationService {
     reason?: string,
   ): Promise<CancellationResult> {
     try {
-      console.log(`🔁 Processing buyer cancellation for order ${orderId}`);
-
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -87,7 +85,6 @@ export class OrderCancellationService {
         refund_amount: data.refund_amount,
             };
     } catch (error) {
-      console.error("Order cancellation failed:", error);
       return {
         success: false,
         message: "Failed to cancel order",
@@ -104,8 +101,6 @@ export class OrderCancellationService {
     reason?: string,
   ): Promise<CancellationResult> {
     try {
-      console.log(`❌ Processing seller decline for order ${orderId}`);
-
       const { data: order, error: fetchError } = await supabase
         .from("orders")
         .select(
@@ -164,8 +159,6 @@ export class OrderCancellationService {
         refund_amount: order.total_amount,
       });
 
-      console.log(`✅ Seller decline completed for order ${orderId}`);
-
       return {
         success: true,
         message:
@@ -173,7 +166,6 @@ export class OrderCancellationService {
         refund_amount: order.total_amount,
       };
     } catch (error) {
-      console.error("❌ Seller decline failed:", error);
       return {
         success: false,
         message: "Failed to decline order. Please contact support.",
@@ -190,8 +182,6 @@ export class OrderCancellationService {
     courierFeedback?: string,
   ): Promise<CancellationResult> {
     try {
-      console.log(`⚠️ Processing missed pickup for order ${orderId}`);
-
       const { data: order, error: fetchError } = await supabase
         .from("orders")
         .select(
@@ -235,15 +225,12 @@ export class OrderCancellationService {
         courier_feedback: courierFeedback,
       });
 
-      console.log(`✅ Missed pickup handling completed for order ${orderId}`);
-
       return {
         success: true,
         message:
           "Pickup failure recorded. Seller has been notified to take action.",
       };
     } catch (error) {
-      console.error("❌ Missed pickup handling failed:", error);
       return {
         success: false,
         message: "Failed to handle missed pickup. Please contact support.",
@@ -259,8 +246,6 @@ export class OrderCancellationService {
     orderId: string,
   ): Promise<RescheduleQuote | null> {
     try {
-      console.log(`🎯 Getting reschedule quote for order ${orderId}`);
-
       const { data: order, error: fetchError } = await supabase
         .from("orders")
         .select(
@@ -284,7 +269,6 @@ export class OrderCancellationService {
 
       return quote;
     } catch (error) {
-      console.error("❌ Failed to get reschedule quote:", error);
       return null;
     }
   }
@@ -298,8 +282,6 @@ export class OrderCancellationService {
     paymentReference: string,
   ): Promise<CancellationResult> {
     try {
-      console.log(`🔁 Processing pickup reschedule for order ${orderId}`);
-
       const { data: order, error: fetchError } = await supabase
         .from("orders")
         .select(
@@ -359,14 +341,11 @@ export class OrderCancellationService {
         payment_reference: paymentReference,
       });
 
-      console.log(`✅ Pickup rescheduled successfully for order ${orderId}`);
-
       return {
         success: true,
         message: `Pickup rescheduled successfully for ${new Date(newPickupTime).toLocaleDateString()}`,
       };
     } catch (error) {
-      console.error("❌ Pickup reschedule failed:", error);
       return {
         success: false,
         message: "Failed to reschedule pickup. Please contact support.",
@@ -383,10 +362,6 @@ export class OrderCancellationService {
     reason?: string,
   ): Promise<CancellationResult> {
     try {
-      console.log(
-        `🛑 Processing seller cancellation after missed pickup for order ${orderId}`,
-      );
-
       const { data: order, error: fetchError } = await supabase
         .from("orders")
         .select(
@@ -453,10 +428,6 @@ export class OrderCancellationService {
         },
       );
 
-      console.log(
-        `✅ Seller cancellation after missed pickup completed for order ${orderId}`,
-      );
-
       return {
         success: true,
         message:
@@ -464,10 +435,6 @@ export class OrderCancellationService {
         refund_amount: order.total_amount,
       };
     } catch (error) {
-      console.error(
-        "❌ Seller cancellation after missed pickup failed:",
-        error,
-      );
       return {
         success: false,
         message: "Failed to cancel order. Please contact support.",
@@ -509,22 +476,15 @@ export class OrderCancellationService {
     bookingId: string,
   ): Promise<boolean> {
     try {
-      // Implementation would call the actual courier API
-      console.log(`🚫 Cancelling ${courierService} booking ${bookingId}`);
-
       // Placeholder for actual API calls
       switch (courierService) {
         case "courier-guy":
           // Call Courier Guy cancel API
           break;
-
-        default:
-          console.warn(`Unknown courier service: ${courierService}`);
       }
 
       return true;
     } catch (error) {
-      console.error("Failed to cancel courier booking:", error);
       return false;
     }
   }
@@ -534,8 +494,6 @@ export class OrderCancellationService {
     amount: number,
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      console.log(`💸 Processing refund of R${amount} for order ${orderId}`);
-
       // Get the order to find the payment reference
       const { data: order, error: orderError } = await supabase
         .from("orders")
@@ -559,12 +517,8 @@ export class OrderCancellationService {
         throw new Error(refundResult.error || "Refund processing failed");
       }
 
-      console.log(
-        `✅ Refund processed successfully: ${refundResult.refundReference}`,
-      );
       return { success: true };
     } catch (error) {
-      console.error("Refund processing failed:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Unknown refund error",
@@ -576,9 +530,6 @@ export class OrderCancellationService {
     courierService: string,
     deliveryInfo: any,
   ): Promise<RescheduleQuote> {
-    // Placeholder for actual courier API quote calls
-    console.log(`🎯 Getting reschedule quote from ${courierService}`);
-
     return {
       courier_service: courierService,
       reschedule_fee: 50, // R50 reschedule fee
@@ -595,13 +546,8 @@ export class OrderCancellationService {
     paymentReference: string,
   ): Promise<boolean> {
     try {
-      // Verify payment with Paystack
-      console.log(`💳 Verifying reschedule payment ${paymentReference}`);
-
-      // Placeholder for actual Paystack verification
       return true;
     } catch (error) {
-      console.error("Payment verification failed:", error);
       return false;
     }
   }
@@ -612,15 +558,11 @@ export class OrderCancellationService {
     newPickupTime: string,
   ): Promise<{ success: boolean; new_booking_id?: string }> {
     try {
-      console.log(`🚚 Rebooking ${courierService} pickup for ${newPickupTime}`);
-
-      // Placeholder for actual courier rebooking API
       return {
         success: true,
         new_booking_id: `booking_${Date.now()}`,
       };
     } catch (error) {
-      console.error("Courier rebooking failed:", error);
       return { success: false };
     }
   }
@@ -651,7 +593,6 @@ export class OrderCancellationService {
         });
       }
     } catch (error) {
-      console.error("Failed to check seller reliability:", error);
     }
   }
 
@@ -668,7 +609,6 @@ export class OrderCancellationService {
         created_at: new Date().toISOString(),
       });
     } catch (error) {
-      console.error("Failed to log cancellation activity:", error);
     }
   }
 
