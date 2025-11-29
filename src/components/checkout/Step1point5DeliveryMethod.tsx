@@ -80,7 +80,6 @@ const Step1point5DeliveryMethod: React.FC<Step1point5DeliveryMethodProps> = ({
         .single();
 
       if (error) {
-        console.warn("Failed to load saved locker:", error);
         setIsLoadingSavedLocker(false);
         return;
       }
@@ -88,10 +87,8 @@ const Step1point5DeliveryMethod: React.FC<Step1point5DeliveryMethodProps> = ({
       if (profile?.preferred_delivery_locker_data) {
         const lockerData = profile.preferred_delivery_locker_data as BobGoLocation;
         setSavedLocker(lockerData);
-        console.log("✅ Loaded saved locker from profile:", lockerData);
       }
     } catch (error) {
-      console.error("Error loading saved locker:", error);
     } finally {
       setIsLoadingSavedLocker(false);
     }
