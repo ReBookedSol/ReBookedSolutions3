@@ -126,7 +126,6 @@ const SimpleAddressEditDialog = ({
       toast.success("Addresses updated successfully!");
       onClose();
     } catch (error) {
-      console.error("Error saving addresses:", error);
       toast.error("Failed to save addresses. Please try again.");
     } finally {
       setIsSubmitting(false);

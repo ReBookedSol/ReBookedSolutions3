@@ -72,7 +72,6 @@ export const BobPayPopup: React.FC<BobPayPopupProps> = ({
       });
 
       if (error) {
-        console.error('BobPay initialization failed:', error);
         toast.error(error.message || 'Failed to initialize payment');
         throw error;
       }
@@ -91,7 +90,6 @@ export const BobPayPopup: React.FC<BobPayPopupProps> = ({
         success: true,
       });
     } catch (err) {
-      console.error('Payment initialization error:', err);
       toast.error(err instanceof Error ? err.message : 'Payment initialization failed');
       onClose?.();
     } finally {
