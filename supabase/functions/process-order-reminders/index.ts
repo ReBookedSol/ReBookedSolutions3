@@ -512,7 +512,7 @@ async function sendSMSReminder(
   // For now, it's just a placeholder
   const message = `URGENT: Your ReBooked order ${orderId.substring(0, 8)} expires in ${hoursLeft} hours. Commit now or buyer gets full refund. Visit: rebookedsolutions.co.za/activity`;
 
-  console.log(`SMS to ${phoneNumber}: ${message}`);
+  // SMS message prepared but not sent
 
   // Example Twilio integration:
   /*
