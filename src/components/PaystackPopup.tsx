@@ -104,11 +104,9 @@ const PaystackPopup: React.FC<PaystackPopupProps> = ({
       script.src = "https://js.paystack.co/v1/inline.js";
       script.async = true;
       script.onload = () => {
-        console.log("Paystack script loaded successfully");
         setScriptLoaded(true);
       };
       script.onerror = () => {
-        console.error("Failed to load Paystack script");
         onError?.("Failed to load payment system");
         toast.error("Failed to load payment system");
       };
@@ -159,14 +157,6 @@ const PaystackPopup: React.FC<PaystackPopupProps> = ({
       const amountInKobo = Math.round(amount * 100); // Convert Rands to kobo
       const reference = generateReference();
 
-      console.log("Initiating Paystack payment:", {
-        email,
-        amount: amountInKobo,
-        reference,
-        subaccountCode,
-        metadata,
-      });
-
       const config: PaystackConfig = {
         key: PAYSTACK_CONFIG.getPublicKey(),
         email: email,
@@ -185,7 +175,6 @@ const PaystackPopup: React.FC<PaystackPopupProps> = ({
           ],
         },
         callback: (response: PaystackResponse) => {
-          console.log("Payment successful:", response);
           setIsLoading(false);
 
           toast.success("Payment successful!", {
@@ -195,7 +184,6 @@ const PaystackPopup: React.FC<PaystackPopupProps> = ({
           onSuccess(response);
         },
         onClose: () => {
-          console.log("Payment popup closed");
           setIsLoading(false);
 
           toast.info("Payment cancelled", {
@@ -209,13 +197,11 @@ const PaystackPopup: React.FC<PaystackPopupProps> = ({
       // Add subaccount if provided
       if (subaccountCode) {
         config.subaccount = subaccountCode;
-        console.log("Payment will be split to subaccount:", subaccountCode);
       }
 
       const handler = window.PaystackPop.setup(config);
       handler.openIframe();
     } catch (error) {
-      console.error("Payment initiation error:", error);
       setIsLoading(false);
 
       const errorMessage =

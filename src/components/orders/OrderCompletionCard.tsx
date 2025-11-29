@@ -340,11 +340,8 @@ const OrderCompletionCard: React.FC<OrderCompletionCardProps> = ({
               const text = `Thank you — Order Received\n\nHello ${buyerFullName},\n\nThanks for confirming receipt of ${bookTitle}. We will release payment to the seller shortly.\n\nView order: https://rebookedsolutions.co.za/orders/${orderId}\n\n— ReBooked Solutions`;
 
               try {
-                console.log("📤 Attempting to send buyer thank you email...");
                 await emailService.sendEmail({ to: buyerEmail, subject: "Thank you — Order Received", html, text });
-                console.log("✅ Buyer thank you email sent successfully");
               } catch (emailErr) {
-                console.error("❌ Failed to send buyer received email:", emailErr);
               }
             }
 
