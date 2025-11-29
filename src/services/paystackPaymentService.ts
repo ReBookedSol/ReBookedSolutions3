@@ -34,7 +34,6 @@ export class PaystackPaymentService {
           subaccount: config.subaccount,
           metadata: config.metadata,
           callback: function (response: any) {
-            console.log("✅ Paystack payment successful:", response);
             resolve({
               success: true,
               reference: response.reference,
@@ -42,7 +41,6 @@ export class PaystackPaymentService {
             });
           },
           onClose: function () {
-            console.log("❌ Paystack payment closed by user");
             resolve({
               success: false,
               reference: config.reference,
@@ -55,7 +53,6 @@ export class PaystackPaymentService {
         // Open the payment modal
         handler.openIframe();
       } catch (error) {
-        console.error("Paystack payment error:", error);
         resolve({
           success: false,
           reference: config.reference,

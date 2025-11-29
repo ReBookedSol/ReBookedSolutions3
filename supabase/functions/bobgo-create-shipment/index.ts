@@ -95,9 +95,6 @@ serve(async (req) => {
 
     const BOBGO_BASE_URL = resolveBaseUrl();
 
-    console.log(`[bobgo-create-shipment] Creating shipment for order ${order_id}`);
-    console.log(`[bobgo-create-shipment] Provider: ${provider_slug}, Service: ${service_level_code}`);
-
     // Build BobGo API payload
     const bobgoPayload: any = {
       parcels: parcels.map((p: any) => ({
@@ -148,7 +145,6 @@ serve(async (req) => {
     if (pickup_locker_location_id) {
       // Pickup from locker
       bobgoPayload.collection_pickup_point_location_id = pickup_locker_location_id;
-      console.log(`[bobgo-create-shipment] Collection: Locker ${pickup_locker_location_id}`);
     } else if (pickup_address) {
       // Pickup from door
       const formattedPickupAddress = formatAddressForBobGo(pickup_address);
@@ -159,7 +155,6 @@ serve(async (req) => {
       }
 
       bobgoPayload.collection_address = formattedPickupAddress;
-      console.log(`[bobgo-create-shipment] Collection: Door address - ${formattedPickupAddress.local_area}, ${formattedPickupAddress.city}`);
     } else {
       throw new Error("Either pickup address or locker location required");
     }
@@ -183,7 +178,6 @@ serve(async (req) => {
     if (delivery_locker_location_id) {
       // Delivery to locker
       bobgoPayload.delivery_pickup_point_location_id = delivery_locker_location_id;
-      console.log(`[bobgo-create-shipment] Delivery: Locker ${delivery_locker_location_id}`);
     } else if (delivery_address) {
       // Delivery to door
       const formattedDeliveryAddress = formatAddressForBobGo(delivery_address);
@@ -194,7 +188,6 @@ serve(async (req) => {
       }
 
       bobgoPayload.delivery_address = formattedDeliveryAddress;
-      console.log(`[bobgo-create-shipment] Delivery: Door address - ${formattedDeliveryAddress.local_area}, ${formattedDeliveryAddress.city}`);
     } else {
       throw new Error("Either delivery address or locker location required");
     }
@@ -219,31 +212,6 @@ serve(async (req) => {
       bobgoPayload.custom_tracking_reference = reference;
     }
 
-    console.log(`[bobgo-create-shipment] Calling BobGo API at ${BOBGO_BASE_URL}/shipments`);
-    console.log(`[bobgo-create-shipment] Full payload:`, JSON.stringify(bobgoPayload, null, 2));
-
-    // Log address details for debugging
-    if (bobgoPayload.collection_address) {
-      console.log(`[bobgo-create-shipment] Collection address details:`, {
-        street_address: bobgoPayload.collection_address.street_address,
-        local_area: bobgoPayload.collection_address.local_area,
-        city: bobgoPayload.collection_address.city,
-        zone: bobgoPayload.collection_address.zone,
-        code: bobgoPayload.collection_address.code,
-        country: bobgoPayload.collection_address.country,
-      });
-    }
-    if (bobgoPayload.delivery_address) {
-      console.log(`[bobgo-create-shipment] Delivery address details:`, {
-        street_address: bobgoPayload.delivery_address.street_address,
-        local_area: bobgoPayload.delivery_address.local_area,
-        city: bobgoPayload.delivery_address.city,
-        zone: bobgoPayload.delivery_address.zone,
-        code: bobgoPayload.delivery_address.code,
-        country: bobgoPayload.delivery_address.country,
-      });
-    }
-
     // Make request to BobGo API
     const bobgoResponse = await fetch(`${BOBGO_BASE_URL}/shipments`, {
       method: "POST",
@@ -257,12 +225,9 @@ serve(async (req) => {
     const bobgoData = await bobgoResponse.json();
 
     if (!bobgoResponse.ok) {
-      console.error(`[bobgo-create-shipment] BobGo API error (${bobgoResponse.status}):`, bobgoData);
       const errorMessage = bobgoData.message || bobgoData.error || "Failed to create shipment";
       throw new Error(`Bobgo create shipment failed: Bobgo shipment HTTP ${bobgoResponse.status}: ${JSON.stringify(bobgoData)}`);
     }
-
-    console.log(`[bobgo-create-shipment] Shipment created successfully:`, bobgoData);
 
     return new Response(
       JSON.stringify({

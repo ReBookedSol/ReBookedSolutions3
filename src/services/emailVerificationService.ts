@@ -50,8 +50,6 @@ export class EmailVerificationService {
     type: string,
   ): Promise<VerificationResult> {
     try {
-      console.log("🔐 Attempting token_hash verification");
-
       const { data, error } = await supabase.auth.verifyOtp({
         token_hash,
         type: type as any,
@@ -68,7 +66,6 @@ export class EmailVerificationService {
       }
 
       if (data.session) {
-        console.log("✅ Token hash verification successful");
         return {
           success: true,
           message: "Email verified successfully using token hash",
@@ -101,8 +98,6 @@ export class EmailVerificationService {
     type: string,
   ): Promise<VerificationResult> {
     try {
-      console.log("🔐 Attempting legacy token verification");
-
       const { data, error } = await supabase.auth.verifyOtp({
         token,
         type: type as any,
@@ -119,7 +114,6 @@ export class EmailVerificationService {
       }
 
       if (data.session) {
-        console.log("✅ Legacy token verification successful");
         return {
           success: true,
           message: "Email verified successfully using legacy token",
@@ -151,8 +145,6 @@ export class EmailVerificationService {
     url: string,
   ): Promise<VerificationResult> {
     try {
-      console.log("🔐 Attempting PKCE code exchange");
-
       const { data, error } = await supabase.auth.exchangeCodeForSession(url);
 
       if (error) {
@@ -166,7 +158,6 @@ export class EmailVerificationService {
       }
 
       if (data.session) {
-        console.log("✅ Code exchange successful");
         return {
           success: true,
           message: "Email verified successfully using code exchange",
@@ -196,8 +187,6 @@ export class EmailVerificationService {
    */
   static async checkExistingSession(): Promise<VerificationResult> {
     try {
-      console.log("🔍 Checking existing session");
-
       const { data: sessionData, error } = await supabase.auth.getSession();
 
       if (error) {
@@ -211,7 +200,6 @@ export class EmailVerificationService {
       }
 
       if (sessionData.session) {
-        console.log("✅ User already has active session");
         return {
           success: true,
           message: "You are already verified and logged in",
@@ -243,18 +231,10 @@ export class EmailVerificationService {
     params: VerificationParams,
     currentUrl: string,
   ): Promise<VerificationResult> {
-    console.log("🔍 Starting comprehensive email verification");
-    console.log("📍 URL:", currentUrl);
-    console.log("📍 Params:", params);
-
     // Check for errors first
     if (this.hasErrorParams(params)) {
       const errorMessage =
         params.error_description || "Email verification failed";
-      console.error("❌ Verification error from URL:", {
-        error_code: params.error_code,
-        error_description: params.error_description,
-      });
 
       return {
         success: false,
@@ -276,7 +256,6 @@ export class EmailVerificationService {
       if (result.success) {
         return result;
       }
-      console.log("Token hash verification failed, trying other methods...");
     }
 
     // Method 2: Legacy token verification
@@ -288,7 +267,6 @@ export class EmailVerificationService {
       if (result.success) {
         return result;
       }
-      console.log("Legacy token verification failed, trying other methods...");
     }
 
     // Method 3: PKCE code exchange
@@ -297,7 +275,6 @@ export class EmailVerificationService {
       if (result.success) {
         return result;
       }
-      console.log("Code exchange failed, trying other methods...");
     }
 
     // Method 4: Check existing session
@@ -381,8 +358,6 @@ export class EmailVerificationService {
     email: string,
   ): Promise<{ success: boolean; message: string; error?: any }> {
     try {
-      console.log("📧 Resending verification email to:", email);
-
       const { error } = await supabase.auth.resend({
         type: "signup",
         email,
@@ -400,7 +375,6 @@ export class EmailVerificationService {
         };
       }
 
-      console.log("✅ Verification email sent successfully");
       return {
         success: true,
         message:

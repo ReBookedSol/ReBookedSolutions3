@@ -81,13 +81,11 @@ export async function getNotifications(userId: string): Promise<Notification[]> 
     ]);
 
     if (regularNotif.error) {
-      const serializedError = serializeError(regularNotif.error);
-      console.error('Error fetching regular notifications:', serializedError);
+      // Error fetching regular notifications
     }
 
     if (orderNotif.error) {
-      const serializedError = serializeError(orderNotif.error);
-      console.error('Error fetching order notifications:', serializedError);
+      // Error fetching order notifications
     }
 
     const regularData = regularNotif.data || [];
@@ -104,11 +102,8 @@ export async function getNotifications(userId: string): Promise<Notification[]> 
       timestamp: Date.now()
     });
 
-    console.log(`📨 Loaded ${allNotifications.length} notifications (${regularData.length} regular, ${orderData.length} order) for user ${userId}`);
     return allNotifications;
   } catch (error) {
-    const serializedError = serializeError(error);
-    console.error('Failed to get notifications:', serializedError);
     const safeMessage = getSafeErrorMessage(error, 'Failed to get notifications');
     throw new Error(safeMessage);
   }
@@ -119,7 +114,6 @@ export async function getNotifications(userId: string): Promise<Notification[]> 
  */
 export function clearNotificationCache(userId: string): void {
   notificationCache.delete(userId);
-  console.log(`🗑️ Cleared notification cache for user ${userId}`);
 }
 
 /**
@@ -141,7 +135,6 @@ export async function markNotificationAsRead(notificationId: string): Promise<bo
       .eq('id', notificationId);
 
     if (!notifError) {
-      console.log(`📖 Marked notification ${notificationId} as read in notifications table`);
       return true;
     }
 
@@ -152,17 +145,12 @@ export async function markNotificationAsRead(notificationId: string): Promise<bo
       .eq('id', notificationId);
 
     if (!orderNotifError) {
-      console.log(`📖 Marked notification ${notificationId} as read in order_notifications table`);
       return true;
     }
 
-    // If both fail, log the error
-    const serializedError = serializeError(orderNotifError);
-    console.error('Failed to mark notification as read in either table:', serializedError);
+    // If both fail, return false
     return false;
   } catch (error) {
-    const serializedError = serializeError(error);
-    console.error('Error marking notification as read:', serializedError);
     return false;
   }
 }
@@ -185,14 +173,6 @@ export class NotificationService {
         throw new Error(`Invalid userId format: ${data.userId}`);
       }
 
-      console.log('Creating notification with data:', {
-        user_id: data.userId,
-        type: data.type,
-        title: data.title,
-        message: data.message.substring(0, 100) + '...',
-        retry_attempt: retryCount
-      });
-
       const { data: insertedData, error } = await supabase
         .from('notifications')
         .insert({
@@ -206,20 +186,11 @@ export class NotificationService {
         .single();
 
       if (error) {
-        const serializedError = serializeError(error);
-        console.error('Failed to create notification:', {
-          ...serializedError,
-          attemptedData: data,
-          timestamp: new Date().toISOString(),
-          retry_attempt: retryCount
-        });
-
         // Retry on certain errors (network issues, temporary database errors)
         if (retryCount < maxRetries &&
             (error.message?.includes('network') ||
              error.message?.includes('timeout') ||
              error.message?.includes('connection'))) {
-          console.log(`🔄 Retrying notification creation (attempt ${retryCount + 1}/${maxRetries + 1})`);
           await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1))); // Exponential backoff
           return this.createNotification(data, retryCount + 1);
         }
@@ -227,29 +198,14 @@ export class NotificationService {
         return false;
       }
 
-      console.log(`📧 Notification created successfully for user ${data.userId}:`, {
-        id: insertedData?.id,
-        title: data.title,
-        type: data.type
-      });
-
       // Clear cache for this user so they get fresh notifications
       clearNotificationCache(data.userId);
 
       return true;
     } catch (error) {
-      const serializedError = serializeError(error);
-      console.error('Error creating notification:', {
-        ...serializedError,
-        attemptedData: data,
-        timestamp: new Date().toISOString(),
-        retry_attempt: retryCount
-      });
-
       // Retry on network errors
       if (retryCount < maxRetries && error instanceof Error &&
           (error.message.includes('network') || error.message.includes('fetch'))) {
-        console.log(`🔄 Retrying notification creation after error (attempt ${retryCount + 1}/${maxRetries + 1})`);
         await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
         return this.createNotification(data, retryCount + 1);
       }
@@ -319,8 +275,6 @@ export class NotificationService {
    * Test notification creation for debugging
    */
   static async createTestNotification(userId: string) {
-    console.log('🧪 Creating test notification for user:', userId);
-
     const testData = {
       userId,
       type: 'info',
@@ -331,10 +285,8 @@ export class NotificationService {
     const result = await this.createNotification(testData);
 
     if (result) {
-      console.log('✅ Test notification created successfully');
       return { success: true, message: 'Test notification created successfully' };
     } else {
-      console.error('❌ Test notification failed');
       return { success: false, message: 'Test notification creation failed' };
     }
   }
@@ -344,11 +296,8 @@ export class NotificationService {
    */
   static async verifyNotificationSystem(userId: string) {
     try {
-      console.log('🔍 Verifying notification system health for user:', userId);
-
       // Test 1: Check if we can read notifications
       const notifications = await getNotifications(userId);
-      console.log('📋 Current notification count:', notifications.length);
 
       // Test 2: Try to create a test notification
       const testResult = await this.createTestNotification(userId);
@@ -359,7 +308,6 @@ export class NotificationService {
         const notificationCreated = updatedNotifications.length > notifications.length;
 
         if (notificationCreated) {
-          console.log('✅ Notification system verification successful');
           return {
             success: true,
             message: 'Notification system is working correctly',
@@ -370,7 +318,6 @@ export class NotificationService {
             }
           };
         } else {
-          console.error('❌ Test notification was not found in database');
           return {
             success: false,
             message: 'Test notification creation appeared successful but notification not found',
@@ -385,12 +332,10 @@ export class NotificationService {
 
       return testResult;
     } catch (error) {
-      const serializedError = serializeError(error);
-      console.error('❌ Notification system verification failed:', serializedError);
       return {
         success: false,
         message: 'Notification system verification failed',
-        error: serializedError
+        error: serializeError(error)
       };
     }
   }

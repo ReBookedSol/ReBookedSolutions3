@@ -198,7 +198,6 @@ serve(async (req) => {
     const bobgoData = await bobgoResponse.json();
 
     if (!bobgoResponse.ok) {
-      console.error("BobGo API error:", bobgoData);
       return new Response(
         JSON.stringify({
           success: false,
@@ -242,10 +241,6 @@ serve(async (req) => {
       })
       .eq("id", body.order_id);
 
-    if (updateError) {
-      console.error("Failed to update order:", updateError);
-    }
-
     // Return success response
     return new Response(
       JSON.stringify({
@@ -262,7 +257,6 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Error in bobgo-create-pickup-point-shipment:", error);
     const errorMessage = error instanceof Error ? error.message : "Internal server error";
     return new Response(
       JSON.stringify({

@@ -49,13 +49,11 @@ export const fetchSuggestions = async (searchInput: string): Promise<Suggestion[
     const result = await response.json();
 
     if (result.error) {
-      console.error('Error fetching suggestions:', result.error);
       return [];
     }
 
     return result.suggestions || [];
   } catch (error) {
-    console.error('Error fetching suggestions:', error);
     return [];
   }
 };
@@ -79,20 +77,17 @@ export const fetchAddressDetails = async (placeId: string): Promise<AddressDetai
     );
 
     if (!response.ok) {
-      console.error('Failed to fetch address details:', response.statusText);
       return null;
     }
 
     const details: AddressDetails = await response.json();
 
     if (!details.formatted_address) {
-      console.error('Failed to get address details');
       return null;
     }
 
     return details;
   } catch (error) {
-    console.error('Error fetching address details:', error);
     return null;
   }
 };
@@ -123,7 +118,6 @@ export const fetchPickupPoints = async (lat: number, lng: number): Promise<Picku
 
     return mockPickupPoints;
   } catch (error) {
-    console.error('Error fetching pickup points:', error);
     return [];
   }
 };

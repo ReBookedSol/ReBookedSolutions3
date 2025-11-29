@@ -25,7 +25,6 @@ const safeLocalStorage = {
     try {
       return localStorage.getItem(key);
     } catch (error) {
-      console.warn("Failed to read from localStorage:", error);
       return null;
     }
   },
@@ -34,7 +33,6 @@ const safeLocalStorage = {
       localStorage.setItem(key, value);
       return true;
     } catch (error) {
-      console.warn("Failed to write to localStorage:", error);
       toast.error("Cart data could not be saved");
       return false;
     }
@@ -44,7 +42,6 @@ const safeLocalStorage = {
       localStorage.removeItem(key);
       return true;
     } catch (error) {
-      console.warn("Failed to remove from localStorage:", error);
       return false;
     }
   },
@@ -75,11 +72,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
           );
           setItems(validItems);
           if (validItems.length !== parsedCart.length) {
-            console.warn("Some invalid cart items were filtered out");
+            // Some invalid cart items were filtered out
           }
         }
       } catch (error) {
-        console.error("Error parsing cart data:", error);
         toast.error("Cart data was corrupted and has been reset");
         safeLocalStorage.removeItem("cart");
       }
@@ -281,7 +277,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       }).then((res) => res.json());
 
       if (error) {
-        console.warn("Could not validate cart items:", error);
         return { valid: true, removedItems: [] }; // Fail gracefully
       }
 
@@ -319,7 +314,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
       return { valid: true, removedItems: [] };
     } catch (error) {
-      console.warn("Cart validation failed:", error);
       return { valid: true, removedItems: [] }; // Fail gracefully
     }
   }, [items]);

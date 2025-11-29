@@ -34,11 +34,6 @@ export class OAuthService {
     try {
       const redirectUrl = `${this.getRedirectUrl()}${redirectTo}`;
 
-      console.log(
-        `Initiating ${provider} OAuth with redirect URL:`,
-        redirectUrl,
-      );
-
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
@@ -51,13 +46,11 @@ export class OAuthService {
       });
 
       if (error) {
-        console.error(`${provider} OAuth error:`, error);
         throw error;
       }
 
       return data;
     } catch (error) {
-      console.error(`Error initiating ${provider} OAuth:`, error);
       throw error;
     }
   }
@@ -88,13 +81,11 @@ export class OAuthService {
       } = await supabase.auth.getSession();
 
       if (error) {
-        console.error("Error getting current session:", error);
         return null;
       }
 
       return session;
     } catch (error) {
-      console.error("Failed to get current session:", error);
       return null;
     }
   }

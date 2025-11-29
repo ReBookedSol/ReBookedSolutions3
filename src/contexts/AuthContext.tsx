@@ -22,13 +22,6 @@ import {
 import { addNotification } from "@/services/notificationService";
 import { logError, getErrorMessage } from "@/utils/errorUtils";
 
-// Simple logging for development
-const devLog = (message: string, data?: unknown) => {
-  if (import.meta.env.DEV) console.log(message, data);
-};
-const devWarn = (message: string, data?: unknown) => {
-  if (import.meta.env.DEV) console.warn(message, data);
-};
 
 export interface UserProfile {
   id: string;
@@ -66,11 +59,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    console.error("useAuth hook called outside of AuthProvider context");
-    console.error("This usually happens when:");
-    console.error("1. Component is rendered before AuthProvider");
-    console.error("2. Component is outside the AuthProvider tree");
-    console.error("3. AuthProvider failed to initialize");
     throw new Error("useAuth must be used within an AuthProvider. Check your component tree structure.");
   }
   return context;
@@ -118,7 +106,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         // After successful login, give Supabase a moment to update auth state
         if (result && result.user) {
-          console.log("✅ Login successful, waiting for auth state update...");
           // Small delay to let auth state propagate
           await new Promise(resolve => setTimeout(resolve, 500));
         }
@@ -130,11 +117,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         try {
           const { data: sessionCheck } = await supabase.auth.getSession();
           if (sessionCheck.session && sessionCheck.user) {
-            console.log("✅ Login succeeded despite error - user is authenticated!");
             return sessionCheck;
           }
         } catch (sessionError) {
-          console.warn("Session check failed:", sessionError);
+          // Session check failed
         }
 
         handleError(error, "Login");
@@ -149,10 +135,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     async (email: string, password: string, firstName: string, lastName: string, phone: string, affiliateCode?: string) => {
       try {
         setIsLoading(true);
-        console.log("🔄 AuthContext register called with:", { email, firstName, lastName, phone });
 
         // Check if user already exists in our profiles table
-        console.log('🔍 Checking if user already exists in profiles table...');
         const { data: existingProfile, error: checkError } = await supabase
           .from('profiles')
           .select('id, email, status')
@@ -160,7 +144,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           .maybeSingle();
 
         if (existingProfile && !checkError) {
-          console.log('❌ User already exists in profiles table:', existingProfile);
 
           // Try to resend verification email for existing profile users
           try {
@@ -173,7 +156,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             });
 
             if (!resendError) {
-              console.log("✅ Resent verification email to existing profile user");
               return {
                 needsVerification: true,
                 isExistingUnverified: true
@@ -182,7 +164,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
               throw new Error("Your account already exists and is fully verified. Please log in instead.");
             }
           } catch (resendException) {
-            console.warn("⚠️ Could not resend to profile user:", resendException);
+            // Could not resend to profile user
           }
 
           throw new Error("An account with this email already exists. Please try logging in instead.");
@@ -190,11 +172,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         // If checkError is not "PGRST116" (no rows), then it's a real error
         if (checkError && checkError.code !== 'PGRST116') {
-          console.warn('⚠️ Error checking existing user (non-critical):', checkError);
+          // Error checking existing user (non-critical)
         }
 
         // Create user account - Supabase handles email confirmation automatically
-        console.log('🔧 Creating user account with email verification...');
 
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -214,7 +195,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             });
           }
         } catch (refErr) {
-          console.warn('Referral tracking failed (non-blocking):', refErr);
+          // Referral tracking failed (non-blocking)
         }
 
         // Stash phone to ensure we can sync it on first login even if metadata is missing
@@ -223,14 +204,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         } catch (_) {}
 
         if (error) {
-          console.error("❌ Supabase signup failed:", error);
-
           // Handle specific Supabase auth errors more gracefully
           if (error.message?.includes("User already registered") ||
               error.message?.includes("already been registered") ||
               error.message?.includes("already exists")) {
-
-            console.log("🔍 User exists in Supabase auth, checking if they need to verify email...");
 
             // Try to check if the user just needs to verify their email
             try {
@@ -244,7 +221,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
               if (!resendError) {
                 // Email resent successfully - user exists but needs verification
-                console.log("✅ Resent verification email to existing unverified user");
                 return {
                   needsVerification: true,
                   isExistingUnverified: true
@@ -254,7 +230,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 throw new Error("An account with this email already exists and is verified. Please log in instead.");
               }
             } catch (resendException) {
-              console.warn("⚠️ Could not resend verification email:", resendException);
+              // Could not resend verification email
             }
 
             // Default to asking user to login
@@ -305,15 +281,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         console.log("✅ Registration completed successfully");
         return { needsVerification: false };
       } catch (error) {
-        console.error("❌ AuthContext register caught error:", {
-          message: error instanceof Error ? error.message : String(error),
-          error: error instanceof Error ? {
-            name: error.name,
-            message: error.message,
-            stack: error.stack
-          } : error,
-          timestamp: new Date().toISOString()
-        });
 
         // Provide more specific error messages
         const errorMessage =
@@ -362,7 +329,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           error.message?.includes("token");
 
         if (!isAcceptableError) {
-          console.warn("Logout had an error but user is signed out:", error);
           // Don't throw - the user is effectively logged out
         }
       }
@@ -371,12 +337,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(null);
       setProfile(null);
       setSession(null);
-
-      // Only log the error, don't throw it to the UI
-      console.warn(
-        "Logout encountered an error but user state cleared:",
-        error,
-      );
     } finally {
       setIsLoading(false);
     }
@@ -391,7 +351,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setProfile(updatedProfile);
       }
     } catch (error) {
-      console.warn("Failed to refresh profile:", error);
+      // Failed to refresh profile
     }
   }, [user]);
 
@@ -434,17 +394,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                         try {
                           await supabase.auth.updateUser({ data: { phone_number: phoneVal, phone: phoneVal } });
                         } catch (e) {
-                          console.warn('Auth metadata phone sync failed:', e);
+                          // Auth metadata phone sync failed
                         }
 
                         await supabase
                           .from('profiles')
                           .update({ phone_number: phoneVal })
                           .eq('id', session.user!.id);
-                        console.log('✅ Synced phone_number to profiles');
                       }
                     } catch (e) {
-                      console.warn('⚠️ Phone sync to profiles failed (non-fatal):', e);
+                      // Phone sync to profiles failed (non-fatal)
                     }
                   })();
 
@@ -483,9 +442,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                         } catch (e) {}
                       }
 
-                      console.log("✅ Prefetched addresses and banking info for user", userId);
                     } catch (prefetchError) {
-                      console.warn("Prefetch error (non-fatal):", prefetchError);
+                      // Prefetch error (non-fatal)
                     }
                   })();
 
@@ -577,16 +535,14 @@ ReBooked Solutions Team
 support@rebookedsolutions.co.za`
                       });
 
-                      console.log("✅ Welcome email sent to verified user");
                     }
                   } catch (welcomeError) {
-                    console.warn("⚠️ Welcome email failed (non-critical):", welcomeError);
                     // Don't fail the login process for email issues
                   }
                 }
               })
               .catch((error) => {
-                console.warn("Background profile load failed:", error);
+                // Background profile load failed
               });
           }
         } else {
@@ -598,7 +554,6 @@ support@rebookedsolutions.co.za`
           }
         }
       } catch (error) {
-        console.error("Auth state change error:", error);
         // Don't throw - just ensure loading is cleared
       } finally {
         setIsLoading(false);
@@ -613,8 +568,6 @@ support@rebookedsolutions.co.za`
 
     const initAuth = async () => {
       try {
-        console.log("🔄 [AuthContext] Initializing auth...");
-
         // Get current session with retry logic for network failures
         let sessionResult;
         let retryCount = 0;
@@ -626,12 +579,10 @@ support@rebookedsolutions.co.za`
             break; // Success, exit retry loop
           } catch (networkError) {
             retryCount++;
-            console.warn(`Auth retry ${retryCount}/${maxRetries}:`, networkError);
 
             if (retryCount >= maxRetries) {
               // Handle network failure gracefully
               if (networkError instanceof TypeError && networkError.message.includes('Failed to fetch')) {
-                console.warn("Network connectivity issues detected, continuing in offline mode");
                 setInitError("Network connectivity issues - some features may be limited");
                 setUser(null);
                 setSession(null);
@@ -659,20 +610,15 @@ support@rebookedsolutions.co.za`
           if (error.message?.includes('Failed to fetch') ||
               error.message?.includes('NetworkError') ||
               error.message?.includes('fetch')) {
-            console.warn("Network error during auth initialization, continuing without session");
             setInitError("Network connectivity issues - some features may be limited");
           } else {
-            console.error("Auth initialization error:", error);
             setInitError(error.message);
           }
         }
 
         await handleAuthStateChange(session);
         setAuthInitialized(true);
-
-        console.log("✅ [AuthContext] Auth initialized");
       } catch (error) {
-        console.error("Auth initialization failed:", error);
         const errorMessage = getErrorMessage(error, "Failed to initialize authentication");
 
         // For network errors, provide a more user-friendly message
@@ -700,11 +646,6 @@ support@rebookedsolutions.co.za`
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // Reduce logging spam
-      if (import.meta.env.DEV) {
-        console.log("🔄 [AuthContext] Auth state changed:", event);
-      }
-
       // Only handle actual changes, not redundant events
       if (
         event === "SIGNED_OUT" ||
