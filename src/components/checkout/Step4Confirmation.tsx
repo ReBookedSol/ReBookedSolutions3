@@ -50,9 +50,7 @@ const Step4Confirmation: React.FC<Step4ConfirmationProps> = ({
   const sendConfirmationEmail = async () => {
     try {
       // This would typically call your email service
-      console.log("Sending confirmation email for order:", orderData.order_id);
     } catch (error) {
-      console.error("Failed to send confirmation email:", error);
     }
   };
 
@@ -81,7 +79,6 @@ const Step4Confirmation: React.FC<Step4ConfirmationProps> = ({
 
       toast.success("Receipt downloaded successfully!");
     } catch (error) {
-      console.error("Error generating receipt:", error);
       toast.error("Failed to generate receipt image");
     } finally {
       setIsDownloading(false);
