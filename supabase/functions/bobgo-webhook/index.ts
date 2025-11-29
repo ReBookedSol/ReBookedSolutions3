@@ -66,7 +66,6 @@ serve(async (req) => {
         created_at: new Date().toISOString(),
       });
     } catch (logErr) {
-      console.warn("Failed to log webhook:", logErr);
     }
 
     switch (eventType) {
@@ -98,7 +97,6 @@ serve(async (req) => {
                 .eq("id", orders[0].id);
             }
           } catch (err) {
-            console.error("Failed to update order tracking:", err);
           }
         }
         break;
@@ -114,7 +112,6 @@ serve(async (req) => {
               .update({ tracking_number: tracking, delivery_status: "submitted", updated_at: new Date().toISOString() })
               .eq("delivery_data->>shipment_id", shipmentId);
           } catch (err) {
-            console.error("Failed to update shipment info:", err);
           }
         }
         break;
@@ -146,7 +143,6 @@ serve(async (req) => {
                   read: false,
                 });
               } catch (notifErr) {
-                console.warn("Failed to create delivery notification:", notifErr);
               }
 
             }
@@ -169,10 +165,8 @@ serve(async (req) => {
                 });
               }
             } catch (affErr) {
-              console.warn('Affiliate earning call failed (non-blocking):', affErr);
             }
           } catch (err) {
-            console.error("Failed to mark order as delivered:", err);
           }
         }
         break;
@@ -192,20 +186,17 @@ serve(async (req) => {
               })
               .eq("tracking_number", tracking_number);
           } catch (err) {
-            console.error("Failed to mark order as cancelled:", err);
           }
         }
         break;
       }
       default:
-        console.log("Unhandled webhook event type:", eventType);
     }
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err: any) {
-    console.error("bobgo-webhook error:", err);
     return new Response(
       JSON.stringify({ success: false, error: err.message || "Webhook handler error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
