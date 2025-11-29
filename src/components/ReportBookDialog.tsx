@@ -75,7 +75,6 @@ const ReportBookDialog = ({
       setReason("");
       setCategory("");
     } catch (error) {
-      console.error("Error submitting report:", error);
       toast.error("Failed to submit report");
     } finally {
       setIsSubmitting(false);
